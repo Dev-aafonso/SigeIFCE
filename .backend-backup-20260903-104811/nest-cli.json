@@ -1,7 +1,0 @@
-﻿{
-"compilerOptions": {
-"deleteOutDir": true
-},
-"sourceRoot": "src",
-"entryFile": "main"
-}
