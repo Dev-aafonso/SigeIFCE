@@ -17,4 +17,16 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
+  color: #17212b;
+  background: #f7f9fa;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  text-decoration: none;
 }

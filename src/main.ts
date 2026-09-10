@@ -1,48 +1,49 @@
-﻿import 'reflect-metadata';
-import 'dotenv/config';
-
-import { NestFactory } from '@nestjs/core';
+﻿import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
 
-import { join } from 'node:path';
+import { join } from 'path';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-
   const app =
     await NestFactory.create<NestExpressApplication>(
       AppModule,
     );
 
-  /*
-   * Arquivos públicos:
-   *
-   * /web/shared/assets
-   * /web/shared/styles
-   * /web/shared/core
-   * /web/vendor
-   */
-  app.useStaticAssets(
-    join(process.cwd(), 'web'),
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
   );
 
-  /*
-   * Templates Handlebars
-   */
   app.setBaseViewsDir(
-    join(process.cwd(), 'web', 'views'),
+    join(
+      process.cwd(),
+      'web',
+      'views',
+    ),
   );
 
   app.setViewEngine('hbs');
 
-  /*
-   * Segurança básica
-   */
-  app.enableCors();
+  app.useStaticAssets(
+    join(
+      process.cwd(),
+      'web',
+      'shared',
+    ),
+  );
+
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
   const port =
-    process.env.PORT || 3000;
+    Number(process.env.PORT) || 3000;
 
   await app.listen(port);
 
