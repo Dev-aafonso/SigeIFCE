@@ -1,6 +1,6 @@
 ﻿import { Module } from '@nestjs/common';
 
-import { PrismaModule } from './database/prisma/prisma.module';
+import { PrismaModule } from './database/prisma.module';
 
 import { actionsModule } from './modules/actions/actions.module';
 import { authModule } from './modules/auth/auth.module';
@@ -22,3 +22,4 @@ import { usersModule } from './modules/users/users.module';
   ],
 })
 export class AppModule {}
+
