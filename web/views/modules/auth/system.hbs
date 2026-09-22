@@ -1,0 +1,72 @@
+﻿<div style="
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f7f9fa;
+  padding:30px;
+">
+  <div style="
+    width:min(700px,100%);
+    background:#fff;
+    border:1px solid #dce4e9;
+    border-radius:20px;
+    padding:50px;
+    text-align:center;
+  ">
+    <h1>SIGE IFCE</h1>
+
+    <p
+      id="system-user"
+      style="
+        color:#6f829e;
+        font-size:18px;
+      "
+    >
+      Carregando perfil...
+    </p>
+
+    <button
+      id="logout"
+      style="
+        border:0;
+        background:#119b3e;
+        color:#fff;
+        padding:14px 30px;
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:700;
+      "
+    >
+      Sair
+    </button>
+  </div>
+</div>
+
+<script>
+  const user =
+    JSON.parse(
+      localStorage.getItem('sige_user') || '{}'
+    );
+
+  const roleNames = {
+    ORGANIZADOR: 'Gerente / Organizador de Eventos',
+    PROFESSOR: 'Professor',
+    ALUNO: 'Aluno'
+  };
+
+  const element =
+    document.getElementById('system-user');
+
+  element.textContent =
+    'Perfil: ' +
+    (roleNames[user.role] || 'Não definido');
+
+  document
+    .getElementById('logout')
+    .addEventListener('click', function () {
+      localStorage.removeItem('sige_access_token');
+      localStorage.removeItem('sige_user');
+      window.location.href = '/login';
+    });
+</script>

@@ -89,6 +89,7 @@ body, html {
     -moz-osx-font-smoothing: grayscale;
 }
 
+
 .alerta-noscript {
     position: fixed;
     top: 0;
@@ -109,6 +110,28 @@ body, html {
     justify-content: center;
     align-items: center;
     padding: var(--espacamento-lg);
+
+body {
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #17212b;
+  background: #f7f9fa;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  text-decoration: none;
+
 }
 
 .fade-in { 
