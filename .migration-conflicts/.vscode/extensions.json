@@ -1,9 +1,0 @@
-﻿{
-"recommendations": [
-"dbaeumer.vscode-eslint",
-"esbenp.prettier-vscode",
-"prisma.prisma",
-"usernamehw.errorlens",
-"eamodio.gitlens"
-]
-}
