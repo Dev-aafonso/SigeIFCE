@@ -1,0 +1,242 @@
+.grade-autenticacao {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+    gap: var(--espacamento-md);
+    align-items: center;
+}
+
+.info-autenticacao {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.info-autenticacao h2 {
+    font-size: var(--texto-xl);
+    margin-bottom: var(--espacamento-sm);
+    line-height: 1.2;
+    color: var(--texto-claro);
+    letter-spacing: -0.02em;
+}
+
+.info-autenticacao p {
+    font-size: var(--texto-sm);
+    color: var(--texto-suave);
+    margin-bottom: var(--espacamento-md);
+    line-height: 1.6;
+}
+
+.logotipo-auth {
+    border: none;
+    padding: 0 0 var(--espacamento-sm) 0;
+    justify-content: flex-start;
+    margin-bottom: var(--espacamento-md);
+    border-bottom: 1px solid var(--borda-barra-lateral);
+    width: 100%;
+}
+
+.destaques-autenticacao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    margin-top: var(--espacamento-sm);
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.item-destaque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacamento-xs);
+    text-align: center;
+    flex: 1 1 80px;
+    max-width: 120px;
+}
+
+.container-icone-destaque {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--raio-borda-sm);
+    background-color: var(--ativo-fundo);
+    color: var(--ativo-borda);
+    border: 1px solid var(--ativo-borda);
+    box-shadow: var(--sombra-sm);
+    transition: transform var(--transicao-suave);
+}
+
+.item-destaque:hover .container-icone-destaque { transform: translateY(-2px); }
+
+.item-destaque span {
+    font-size: var(--texto-xs);
+    font-weight: 600;
+    color: var(--texto-principal);
+    line-height: 1.2;
+}
+
+.divisor-vertical-destaque {
+    width: 1px;
+    height: 40px;
+    background-color: var(--cor-divisor);
+    align-self: center;
+    flex-shrink: 0;
+}
+
+.destaque-texto { color: var(--ativo-borda); }
+
+.cartao-autenticacao {
+    background-color: var(--fundo-modulo);
+    padding: var(--espacamento-md);
+    border-radius: var(--raio-borda-lg);
+    box-shadow: var(--sombra-xl);
+    border: 1px solid var(--borda-barra-lateral);
+    backdrop-filter: blur(10px);
+}
+
+.cartao-autenticacao h3 {
+    font-size: var(--texto-xl);
+    margin-bottom: var(--espacamento-xs);
+    color: var(--texto-claro);
+    letter-spacing: -0.01em;
+}
+
+.subtitulo-cartao {
+    color: var(--texto-suave);
+    font-size: var(--texto-sm);
+    margin-bottom: var(--espacamento-md);
+}
+
+.botao-trocar-auth {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacamento-xs);
+    background-color: var(--ativo-fundo);
+    color: var(--ativo-texto);
+    border: 1px solid var(--ativo-borda);
+    padding: var(--espacamento-xs) var(--espacamento-sm);
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: var(--texto-xs);
+    cursor: pointer;
+    margin-bottom: var(--espacamento-md);
+    transition: all var(--transicao-suave);
+}
+
+.botao-trocar-auth:hover {
+    background-color: var(--ativo-borda);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.formulario-autenticacao .grupo-formulario { margin-bottom: var(--espacamento-sm); }
+
+.formulario-autenticacao label {
+    display: block;
+    font-size: var(--texto-sm);
+    font-weight: 600;
+    margin-bottom: var(--espacamento-xs);
+    color: var(--texto-principal);
+}
+
+.grupo-input-icone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.icone-input {
+    position: absolute;
+    left: var(--espacamento-sm);
+    color: var(--texto-suave);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.formulario-autenticacao input {
+    width: 100%;
+    padding: var(--espacamento-sm) var(--espacamento-md);
+    border: 1px solid var(--borda-barra-lateral);
+    border-radius: var(--raio-borda-sm);
+    background-color: transparent;
+    color: var(--texto-principal);
+    font-size: var(--texto-base);
+    outline: none;
+    transition: border-color var(--transicao-suave), box-shadow var(--transicao-suave);
+}
+
+.formulario-autenticacao .grupo-input-icone input {
+    padding-left: calc(var(--espacamento-sm) + 28px);
+    padding-right: calc(var(--espacamento-sm) + 28px);
+}
+
+.formulario-autenticacao input:focus { 
+    border-color: var(--ativo-borda); 
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.botao-olho {
+    position: absolute;
+    right: var(--espacamento-sm);
+    background: none;
+    border: none;
+    color: var(--texto-suave);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: color var(--transicao-suave), opacity var(--transicao-suave);
+}
+
+.botao-olho:hover, .botao-olho:focus {
+    color: var(--ativo-borda);
+    outline: none;
+}
+
+.botao-primario {
+    width: 100%;
+    padding: var(--espacamento-sm) var(--espacamento-md);
+    background-color: var(--ativo-borda);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--raio-borda-sm);
+    font-size: var(--texto-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transicao-suave), transform var(--transicao-suave);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--espacamento-xs);
+    margin-top: var(--espacamento-md);
+    box-shadow: var(--sombra-md);
+}
+
+.botao-primario:hover { 
+    background-color: var(--ativo-texto); 
+    transform: translateY(-1px);
+}
+
+.texto-rodape-auth {
+    text-align: center;
+    margin-top: var(--espacamento-md);
+    font-size: var(--texto-sm);
+    color: var(--texto-suave);
+}
+
+.texto-rodape-auth a {
+    color: var(--ativo-borda);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .destaques-autenticacao { gap: 0.5rem; }
+    .divisor-vertical-destaque { display: none; }
+}

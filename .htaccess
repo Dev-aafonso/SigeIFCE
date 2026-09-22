@@ -1,0 +1,81 @@
+# ==============================================================================
+# 1. CORREÇÃO DO PROBLEMA DO F5 (REDIRECIONAMENTO SPA)
+# ==============================================================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Evita que a regra entre em loop no próprio index.html
+    RewriteRule ^index\.html$ - [L]
+
+    # Se a requisição NÃO for um arquivo real (-f)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Se a requisição NÃO foi um diretório real (-d)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Se a requisição NÃO for um link simbólico (-l)
+    RewriteCond %{REQUEST_FILENAME} !-l
+
+    # Redireciona todas as outras rotas para o index.html principal
+    RewriteRule . /index.html [L]
+</IfModule>
+
+# ==============================================================================
+# 2. SEGURANÇA E PROTEÇÃO
+# ==============================================================================
+# Desativa a listagem de diretórios no navegador
+Options -Indexes
+
+# Bloqueia o acesso a arquivos sensíveis (como .env, .git, etc)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Cabeçalhos de Segurança Recomendados
+<IfModule mod_headers.c>
+    # Previne ataques de XSS no navegador
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Previne clickjacking (não permite que o site rode dentro de <iframes> externos)
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Previne sniffing de MIME types
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Política de Referrer para maior privacidade
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ==============================================================================
+# 3. PERFORMANCE: COMPRESSÃO (GZIP / DEFLATE)
+# ==============================================================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/xhtml+xml application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ==============================================================================
+# 4. PERFORMANCE: CACHE NO NAVEGADOR
+# ==============================================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Imagens e Mídias (Cache longo)
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+
+    # CSS e JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+
+    # Documento HTML (Não armazena em cache para que atualizações do app reflitam de imediato)
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>

@@ -1,0 +1,112 @@
+.envoltorio-selecao-funcao {
+    width: min(100%, 860px);
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.icone-topo-selecao {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto var(--espacamento-xs);
+    border-radius: var(--raio-borda-padrao);
+    background-color: var(--ativo-fundo);
+    color: var(--ativo-borda);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.titulo-selecao-funcao {
+    font-size: var(--texto-xl);
+    font-weight: 700;
+    color: var(--texto-claro);
+    letter-spacing: -0.01em;
+    margin-bottom: var(--espacamento-xs);
+}
+
+.subtitulo-selecao-funcao {
+    font-size: var(--texto-sm);
+    color: var(--texto-suave);
+    line-height: 1.4;
+    margin-bottom: var(--espacamento-md);
+    max-width: 600px;
+}
+
+.grade-cartoes-funcao {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: var(--espacamento-sm);
+    width: 100%;
+}
+
+.cartao-funcao {
+    background-color: var(--fundo-modulo);
+    border: 1px solid var(--borda-barra-lateral);
+    border-radius: var(--raio-borda-lg);
+    box-shadow: var(--sombra-sm);
+    padding: var(--espacamento-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform var(--transicao-suave), box-shadow var(--transicao-suave), border-color var(--transicao-suave);
+}
+
+.cartao-funcao:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-md);
+    border-color: var(--ativo-borda);
+}
+
+.icone-cartao-funcao {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--raio-borda-padrao);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--espacamento-xs);
+}
+
+.icone-cartao-funcao.gestor { background-color: var(--funcao-gestor-fundo); color: var(--funcao-gestor-icone); }
+.icone-cartao-funcao.professor { background-color: var(--funcao-professor-fundo); color: var(--funcao-professor-icone); }
+.icone-cartao-funcao.aluno { background-color: var(--funcao-aluno-fundo); color: var(--funcao-aluno-icone); }
+
+.titulo-cartao-funcao {
+    font-size: var(--texto-sm);
+    font-weight: 700;
+    color: var(--texto-claro);
+    margin-bottom: 2px;
+}
+
+.descricao-cartao-funcao {
+    font-size: var(--texto-xs);
+    color: var(--texto-suave);
+    line-height: 1.4;
+    margin-bottom: var(--espacamento-sm);
+    flex-grow: 1;
+}
+
+.botao-selecionar-funcao {
+    width: 100%;
+    padding: var(--espacamento-xs) var(--espacamento-sm);
+    background-color: var(--ativo-borda);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--raio-borda-sm);
+    font-size: var(--texto-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--transicao-suave), transform var(--transicao-suave);
+}
+
+.botao-selecionar-funcao:hover {
+    background-color: var(--ativo-texto);
+    transform: translateY(-1px);
+}
+
+.espacamento-topo-rodape { margin-top: var(--espacamento-md); }

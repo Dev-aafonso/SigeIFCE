@@ -1,0 +1,13 @@
+ M index.html
+ M src/main.ts
+ M web/shared/core/main.js
+ M web/shared/core/router.js
+ M web/shared/styles/global.css
+ M web/shared/styles/layout.css
+ M web/views/layout.hbs
+?? .htaccess
+?? moon.vbs
+?? sige_temp.txt
+?? web/shared/assets/
+?? web/views/components/
+?? web/views/modules/
