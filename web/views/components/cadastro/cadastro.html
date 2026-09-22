@@ -1,0 +1,128 @@
+<div class="grade-autenticacao fade-in">
+    <div class="info-autenticacao">
+        <header class="logotipo logotipo-auth">
+            <div class="icone-logotipo">
+                <div class="ponto vermelho"></div><div class="ponto verde"></div><div class="ponto verde"></div>
+                <div class="ponto verde"></div><div class="ponto verde"></div><div class="ponto transparente"></div>
+                <div class="ponto verde"></div><div class="ponto verde"></div><div class="ponto verde"></div>
+                <div class="ponto verde"></div><div class="ponto verde"></div><div class="ponto transparente"></div>
+            </div>
+            <h1>SIGE IFCE</h1>
+        </header>
+        
+        <h2>Gestão de eventos científicos de forma <span class="destaque-texto">simples e eficiente.</span></h2>
+        <p>Conectando estudantes, professores e organizadores em um só lugar.</p>
+
+        <div class="destaques-autenticacao">
+            <div class="item-destaque">
+                <div class="container-icone-destaque">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <span>Eventos Acadêmicos</span>
+            </div>
+
+            <div class="divisor-vertical-destaque" aria-hidden="true"></div>
+
+            <div class="item-destaque">
+                <div class="container-icone-destaque">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 15l-2 5-9-5 9-5 2 5z"></path>
+                        <path d="M22 12l-4-2v-4h-4l-2-4-2 4h-4v4l-4 2 4 2v4h4l2 4 2-4h4v-4z"></path>
+                    </svg>
+                </div>
+                <span>Certificados</span>
+            </div>
+
+            <div class="divisor-vertical-destaque" aria-hidden="true"></div>
+
+            <div class="item-destaque">
+                <div class="container-icone-destaque">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                </div>
+                <span>e mais oportunidades</span>
+            </div>
+
+            <div class="divisor-vertical-destaque" aria-hidden="true"></div>
+        </div>
+    </div>
+
+    <section class="cartao-autenticacao">
+        <button class="botao-trocar-auth" onclick="window.carregarComponenteAuth('login')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            Logar
+        </button>
+        
+        <h3>Crie sua conta</h3>
+        <p class="subtitulo-cartao">Preencha os dados abaixo para se cadastrar.</p>
+
+        <div class="seletor-cargo-container">
+            <p class="rotulo-seletor-cargo">Função selecionada:</p>
+            <div class="cartoes-cargo">
+                <label class="cartao-cargo">
+                    <input type="radio" name="tipo_perfil" value="gestor" id="radio-gestor">
+                    <span class="conteudo-cargo">Gestor</span>
+                </label>
+                <label class="cartao-cargo">
+                    <input type="radio" name="tipo_perfil" value="professor" id="radio-professor">
+                    <span class="conteudo-cargo">Professor</span>
+                </label>
+                <label class="cartao-cargo">
+                    <input type="radio" name="tipo_perfil" value="aluno" id="radio-aluno" checked>
+                    <span class="conteudo-cargo">Aluno</span>
+                </label>
+            </div>
+        </div>
+
+        <form class="formulario-autenticacao" onsubmit="window.realizarLogin(event)">
+            <div class="grupo-formulario">
+                <label for="nome-cadastro">Nome completo *</label>
+                <div class="grupo-input-icone">
+                    <svg class="icone-input" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <input type="text" id="nome-cadastro" placeholder="Digite seu nome completo" required>
+                </div>
+            </div>
+
+            <div class="grupo-formulario">
+                <label for="email-cadastro">E-mail *</label>
+                <div class="grupo-input-icone">
+                    <svg class="icone-input" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                    </svg>
+                    <input type="email" id="email-cadastro" placeholder="Digite seu e-mail" required>
+                </div>
+            </div>
+
+            <div class="grupo-formulario">
+                <label for="senha-cadastro">Senha *</label>
+                <div class="grupo-input-icone">
+                    <svg class="icone-input" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <input type="password" id="senha-cadastro" placeholder="Digite sua senha" required>
+                    <button type="button" class="botao-olho" onclick="window.alternarSenha(this)" aria-label="Mostrar ou ocultar senha">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="botao-primario">Cadastrar</button>
+        </form>
+        
+        <p class="texto-rodape-auth">Já possui uma conta? <a href="#" onclick="window.carregarComponenteAuth('login'); return false;">Faça seu login.</a></p>
+    </section>
+</div>

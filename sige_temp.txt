@@ -1,0 +1,79 @@
+ M .env.example
+ M .github/workflows/ci.yml
+ M .gitignore
+ D .migration-conflicts/.editorconfig
+ D .migration-conflicts/.github/ISSUE_TEMPLATE/bug_report.md
+ D .migration-conflicts/.github/workflows/ci.yml
+ D .migration-conflicts/.gitignore
+ D .migration-conflicts/.prettierrc
+ D .migration-conflicts/.vscode/extensions.json
+ D .migration-conflicts/.vscode/launch.json
+ D .migration-conflicts/.vscode/settings.json
+ D .migration-conflicts/README.md
+ D .migration-conflicts/package.json
+ D .migration-conflicts/prisma/schema.prisma
+ D .migration-conflicts/src/app.module.ts
+ D .migration-conflicts/src/common/decorators/htmx-request.decorator.ts
+ D .migration-conflicts/src/common/interceptors/htmx.interceptor.ts
+ D .migration-conflicts/src/database/prisma.module.ts
+ D .migration-conflicts/src/database/prisma.service.ts
+ D .migration-conflicts/src/main.ts
+ M .vscode/extensions.json
+ M .vscode/settings.json
+ M Dockerfile
+ M README.md
+ M docker-compose.yml
+ M index.html
+ M manifest.json
+ M nest-cli.json
+ M package-lock.json
+ M package.json
+ M prisma.config.ts
+ M prisma/schema.prisma
+ M src/app.module.ts
+ M src/common/decorators/htmx-request.decorator.ts
+ M src/common/interceptors/htmx.interceptor.ts
+ M src/database/prisma.module.ts
+ M src/database/prisma.service.ts
+ M src/main.ts
+ M src/modules/auth/auth.controller.ts
+ M src/modules/auth/auth.module.ts
+ M src/modules/auth/auth.service.ts
+ M src/modules/auth/dto/login.dto.ts
+ M src/modules/users/users.controller.ts
+ M src/modules/users/users.module.ts
+ M src/modules/users/users.service.ts
+ M tsconfig.build.json
+ M tsconfig.json
+ D views/components/alerts/error.hbs
+ D views/components/alerts/success.hbs
+ D views/components/events/event-card.hbs
+ D views/components/events/event-form.hbs
+ D views/components/events/event-list.hbs
+ D views/components/events/event-modal.hbs
+ D views/components/navigation/navbar.hbs
+ D views/components/registrations/registration-form.hbs
+ D views/components/registrations/registration-item.hbs
+ D views/layouts/main.hbs
+ D views/pages/auth/login.hbs
+ D views/pages/dashboard/index.hbs
+ D views/pages/events/index.hbs
+ D views/pages/users/index.hbs
+ M web/shared/core/main.js
+ M web/shared/core/router.js
+ M web/shared/styles/global.css
+ M web/shared/styles/layout.css
+ D web/views/layout.hbs
+?? .htaccess
+?? docs/
+?? jest.config.ts
+?? moon.vbs
+?? prisma/migrations/
+?? sige_temp.txt
+?? src/generated/
+?? src/modules/auth/dto/register.dto.ts
+?? src/modules/users/dto/select-role.dto.ts
+?? test/jest-e2e.json
+?? web/shared/assets/
+?? web/views/components/
+?? web/views/modules/

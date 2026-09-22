@@ -1,64 +1,156 @@
 ﻿<!DOCTYPE html>
-
-<html lang="pt-BR">
-
+<html lang="pt-br">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="referrer" content="no-referrer">
+    <link rel="icon" href="./web/shared/assets/images/favicon.svg" type="image/x-icon">
+    <title>SIGE - Sistema de Gerenciamento de Eventos</title>
 
-  <meta charset="UTF-8">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="./manifest.json">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+    <link rel="stylesheet" href="./web/shared/styles/global.css">
+    <link rel="stylesheet" href="./web/shared/styles/layout.css">
 
-  <title>SIGE IFCE</title>
-
-  <meta
-    name="theme-color"
-    content="#ffffff"
-  >
-
-  <link
-    rel="manifest"
-    href="/manifest.json"
-  >
-
-  <link
-    rel="stylesheet"
-    href="/shared/styles/global.css"
-  >
-
-  <link
-    rel="stylesheet"
-    href="/shared/styles/layout.css"
-  >
-
+    <script src="./web/vendor/htmx.min.js" defer></script>
+    <script src="./web/shared/core/router.js" type="module" defer></script>
+    <script src="./web/shared/core/main.js" type="module" defer></script>
 </head>
-
 <body>
+    <noscript>
+        <div class="alerta-noscript">
+            <h2>JavaScript Desativado</h2>
+            <p>Para utilizar o SIGE IFCE e acessar todas as suas funcionalidades, por favor, ative o JavaScript no seu navegador.</p>
+        </div>
+    </noscript>
 
-  <main id="app">
+    <div class="container">
+        <header class="cabecalho-topo">
+            <div class="cabecalho-esquerda">
+                <button id="alternador-barra-lateral" class="botao-icone" aria-label="Alternar menu lateral" title="Ocultar/Exibir menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                
+                <header class="logotipo logotipo-cabecalho">
+                    <div class="icone-logotipo">
+                        <div class="ponto vermelho"></div><div class="ponto verde"></div><div class="ponto verde"></div>
+                        <div class="ponto verde"></div><div class="ponto verde"></div><div class="ponto transparente"></div>
+                        <div class="ponto verde"></div><div class="ponto verde"></div><div class="ponto verde"></div>
+                        <div class="ponto verde"></div><div class="ponto verde"></div><div class="ponto transparente"></div>
+                    </div>
+                    <h1>SIGE IFCE</h1>
+                </header>
+        
+                <h2 id="titulo-pagina-cabecalho" class="titulo-pagina-cabecalho">Painel do Evento</h2>
+            </div>
 
-    <section>
+            <button id="botao-notificacoes" class="botao-icone" commandfor="popover-notificacoes" command="toggle-popover" aria-label="Notificações">
+                <img src="./web/shared/assets/icons/main-icons/sino.png" width="24" height="24" alt="Sino de notificações">
+            </button>
+        </header>
 
-      <h1>SIGE IFCE</h1>
+        <div class="corpo-inferior">
+            <div id="painel-fundo-lateral" class="painel-fundo-lateral"></div>
 
-      <p>
-        Sistema de Gerenciamento de Eventos Científicos.
-      </p>
+            <aside class="barra-lateral" id="barra-lateral">
+                <div class="topo-barra-lateral">
+                    <nav class="menu-navegacao" aria-label="Menu Principal">
+                        <div class="grupo-menu">
+                            <span class="titulo-grupo-menu">PRINCIPAL</span>
+                            <button class="botao-menu ativo" data-module="dashboard" aria-current="page">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                                Dashboard
+                            </button>
+                            <button class="botao-menu" data-module="events">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                Eventos
+                            </button>
+                            <button class="botao-menu" data-module="registrations">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Inscrições
+                            </button>
+                            <button class="botao-menu" data-module="participants">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                Participantes
+                            </button>
+                            <button class="botao-menu" data-module="certificates">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15l-2 5-9-5 9-5 2 5z"></path><path d="M22 12l-4-2v-4h-4l-2-4-2 4h-4v4l-4 2 4 2v4h4l2 4 2-4h4v-4z"></path></svg>
+                                Certificados
+                            </button>
+                        </div>
 
-    </section>
+                        <div class="grupo-menu">
+                            <span class="titulo-grupo-menu">ADMINISTRAÇÃO</span>
+                            <button class="botao-menu" data-module="reports">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                Relatórios
+                            </button>
+                            <button class="botao-menu" data-module="users">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><circle cx="19" cy="11" r="2"></circle></svg>
+                                Usuários
+                            </button>
+                            <button class="botao-menu" data-module="settings">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                Configurações
+                            </button>
+                        </div>
+                    </nav>
+                </div>
 
-  </main>
+                <div class="rodape-barra-lateral">
+                    <button class="botao-perfil-usuario" commandfor="modal-perfil" command="show-modal" aria-label="Abrir perfil do usuário">
+                        <img src="" alt="Foto de perfil" class="avatar-perfil" id="avatar-usuario">
+                        <div class="info-perfil">
+                            <span class="nome-perfil" id="nome-usuario">Carregando...</span>
+                            <span class="cargo-perfil" id="cargo-usuario" data-role="ALUNO">Carregando...</span>
+                        </div>
+                    </button>
+                </div>
+            </aside>
 
-  <script
-    src="/vendor/htmx.min.js"
-  ></script>
+            <div class="envoltorio-principal">
+                <main id="area-conteudo" class="conteudo-principal"></main>
+            </div>
+        </div>
+    </div>
 
-  <script
-    src="/shared/core/main.js"
-  ></script>
+    <dialog id="modal-perfil" class="modal-perfil">
+        <header class="cabecalho-modal">
+            <h3>Perfil do Usuário</h3>
+            <button commandfor="modal-perfil" command="close" class="botao-fechar" aria-label="Fechar modal">&times;</button>
+        </header>
+        <div class="corpo-modal">
+            <div class="cartao-usuario-modal">
+                <img src="" alt="Foto do Usuário" class="avatar-modal" id="avatar-usuario-modal">
+                <div class="detalhes-usuario-modal">
+                    <strong id="nome-usuario-modal">Nome</strong>
+                    <span id="cargo-usuario-modal" class="cargo-perfil">Papel</span>
+                </div>
+            </div>
+            <nav class="opcoes-modal">
+                <button class="botao-opcao-modal">Meus Dados</button>
+                <button class="botao-opcao-modal">Alterar Senha</button>
+                <button class="botao-opcao-modal perigo" id="botao-sair" commandfor="modal-perfil" command="close">Sair do Sistema</button>
+            </nav>
+        </div>
+    </dialog>
 
+    <div id="popover-notificacoes" class="popover-configuracoes" popover>
+        <header class="cabecalho-popover">
+            <h4>NOTIFICAÇÕES</h4>
+        </header>
+        <div class="corpo-popover">
+            <button class="botao-opcao-modal">Lista de notificações</button>
+            <button class="botao-opcao-modal">Preferências</button>
+            <button class="botao-opcao-modal">Marcar todas como lidas</button>
+        </div>
+    </div>
 </body>
-
 </html>

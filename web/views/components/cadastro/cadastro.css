@@ -1,0 +1,43 @@
+.seletor-cargo-container {
+    margin-top: 0;
+    margin-bottom: var(--espacamento-sm);
+    text-align: left;
+}
+
+.rotulo-seletor-cargo {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto-principal);
+    margin-bottom: var(--espacamento-xs);
+}
+
+.cartoes-cargo {
+    display: flex;
+    gap: var(--espacamento-xs);
+    flex-wrap: wrap;
+}
+
+.cartao-cargo { cursor: pointer; flex: 1 1 70px; }
+.cartao-cargo input { display: none; }
+
+.conteudo-cargo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--espacamento-xs);
+    padding: var(--espacamento-xs) var(--espacamento-sm);
+    border: 1px solid var(--borda-barra-lateral);
+    border-radius: var(--raio-borda-sm);
+    font-size: var(--texto-xs);
+    font-weight: 600;
+    background-color: var(--fundo-modulo);
+    color: var(--texto-suave);
+    transition: all var(--transicao-suave);
+    white-space: nowrap;
+}
+
+.cartao-cargo input:checked + .conteudo-cargo {
+    border-color: var(--ativo-borda);
+    background-color: var(--ativo-fundo);
+    color: var(--ativo-texto);
+}
