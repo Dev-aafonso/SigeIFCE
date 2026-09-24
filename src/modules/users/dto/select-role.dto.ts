@@ -1,4 +1,4 @@
-﻿import { IsIn } from 'class-validator';
+import { IsIn } from 'class-validator';
 
 export const USER_ROLES = [
   'ORGANIZADOR',
@@ -10,5 +10,6 @@ export type UserRole = typeof USER_ROLES[number];
 
 export class SelectRoleDto {
   @IsIn(USER_ROLES)
-  role: UserRole;
+  role!: UserRole;
 }
+

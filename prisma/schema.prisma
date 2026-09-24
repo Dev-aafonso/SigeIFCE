@@ -6,3 +6,16 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  ORGANIZADOR
+  PROFESSOR
+  ALUNO
+}
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  role     UserRole?
+}

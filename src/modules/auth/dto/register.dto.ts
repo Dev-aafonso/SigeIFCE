@@ -1,4 +1,4 @@
-﻿import {
+import {
   IsEmail,
   IsString,
   MinLength,
@@ -6,13 +6,14 @@
 
 export class RegisterDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @IsString()
   @MinLength(6)
-  passwordConfirmation: string;
+  passwordConfirmation!: string;
 }
+

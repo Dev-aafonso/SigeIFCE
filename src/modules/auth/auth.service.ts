@@ -1,4 +1,4 @@
-Ôªøimport {
+import {
   BadRequestException,
   ConflictException,
   Injectable,
@@ -7,7 +7,7 @@
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 
-import { PrismaService } from '../../database/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -21,7 +21,7 @@ export class AuthService {
   async register(dto: RegisterDto) {
     if (dto.password !== dto.passwordConfirmation) {
       throw new BadRequestException(
-        'As senhas n√£o coincidem.',
+        'As senhas n„o coincidem.',
       );
     }
 
@@ -33,7 +33,7 @@ export class AuthService {
 
     if (existing) {
       throw new ConflictException(
-        'Este e-mail j√° est√° cadastrado.',
+        'Este e-mail j· est· cadastrado.',
       );
     }
 
@@ -71,7 +71,7 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException(
-        'E-mail ou senha inv√°lidos.',
+        'E-mail ou senha inv·lidos.',
       );
     }
 
@@ -82,7 +82,7 @@ export class AuthService {
 
     if (!passwordValid) {
       throw new UnauthorizedException(
-        'E-mail ou senha inv√°lidos.',
+        'E-mail ou senha inv·lidos.',
       );
     }
 
@@ -102,3 +102,4 @@ export class AuthService {
     };
   }
 }
+
