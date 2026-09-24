@@ -1,25 +1,25 @@
 ﻿import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 
 import { PrismaModule } from './database/prisma.module';
 
-import { AuthModule } from './modules/auth/auth.module';
-import { EventsModule } from './modules/events/events.module';
-import { UsersModule } from './modules/users/users.module';
-import { RegistrationsModule } from './modules/registrations/registrations.module';
+import { actionsModule } from './modules/actions/actions.module';
+import { authModule } from './modules/auth/auth.module';
+import { certificatesModule } from './modules/certificates/certificates.module';
+import { eventsModule } from './modules/events/events.module';
+import { registrationsModule } from './modules/registrations/registrations.module';
+import { usersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-
     PrismaModule,
+    actionsModule,
+    authModule,
+    certificatesModule,
+    eventsModule,
+    registrationsModule,
+    usersModule,
 
-    AuthModule,
-    EventsModule,
-    UsersModule,
-    RegistrationsModule,
   ],
 })
 export class AppModule {}
+

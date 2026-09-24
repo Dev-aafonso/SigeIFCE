@@ -1,0 +1,39 @@
+ M sige_temp.txt
+ D web/shared/assets/icons/console-icons/.gitkeep
+ M web/shared/core/router.js
+?? web/shared/assets/icons/console-icons/Cansado.webp
+?? web/shared/assets/icons/console-icons/Inicializado.webp
+?? "web/shared/assets/icons/console-icons/almo\303\247o-natan.webp"
+?? "web/shared/assets/icons/console-icons/anota\303\247\303\265es.webp"
+?? web/shared/assets/icons/console-icons/bom.webp
+?? web/shared/assets/icons/console-icons/coisa.webp
+?? "web/shared/assets/icons/console-icons/cora\303\247\303\243o.webp"
+?? web/shared/assets/icons/console-icons/criptografi.webp
+?? web/shared/assets/icons/console-icons/defeito.webp
+?? web/shared/assets/icons/console-icons/dia.webp
+?? web/shared/assets/icons/console-icons/equipe.webp
+?? web/shared/assets/icons/console-icons/esquecido.webp
+?? web/shared/assets/icons/console-icons/estupido.webp
+?? web/shared/assets/icons/console-icons/feio.webp
+?? web/shared/assets/icons/console-icons/fragil.webp
+?? web/shared/assets/icons/console-icons/genial.webp
+?? web/shared/assets/icons/console-icons/ideias.webp
+?? web/shared/assets/icons/console-icons/kkkk.webp
+?? web/shared/assets/icons/console-icons/leve.webp
+?? web/shared/assets/icons/console-icons/ligado.webp
+?? web/shared/assets/icons/console-icons/medo.webp
+?? "web/shared/assets/icons/console-icons/mente forte.webp"
+?? "web/shared/assets/icons/console-icons/muita-pregui\303\247a.webp"
+?? web/shared/assets/icons/console-icons/noite.webp
+?? web/shared/assets/icons/console-icons/paranoia.webp
+?? web/shared/assets/icons/console-icons/pensando.webp
+?? web/shared/assets/icons/console-icons/pesado.webp
+?? "web/shared/assets/icons/console-icons/pregui\303\247a.webp"
+?? web/shared/assets/icons/console-icons/problemas.webp
+?? web/shared/assets/icons/console-icons/quebrado.webp
+?? "web/shared/assets/icons/console-icons/r\303\241pido.webp"
+?? web/shared/assets/icons/console-icons/sem-internet.webp
+?? web/shared/assets/icons/console-icons/sem-tempo.webp
+?? web/shared/assets/icons/console-icons/sorte.webp
+?? web/shared/assets/icons/console-icons/tempo.webp
+?? web/shared/assets/icons/console-icons/testes.webp
