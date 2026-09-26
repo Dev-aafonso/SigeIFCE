@@ -172,4 +172,3 @@ window.navegarParaModulo = (mod) => router.carregarModulo(mod);
       "/login";
   }
 })();
-
