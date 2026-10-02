@@ -1,19 +1,15 @@
-import {
-  IsEmail,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { Match } from './match.decorator';
 
 export class RegisterDto {
   @IsEmail()
   email!: string;
 
-  @IsString()
+  @IsNotEmpty()
   @MinLength(6)
   password!: string;
 
-  @IsString()
-  @MinLength(6)
+  @IsNotEmpty()
+  @Match('password', { message: 'As senhas não coincidem.' })
   passwordConfirmation!: string;
 }
-

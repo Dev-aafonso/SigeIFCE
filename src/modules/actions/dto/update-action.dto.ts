@@ -10,34 +10,40 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateActionDto {
+export class UpdateActionDto {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(200)
-  title!: string;
+  title?: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
   @MaxLength(5000)
-  description!: string;
+  description?: string;
 
+  @IsOptional()
   @IsDateString()
-  startDate!: string;
+  startDate?: string;
 
+  @IsOptional()
   @IsDateString()
-  endDate!: string;
+  endDate?: string;
 
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
   @Min(1)
-  durationMinutes!: number;
+  durationMinutes?: number;
 
   @Type(() => Number)
+  @IsOptional()
   @IsInt()
   @Min(1)
-  capacity!: number;
+  capacity?: number;
 
   @IsOptional()
   @IsString()

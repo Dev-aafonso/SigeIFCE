@@ -10,9 +10,29 @@
 */
 
 export const UserRole = {
+  ADMIN: 'ADMIN',
   ORGANIZADOR: 'ORGANIZADOR',
   PROFESSOR: 'PROFESSOR',
   ALUNO: 'ALUNO'
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const EventStatus = {
+  RASCUNHO: 'RASCUNHO',
+  PUBLICADO: 'PUBLICADO',
+  ENCERRADO: 'ENCERRADO',
+  CANCELADO: 'CANCELADO'
+} as const
+
+export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus]
+
+
+export const ActionStatus = {
+  ATIVA: 'ATIVA',
+  ENCERRADA: 'ENCERRADA',
+  CANCELADA: 'CANCELADA'
+} as const
+
+export type ActionStatus = (typeof ActionStatus)[keyof typeof ActionStatus]

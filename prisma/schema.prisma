@@ -8,14 +8,78 @@ datasource db {
 }
 
 enum UserRole {
+  ADMIN
   ORGANIZADOR
   PROFESSOR
   ALUNO
+}
+
+enum EventStatus {
+  RASCUNHO
+  PUBLICADO
+  ENCERRADO
+  CANCELADO
+}
+
+enum ActionStatus {
+  ATIVA
+  ENCERRADA
+  CANCELADA
 }
 
 model User {
   id       String   @id @default(cuid())
   email    String   @unique
   password String
-  role     UserRole?
+  role     UserRole @default(ALUNO)
+
+  events   Event[]
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  status      EventStatus @default(RASCUNHO)
+  publishedAt DateTime?
+  canceledAt  DateTime?
+  closedAt    DateTime?
+  organizerId String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  organizer User     @relation(fields: [organizerId], references: [id])
+  actions   Action[]
+
+  @@index([organizerId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([title])
+}
+
+model Action {
+  id              String       @id @default(cuid())
+  eventId         String
+  title           String
+  description     String
+  startDate       DateTime
+  endDate         DateTime
+  durationMinutes Int
+  capacity        Int
+  location        String?
+  status          ActionStatus @default(ATIVA)
+  canceledAt      DateTime?
+  closedAt        DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([status])
+  @@index([startDate])
 }

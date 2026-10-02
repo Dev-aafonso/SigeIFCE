@@ -1,54 +1,69 @@
-﻿import {
+import {
   Body,
   Controller,
   Get,
   Post,
+  Req,
   Res,
 } from '@nestjs/common';
-import { Response } from 'express';
-
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { Public } from '../../common/decorators/public.decorator';
 
-@Controller()
+const COOKIE_NAME = 'access_token';
+const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000;
+
+@Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Get('/')
-  home(@Res() res: Response) {
-    return res.redirect('/login');
+  @Public()
+  @Post('register')
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.register(dto);
+    this.setAuthCookie(response, result.accessToken);
+    return result.user;
   }
 
-  @Get('/login')
-  loginPage(@Res() res: Response) {
-    return res.render('modules/auth/login');
+  @Public()
+  @Post('login')
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.login(dto);
+    this.setAuthCookie(response, result.accessToken);
+    return result.user;
   }
 
-  @Get('/cadastro')
-  registerPage(@Res() res: Response) {
-    return res.render('modules/auth/register');
+  @Post('logout')
+  logout(@Res({ passthrough: true }) response: Response) {
+    response.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
+
+    return { message: 'Logout realizado com sucesso.' };
   }
 
-  @Get('/selecao-funcao')
-  rolePage(@Res() res: Response) {
-    return res.render('modules/auth/role-selection');
+  @Get('me')
+  me(@Req() request: Request & { user?: unknown }) {
+    return request.user;
   }
 
-  @Post('/auth/login')
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
-  }
-
-  @Post('/auth/register')
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
-  }
-  @Get('/sistema')
-  systemPage(@Res() res: Response) {
-    return res.render('modules/auth/system');
+  private setAuthCookie(response: Response, token: string) {
+    response.cookie(COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: COOKIE_MAX_AGE,
+      path: '/',
+    });
   }
 }
-

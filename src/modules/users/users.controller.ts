@@ -1,71 +1,31 @@
-﻿import {
-  Body,
-  Controller,
-  Patch,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
-
-import { Request } from 'express';
-
+import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '../../generated/prisma/client';
+import { SelectRoleDto } from '../auth/dto/select-role.dto';
 import { UsersService } from './users.service';
-import { SelectRoleDto } from './dto/select-role.dto';
 
 @Controller('users')
+@Roles(UserRole.ADMIN)
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
-  @Patch('me/role')
-  async selectRole(
-    @Req() req: Request,
-    @Body() dto: SelectRoleDto,
-  ) {
-    const auth =
-      req.headers.authorization || '';
-
-    if (!auth.startsWith('Bearer ')) {
-      throw new UnauthorizedException(
-        'Token não informado.',
-      );
-    }
-
-    const token = auth.replace(
-      'Bearer ',
-      '',
-    );
-
-    const payload = this.decodeToken(token);
-
-    if (!payload?.sub) {
-      throw new UnauthorizedException(
-        'Token inválido.',
-      );
-    }
-
-    return this.usersService.selectRole(
-      String(payload.sub),
-      dto.role,
-    );
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
   }
 
-  private decodeToken(token: string): any {
-    try {
-      const parts = token.split('.');
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.usersService.findById(id);
+  }
 
-      if (parts.length !== 3) {
-        return null;
-      }
+  @Patch(':id/role')
+  updateRole(@Param('id') id: string, @Body() dto: SelectRoleDto) {
+    return this.usersService.updateRole(id, dto.role);
+  }
 
-      return JSON.parse(
-        Buffer.from(
-          parts[1],
-          'base64url',
-        ).toString('utf8'),
-      );
-    } catch {
-      return null;
-    }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
   }
 }

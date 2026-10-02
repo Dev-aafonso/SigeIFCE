@@ -1,12 +1,7 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
-
+import * as argon2 from 'argon2';
+import { UserRole } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -15,91 +10,70 @@ import { RegisterDto } from './dto/register.dto';
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwt: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(dto: RegisterDto) {
     if (dto.password !== dto.passwordConfirmation) {
-      throw new BadRequestException(
-        'As senhas n„o coincidem.',
-      );
+      throw new ConflictException('As senhas n√£o coincidem.');
     }
 
-    const existing = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
     });
 
-    if (existing) {
-      throw new ConflictException(
-        'Este e-mail j· est· cadastrado.',
-      );
+    if (existingUser) {
+      throw new ConflictException('E-mail j√° cadastrado.');
     }
 
-    const password = await bcrypt.hash(dto.password, 12);
+    const password = await argon2.hash(dto.password);
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: dto.email.toLowerCase(),
         password,
-        role: null,
+        // role n√£o √© enviado: o Prisma aplica @default(ALUNO).
       },
     });
 
-    const accessToken = await this.jwt.signAsync({
-      sub: user.id,
-      email: user.email,
-    });
+    const accessToken = await this.createToken(user.id, user.email, user.role);
 
     return {
+      user: this.publicUser(user),
       accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
     };
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
+      where: { email: dto.email.toLowerCase() },
     });
 
-    if (!user) {
-      throw new UnauthorizedException(
-        'E-mail ou senha inv·lidos.',
-      );
+    if (!user || !(await argon2.verify(user.password, dto.password))) {
+      throw new UnauthorizedException('E-mail ou senha inv√°lidos.');
     }
 
-    const passwordValid = await bcrypt.compare(
-      dto.password,
-      user.password,
-    );
-
-    if (!passwordValid) {
-      throw new UnauthorizedException(
-        'E-mail ou senha inv·lidos.',
-      );
-    }
-
-    const accessToken = await this.jwt.signAsync({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const accessToken = await this.createToken(user.id, user.email, user.role);
 
     return {
+      user: this.publicUser(user),
       accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
+    };
+  }
+
+  private async createToken(id: string, email: string, role: UserRole) {
+    return this.jwtService.signAsync({
+      sub: id,
+      email,
+      role,
+    });
+  }
+
+  private publicUser(user: { id: string; email: string; role: UserRole }) {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
     };
   }
 }
-
