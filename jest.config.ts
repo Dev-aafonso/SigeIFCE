@@ -1,20 +1,33 @@
 ﻿import type { Config } from 'jest';
 
 const config: Config = {
-  moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testEnvironment: 'node',
   testRegex: '.*\.spec\.ts$',
+
+  moduleFileExtensions: ['ts', 'js', 'json', 'mts', 'cts'],
+
+  extensionsToTreatAsEsm: ['.ts'],
+
   transform: {
-    '^.+\.(t|j)s$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.json',
-    }],
+    '^.+\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+        useESM: true,
+      },
+    ],
   },
+
   collectCoverageFrom: [
     'src/**/*.ts',
   ],
+
   coverageDirectory: './coverage',
-  moduleDirectories: ['node_modules', '<rootDir>/'],
+
+  moduleDirectories: [
+    'node_modules',
+  ],
 };
 
 export default config;

@@ -293,6 +293,7 @@ export type ActionWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Action"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Action"> | Date | string
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
+  registrations?: Prisma.RegistrationListRelationFilter
 }
 
 export type ActionOrderByWithRelationInput = {
@@ -311,6 +312,7 @@ export type ActionOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   event?: Prisma.EventOrderByWithRelationInput
+  registrations?: Prisma.RegistrationOrderByRelationAggregateInput
 }
 
 export type ActionWhereUniqueInput = Prisma.AtLeast<{
@@ -332,6 +334,7 @@ export type ActionWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Action"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Action"> | Date | string
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
+  registrations?: Prisma.RegistrationListRelationFilter
 }, "id">
 
 export type ActionOrderByWithAggregationInput = {
@@ -391,6 +394,7 @@ export type ActionCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   event: Prisma.EventCreateNestedOneWithoutActionsInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutActionInput
 }
 
 export type ActionUncheckedCreateInput = {
@@ -408,6 +412,7 @@ export type ActionUncheckedCreateInput = {
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutActionInput
 }
 
 export type ActionUpdateInput = {
@@ -425,6 +430,7 @@ export type ActionUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventUpdateOneRequiredWithoutActionsNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateInput = {
@@ -442,6 +448,7 @@ export type ActionUncheckedUpdateInput = {
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutActionNestedInput
 }
 
 export type ActionCreateManyInput = {
@@ -565,6 +572,11 @@ export type ActionSumOrderByAggregateInput = {
   capacity?: Prisma.SortOrder
 }
 
+export type ActionScalarRelationFilter = {
+  is?: Prisma.ActionWhereInput
+  isNot?: Prisma.ActionWhereInput
+}
+
 export type ActionCreateNestedManyWithoutEventInput = {
   create?: Prisma.XOR<Prisma.ActionCreateWithoutEventInput, Prisma.ActionUncheckedCreateWithoutEventInput> | Prisma.ActionCreateWithoutEventInput[] | Prisma.ActionUncheckedCreateWithoutEventInput[]
   connectOrCreate?: Prisma.ActionCreateOrConnectWithoutEventInput | Prisma.ActionCreateOrConnectWithoutEventInput[]
@@ -619,6 +631,20 @@ export type EnumActionStatusFieldUpdateOperationsInput = {
   set?: $Enums.ActionStatus
 }
 
+export type ActionCreateNestedOneWithoutRegistrationsInput = {
+  create?: Prisma.XOR<Prisma.ActionCreateWithoutRegistrationsInput, Prisma.ActionUncheckedCreateWithoutRegistrationsInput>
+  connectOrCreate?: Prisma.ActionCreateOrConnectWithoutRegistrationsInput
+  connect?: Prisma.ActionWhereUniqueInput
+}
+
+export type ActionUpdateOneRequiredWithoutRegistrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.ActionCreateWithoutRegistrationsInput, Prisma.ActionUncheckedCreateWithoutRegistrationsInput>
+  connectOrCreate?: Prisma.ActionCreateOrConnectWithoutRegistrationsInput
+  upsert?: Prisma.ActionUpsertWithoutRegistrationsInput
+  connect?: Prisma.ActionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ActionUpdateToOneWithWhereWithoutRegistrationsInput, Prisma.ActionUpdateWithoutRegistrationsInput>, Prisma.ActionUncheckedUpdateWithoutRegistrationsInput>
+}
+
 export type ActionCreateWithoutEventInput = {
   id?: string
   title: string
@@ -633,6 +659,7 @@ export type ActionCreateWithoutEventInput = {
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutActionInput
 }
 
 export type ActionUncheckedCreateWithoutEventInput = {
@@ -649,6 +676,7 @@ export type ActionUncheckedCreateWithoutEventInput = {
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutActionInput
 }
 
 export type ActionCreateOrConnectWithoutEventInput = {
@@ -697,6 +725,90 @@ export type ActionScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Action"> | Date | string
 }
 
+export type ActionCreateWithoutRegistrationsInput = {
+  id?: string
+  title: string
+  description: string
+  startDate: Date | string
+  endDate: Date | string
+  durationMinutes: number
+  capacity: number
+  location?: string | null
+  status?: $Enums.ActionStatus
+  canceledAt?: Date | string | null
+  closedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  event: Prisma.EventCreateNestedOneWithoutActionsInput
+}
+
+export type ActionUncheckedCreateWithoutRegistrationsInput = {
+  id?: string
+  eventId: string
+  title: string
+  description: string
+  startDate: Date | string
+  endDate: Date | string
+  durationMinutes: number
+  capacity: number
+  location?: string | null
+  status?: $Enums.ActionStatus
+  canceledAt?: Date | string | null
+  closedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ActionCreateOrConnectWithoutRegistrationsInput = {
+  where: Prisma.ActionWhereUniqueInput
+  create: Prisma.XOR<Prisma.ActionCreateWithoutRegistrationsInput, Prisma.ActionUncheckedCreateWithoutRegistrationsInput>
+}
+
+export type ActionUpsertWithoutRegistrationsInput = {
+  update: Prisma.XOR<Prisma.ActionUpdateWithoutRegistrationsInput, Prisma.ActionUncheckedUpdateWithoutRegistrationsInput>
+  create: Prisma.XOR<Prisma.ActionCreateWithoutRegistrationsInput, Prisma.ActionUncheckedCreateWithoutRegistrationsInput>
+  where?: Prisma.ActionWhereInput
+}
+
+export type ActionUpdateToOneWithWhereWithoutRegistrationsInput = {
+  where?: Prisma.ActionWhereInput
+  data: Prisma.XOR<Prisma.ActionUpdateWithoutRegistrationsInput, Prisma.ActionUncheckedUpdateWithoutRegistrationsInput>
+}
+
+export type ActionUpdateWithoutRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumActionStatusFieldUpdateOperationsInput | $Enums.ActionStatus
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  event?: Prisma.EventUpdateOneRequiredWithoutActionsNestedInput
+}
+
+export type ActionUncheckedUpdateWithoutRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumActionStatusFieldUpdateOperationsInput | $Enums.ActionStatus
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type ActionCreateManyEventInput = {
   id?: string
   title: string
@@ -727,6 +839,7 @@ export type ActionUpdateWithoutEventInput = {
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registrations?: Prisma.RegistrationUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateWithoutEventInput = {
@@ -743,6 +856,7 @@ export type ActionUncheckedUpdateWithoutEventInput = {
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateManyWithoutEventInput = {
@@ -762,6 +876,35 @@ export type ActionUncheckedUpdateManyWithoutEventInput = {
 }
 
 
+/**
+ * Count Type ActionCountOutputType
+ */
+
+export type ActionCountOutputType = {
+  registrations: number
+}
+
+export type ActionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  registrations?: boolean | ActionCountOutputTypeCountRegistrationsArgs
+}
+
+/**
+ * ActionCountOutputType without action
+ */
+export type ActionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ActionCountOutputType
+   */
+  select?: Prisma.ActionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ActionCountOutputType without action
+ */
+export type ActionCountOutputTypeCountRegistrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RegistrationWhereInput
+}
+
 
 export type ActionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -779,6 +922,8 @@ export type ActionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   createdAt?: boolean
   updatedAt?: boolean
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
+  registrations?: boolean | Prisma.Action$registrationsArgs<ExtArgs>
+  _count?: boolean | Prisma.ActionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["action"]>
 
 export type ActionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -837,6 +982,8 @@ export type ActionSelectScalar = {
 export type ActionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "title" | "description" | "startDate" | "endDate" | "durationMinutes" | "capacity" | "location" | "status" | "canceledAt" | "closedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["action"]>
 export type ActionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
+  registrations?: boolean | Prisma.Action$registrationsArgs<ExtArgs>
+  _count?: boolean | Prisma.ActionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ActionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
@@ -849,6 +996,7 @@ export type $ActionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Action"
   objects: {
     event: Prisma.$EventPayload<ExtArgs>
+    registrations: Prisma.$RegistrationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1260,6 +1408,7 @@ readonly fields: ActionFieldRefs;
 export interface Prisma__ActionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   event<T extends Prisma.EventDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EventDefaultArgs<ExtArgs>>): Prisma.Prisma__EventClient<runtime.Types.Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  registrations<T extends Prisma.Action$registrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Action$registrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RegistrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1701,6 +1850,30 @@ export type ActionDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Actions to delete.
    */
   limit?: number
+}
+
+/**
+ * Action.registrations
+ */
+export type Action$registrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Registration
+   */
+  select?: Prisma.RegistrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Registration
+   */
+  omit?: Prisma.RegistrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RegistrationInclude<ExtArgs> | null
+  where?: Prisma.RegistrationWhereInput
+  orderBy?: Prisma.RegistrationOrderByWithRelationInput | Prisma.RegistrationOrderByWithRelationInput[]
+  cursor?: Prisma.RegistrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RegistrationScalarFieldEnum | Prisma.RegistrationScalarFieldEnum[]
 }
 
 /**
