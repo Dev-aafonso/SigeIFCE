@@ -619,14 +619,6 @@ export type ActionUncheckedUpdateManyWithoutEventNestedInput = {
   deleteMany?: Prisma.ActionScalarWhereInput | Prisma.ActionScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type EnumActionStatusFieldUpdateOperationsInput = {
   set?: $Enums.ActionStatus
 }

@@ -1,5 +1,4 @@
-import { PresenceModule } from './presences/presence.module';
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
 import { RolesGuard } from './common/guards/roles.guard';
@@ -10,18 +9,15 @@ import { UsersModule } from './modules/users/users.module';
 import { EventsModule } from './modules/events/events.module';
 import { ActionsModule } from './modules/actions/actions.module';
 import { RegistrationsModule } from './modules/registrations/registrations.module';
-import { CertificatesModule } from './modules/certificates/certificates.module';
 
 @Module({
   imports: [
-    PresenceModule,
     PrismaModule,
     AuthModule,
     UsersModule,
     EventsModule,
     ActionsModule,
     RegistrationsModule,
-    CertificatesModule,
   ],
   providers: [
     {
@@ -35,4 +31,3 @@ import { CertificatesModule } from './modules/certificates/certificates.module';
   ],
 })
 export class AppModule {}
-

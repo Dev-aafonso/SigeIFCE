@@ -1,4 +1,4 @@
-node_modules/
+﻿node_modules/
 dist/
 coverage/
 
@@ -20,5 +20,3 @@ Thumbs.db
 !.vscode/extensions.json
 !.vscode/launch.json
 .setup-backup/
-
-storage/certificates/*.pdf

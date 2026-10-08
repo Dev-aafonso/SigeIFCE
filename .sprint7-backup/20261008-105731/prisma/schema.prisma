@@ -29,35 +29,32 @@ enum ActionStatus {
 
 model User {
   id       String   @id @default(cuid())
-  name     String   @default("UsuÃ¡rio")
+  name     String   @default("Usuário")
   email    String   @unique
   password String
   role     UserRole @default(ALUNO)
 
   events        Event[]
   registrations Registration[]
-  certificates  Certificate[]
 }
 
 model Event {
-  id                   String      @id @default(cuid())
-  title                String
-  description          String
-  startDate            DateTime
-  endDate              DateTime
-  location             String?
-  status               EventStatus @default(RASCUNHO)
-  minAttendancePercent Int         @default(75)
-  publishedAt          DateTime?
-  canceledAt           DateTime?
-  closedAt             DateTime?
-  organizerId          String
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  status      EventStatus @default(RASCUNHO)
+  publishedAt DateTime?
+  canceledAt  DateTime?
+  closedAt    DateTime?
+  organizerId String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  organizer    User          @relation(fields: [organizerId], references: [id])
-  actions      Action[]
-  certificates Certificate[]
+  organizer User     @relation(fields: [organizerId], references: [id])
+  actions   Action[]
 
   @@index([organizerId])
   @@index([status])
@@ -125,22 +122,4 @@ model Presence {
 
   @@index([responsibleId])
   @@index([registeredAt])
-}
-
-model Certificate {
-  id                String   @id @default(cuid())
-  userId            String
-  eventId           String
-  validationCode    String   @unique
-  certifiedMinutes  Int
-  attendancePercent Float
-  issuedAt          DateTime @default(now())
-  filePath          String
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, eventId])
-  @@index([eventId])
-  @@index([userId])
 }

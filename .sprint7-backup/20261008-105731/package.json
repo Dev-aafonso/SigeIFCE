@@ -25,7 +25,7 @@
         "prisma:validate": "prisma validate"
     },
     "devDependencies": {
-        "@jest/globals": "^30.5.2",
+        "@jest/globals": "^30.0.0",
         "@nestjs/cli": "^12.0.0",
         "@nestjs/testing": "^12.0.1",
         "@types/bcrypt": "^6.0.0",
@@ -37,7 +37,7 @@
         "@types/pg": "^8.23.1",
         "@types/supertest": "^7.2.1",
         "eslint": "^10.9.1",
-        "jest": "^30.5.2",
+        "jest": "^30.0.0",
         "prettier": "^3.9.6",
         "prisma": "^7.9.1",
         "supertest": "^7.2.2",
@@ -54,7 +54,6 @@
         "@nestjs/platform-express": "^12.0.1",
         "@prisma/adapter-pg": "^7.10.0",
         "@prisma/client": "^7.9.1",
-        "@types/pdfkit": "^0.17.6",
         "argon2": "^0.45.1",
         "bcrypt": "^6.0.0",
         "bcryptjs": "^3.0.3",
@@ -65,7 +64,6 @@
         "hbs": "^4.3.0",
         "passport": "^0.7.0",
         "passport-jwt": "^4.0.1",
-        "pdfkit": "^0.20.2",
         "pg": "^8.23.0",
         "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.2"
