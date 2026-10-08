@@ -1,54 +1,47 @@
-﻿import 'reflect-metadata';
-import 'dotenv/config';
+﻿import 'dotenv/config';
 
+import cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-
-import { join } from 'node:path';
+import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  const app =
-    await NestFactory.create<NestExpressApplication>(
-      AppModule,
-    );
+  app.use(cookieParser());
 
-  /*
-   * Arquivos públicos:
-   *
-   * /web/shared/assets
-   * /web/shared/styles
-   * /web/shared/core
-   * /web/vendor
-   */
-  app.useStaticAssets(
-    join(process.cwd(), 'web'),
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
   );
 
-  /*
-   * Templates Handlebars
-   */
   app.setBaseViewsDir(
     join(process.cwd(), 'web', 'views'),
   );
 
   app.setViewEngine('hbs');
 
-  /*
-   * Segurança básica
-   */
-  app.enableCors();
+  app.useStaticAssets(
+    join(process.cwd(), 'web', 'shared'),
+  );
 
-  const port =
-    process.env.PORT || 3000;
+  app.useStaticAssets(process.cwd());
+
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
+  const port = Number(process.env.PORT) || 3000;
 
   await app.listen(port);
 
-  console.log(
-    `SIGE IFCE executando em http://localhost:${port}`,
-  );
+  console.log(`SIGE IFCE executando em http://localhost:${port}`);
 }
 
 bootstrap();

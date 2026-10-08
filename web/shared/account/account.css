@@ -1,0 +1,180 @@
+.modal-autenticacao {
+    margin: auto;
+    width: min(92vw, 440px);
+    padding: var(--espacamento-md);
+    border: 1px solid var(--borda-barra-lateral);
+    border-radius: var(--raio-borda-lg);
+    background: var(--fundo-modulo);
+    color: var(--texto-principal);
+    box-shadow: var(--sombra-xl);
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+    transition: opacity var(--transicao-suave), transform var(--transicao-suave), display var(--transicao-suave) allow-discrete;
+}
+
+.modal-autenticacao[open] {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+@starting-style {
+    .modal-autenticacao[open] {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+}
+
+.modal-autenticacao::backdrop {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+    transition: background var(--transicao-suave), backdrop-filter var(--transicao-suave), display var(--transicao-suave) allow-discrete;
+}
+
+.modal-autenticacao[open]::backdrop {
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(4px);
+}
+
+.cabecalho-modal-auth {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--espacamento-sm);
+    margin-bottom: var(--espacamento-md);
+}
+
+.cabecalho-modal-auth h3 {
+    color: var(--texto-claro);
+    font-size: var(--texto-lg);
+    margin-bottom: var(--espacamento-xs);
+}
+
+.cabecalho-modal-auth p {
+    color: var(--texto-suave);
+    font-size: var(--texto-sm);
+    line-height: 1.5;
+}
+
+.descricao-modal-conta {
+    margin-top: var(--espacamento-xs);
+    color: var(--texto-suave);
+    font-size: var(--texto-xs);
+    line-height: 1.5;
+}
+
+.botao-fechar-auth {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: var(--raio-borda-sm);
+    background: transparent;
+    color: var(--texto-suave);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color var(--transicao-suave), background-color var(--transicao-suave);
+}
+
+.botao-fechar-auth:hover,
+.botao-fechar-auth:focus-visible {
+    color: var(--texto-claro);
+    background: var(--botao-hover);
+    outline: none;
+}
+
+.modal-autenticacao .formulario-autenticacao input {
+    padding: var(--espacamento-sm) var(--espacamento-md);
+}
+
+.mensagem-autenticacao {
+    min-height: 1.25rem;
+    margin-top: var(--espacamento-sm);
+    font-size: var(--texto-sm);
+    line-height: 1.5;
+}
+
+.mensagem-autenticacao.erro,
+.mensagem-login.erro,
+.mensagem-conta.erro {
+    padding: var(--espacamento-xs) var(--espacamento-sm);
+    border: 1px solid #dc2626;
+    border-radius: var(--raio-borda-sm);
+    background: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+}
+
+.mensagem-autenticacao.sucesso,
+.mensagem-login.sucesso {
+    color: var(--ativo-borda);
+}
+
+.mensagem-login {
+    margin-top: var(--espacamento-sm);
+    font-size: var(--texto-sm);
+    line-height: 1.5;
+}
+
+.botao-primario:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+}
+
+.formulario-conta .grupo-formulario {
+    margin-bottom: var(--espacamento-sm);
+}
+
+.formulario-conta label {
+    display: block;
+    margin-bottom: var(--espacamento-xs);
+    color: var(--texto-principal);
+    font-size: var(--texto-sm);
+    font-weight: 600;
+}
+
+.formulario-conta input {
+    width: 100%;
+    padding: var(--espacamento-sm) var(--espacamento-md);
+    border: 1px solid var(--borda-barra-lateral);
+    border-radius: var(--raio-borda-sm);
+    background: transparent;
+    color: var(--texto-principal);
+    font-size: var(--texto-base);
+    outline: none;
+    transition: border-color var(--transicao-suave), box-shadow var(--transicao-suave);
+}
+
+.formulario-conta input:focus {
+    border-color: var(--ativo-borda);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.mensagem-conta {
+    min-height: 1.25rem;
+    margin-top: var(--espacamento-sm);
+    font-size: var(--texto-sm);
+    line-height: 1.5;
+}
+
+.mensagem-conta.sucesso {
+    color: var(--ativo-borda);
+}
+
+.botao-voltar-conta {
+    margin-top: var(--espacamento-xs);
+}
+
+.email-perfil-modal {
+    color: var(--texto-suave);
+    font-size: var(--texto-xs);
+    overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-autenticacao,
+    .modal-autenticacao::backdrop,
+    .botao-fechar-auth {
+        transition-duration: 0.01ms;
+    }
+}

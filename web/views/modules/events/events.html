@@ -1,0 +1,144 @@
+<section class="module-wrapper fade-in modulo-eventos" aria-labelledby="titulo-modulo-eventos">
+    <header class="cabecalho-eventos">
+        <div>
+            <p class="sobretitulo-eventos">SIGE IFCE</p>
+            <h2 id="titulo-modulo-eventos">Eventos científicos</h2>
+            <p>Pesquise eventos publicados ou gerencie os eventos do seu escopo.</p>
+        </div>
+        <button id="novo-evento" class="botao-evento botao-evento-primario" type="button" hidden>Criar evento</button>
+    </header>
+
+    <p id="mensagem-eventos" class="mensagem-eventos" role="status" aria-live="polite"></p>
+
+    <section class="secao-eventos secao-lista-eventos" aria-labelledby="titulo-pesquisa-eventos">
+        <div class="titulo-secao-eventos">
+            <div>
+                <h3 id="titulo-pesquisa-eventos">Consultar eventos publicados</h3>
+                <p>Use os filtros para encontrar eventos disponíveis ao público.</p>
+            </div>
+        </div>
+        <form id="filtros-eventos" class="filtros-eventos">
+            <label class="campo-evento campo-evento-busca">
+                <span>Pesquisar por título</span>
+                <input name="title" type="search" maxlength="200" placeholder="Ex.: Semana de Ciência e Tecnologia">
+            </label>
+            <label class="campo-evento">
+                <span>Início a partir de</span>
+                <input name="startDateFrom" type="date">
+            </label>
+            <label class="campo-evento">
+                <span>Início até</span>
+                <input name="startDateTo" type="date">
+            </label>
+            <div class="acoes-filtros-eventos">
+                <button class="botao-evento botao-evento-primario" type="submit">Pesquisar</button>
+                <button id="limpar-filtros-eventos" class="botao-evento botao-evento-secundario" type="button">Limpar</button>
+            </div>
+        </form>
+        <div class="tabela-eventos-conteiner">
+            <table class="tabela-eventos">
+                <thead>
+                    <tr>
+                        <th scope="col">Título</th>
+                        <th scope="col">Data</th>
+                        <th scope="col">Local</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-eventos-publicos" aria-live="polite">
+                    <tr><td colspan="5">Buscando eventos publicados...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <nav id="paginacao-eventos" class="paginacao-eventos" aria-label="Paginação dos eventos"></nav>
+    </section>
+
+    <section id="secao-gerenciamento-eventos" class="secao-eventos secao-gerenciamento-eventos" aria-labelledby="titulo-gerenciamento-eventos" hidden>
+        <div class="titulo-secao-eventos">
+            <div>
+                <h3 id="titulo-gerenciamento-eventos">Gerenciar eventos</h3>
+                <p>Abra um evento do seu escopo pelo identificador ou selecione um criado neste navegador.</p>
+            </div>
+        </div>
+        <form id="abrir-evento-form" class="abrir-evento-form">
+            <label class="campo-evento">
+                <span>Eventos criados neste navegador</span>
+                <select id="eventos-recentes">
+                    <option value="">Selecione um evento salvo</option>
+                </select>
+            </label>
+            <label class="campo-evento">
+                <span>Identificador do evento</span>
+                <input id="identificador-evento" name="eventId" autocomplete="off" required>
+            </label>
+            <button class="botao-evento botao-evento-primario" type="submit">Abrir gerenciamento</button>
+        </form>
+        <div id="painel-gerenciamento-evento" class="painel-gerenciamento-evento"></div>
+    </section>
+
+    <dialog id="dialog-criar-evento" class="dialog-evento">
+        <form id="form-criar-evento" class="formulario-evento" novalidate>
+            <header class="cabecalho-dialog-evento">
+                <div>
+                    <p class="sobretitulo-eventos">Novo cadastro</p>
+                    <h3 id="titulo-wizard-evento">Cadastrar evento</h3>
+                    <p id="descricao-wizard-evento">Preencha as informações gerais do evento.</p>
+                </div>
+                <button class="botao-fechar-evento" type="button" data-event-action="close-create" aria-label="Fechar">&times;</button>
+            </header>
+            <ol class="etapas-wizard-evento" aria-label="Etapas do cadastro">
+                <li class="etapa-wizard-evento ativa" data-wizard-indicator="0" aria-current="step"><span>1</span> Informações gerais</li>
+                <li class="etapa-wizard-evento" data-wizard-indicator="1"><span>2</span> Programação</li>
+                <li class="etapa-wizard-evento" data-wizard-indicator="2"><span>3</span> Revisão</li>
+            </ol>
+            <p id="erro-wizard-evento" class="erro-wizard-evento" role="alert" aria-live="assertive"></p>
+
+            <section class="etapa-formulario-evento" data-wizard-step="0" aria-labelledby="titulo-etapa-geral">
+                <h4 id="titulo-etapa-geral">Informações gerais</h4>
+                <label class="campo-evento">
+                    <span>Título do evento *</span>
+                    <input name="title" required minlength="3" maxlength="200" autocomplete="off">
+                </label>
+                <label class="campo-evento">
+                    <span>Descrição *</span>
+                    <textarea name="description" required minlength="10" maxlength="5000" rows="4"></textarea>
+                </label>
+                <div class="campos-data-evento">
+                    <label class="campo-evento">
+                        <span>Data e hora de início *</span>
+                        <input name="startDate" type="datetime-local" required>
+                    </label>
+                    <label class="campo-evento">
+                        <span>Data e hora de término *</span>
+                        <input name="endDate" type="datetime-local" required>
+                    </label>
+                </div>
+                <label class="campo-evento">
+                    <span>Local</span>
+                    <input name="location" maxlength="255">
+                </label>
+            </section>
+
+            <section class="etapa-formulario-evento" data-wizard-step="1" aria-labelledby="titulo-etapa-programacao" hidden>
+                <h4 id="titulo-etapa-programacao">Programação do evento</h4>
+                <p class="ajuda-wizard-evento">Adicione pelo menos uma ação para habilitar a publicação. A duração é calculada pelos horários informados.</p>
+                <div id="acoes-rascunho-evento" class="acoes-rascunho-evento"></div>
+                <button id="adicionar-acao-rascunho" class="botao-evento botao-evento-secundario" type="button">Adicionar outra ação</button>
+            </section>
+
+            <section class="etapa-formulario-evento" data-wizard-step="2" aria-labelledby="titulo-etapa-revisao" hidden>
+                <h4 id="titulo-etapa-revisao">Revise antes de salvar</h4>
+                <div id="resumo-rascunho-evento" class="resumo-rascunho-evento"></div>
+                <p class="ajuda-wizard-evento">O evento será criado como rascunho. Você poderá revisar e publicar depois que a API confirmar os dados.</p>
+            </section>
+
+            <div class="acoes-formulario-evento">
+                <button class="botao-evento botao-evento-secundario" type="button" data-event-action="wizard-cancel">Cancelar</button>
+                <button id="voltar-etapa-evento" class="botao-evento botao-evento-secundario" type="button" data-event-action="wizard-back" hidden>Voltar</button>
+                <button id="avancar-etapa-evento" class="botao-evento botao-evento-primario" type="button" data-event-action="wizard-next">Próximo</button>
+                <button id="salvar-rascunho-evento" class="botao-evento botao-evento-primario" type="submit" hidden>Salvar rascunho</button>
+            </div>
+        </form>
+    </dialog>
+</section>

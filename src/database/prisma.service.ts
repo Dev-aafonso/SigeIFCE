@@ -1,5 +1,4 @@
-ï»¿import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 
@@ -8,24 +7,37 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
-  constructor() {
+  private readonly mockMode =
+    process.env.MOCK_MODE === 'true';
 
-    const adapter =
-      new PrismaPg({
-        connectionString:
-          process.env.DATABASE_URL!,
-      });
+  constructor() {
+    const adapter = new PrismaPg({
+      connectionString:
+        process.env.DATABASE_URL ||
+        'postgresql://localhost:5432/sigeifce',
+    });
 
     super({
       adapter,
     });
   }
 
-  async onModuleInit(): Promise<void> {
+  async onModuleInit() {
+    if (this.mockMode) {
+      console.log(
+        'SIGE IFCE: MOCK_MODE ativo — PostgreSQL não será conectado.',
+      );
+      return;
+    }
+
     await this.$connect();
   }
 
-  async onModuleDestroy(): Promise<void> {
+  async onModuleDestroy() {
+    if (this.mockMode) {
+      return;
+    }
+
     await this.$disconnect();
   }
 }
