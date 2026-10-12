@@ -159,7 +159,10 @@ export const CertificateScalarFieldEnum = {
   certifiedMinutes: 'certifiedMinutes',
   attendancePercent: 'attendancePercent',
   issuedAt: 'issuedAt',
-  filePath: 'filePath'
+  filePath: 'filePath',
+  actionId: 'actionId',
+  registrationId: 'registrationId',
+  revokedAt: 'revokedAt'
 } as const
 
 export type CertificateScalarFieldEnum = (typeof CertificateScalarFieldEnum)[keyof typeof CertificateScalarFieldEnum]

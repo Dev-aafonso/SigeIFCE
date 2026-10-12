@@ -29,7 +29,7 @@ enum ActionStatus {
 
 model User {
   id       String   @id @default(cuid())
-  name     String   @default("UsuÃ¡rio")
+  name     String   @default("UsuÃƒÂ¡rio")
   email    String   @unique
   password String
   role     UserRole @default(ALUNO)
@@ -84,6 +84,7 @@ model Action {
 
   event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
   registrations Registration[]
+  certificates  Certificate[]
 
   @@index([eventId])
   @@index([status])
@@ -104,9 +105,10 @@ model Registration {
   updatedAt   DateTime           @updatedAt
   cancelledAt DateTime?
 
-  user     User      @relation(fields: [userId], references: [id])
-  action   Action    @relation(fields: [actionId], references: [id])
-  presence Presence? @relation("RegistrationPresence")
+  user        User         @relation(fields: [userId], references: [id])
+  action      Action       @relation(fields: [actionId], references: [id])
+  presence    Presence?    @relation("RegistrationPresence")
+  certificate Certificate?
 
   @@unique([userId, actionId])
   @@index([actionId, status])
@@ -137,10 +139,16 @@ model Certificate {
   issuedAt          DateTime @default(now())
   filePath          String
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  actionId       String?
+  registrationId String?       @unique
+  revokedAt      DateTime?
+  action         Action?       @relation(fields: [actionId], references: [id], onDelete: Restrict)
+  registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: Restrict)
 
-  @@unique([userId, eventId])
+  @@unique([userId, actionId])
   @@index([eventId])
   @@index([userId])
+  @@index([actionId])
 }

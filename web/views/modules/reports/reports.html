@@ -1,5 +1,41 @@
-<div class="module-wrapper fade-in">
-    <h2>Relatórios</h2>
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque quod ullam beatae magnam, mollitia sit molestias facilis consequatur aliquam repellat, pariatur labore alias fugiat unde nulla quos excepturi ipsum est.</p>
-</div>
+<section class="module-wrapper fade-in s8-shell s8-reports" data-s8-reports>
+  <header class="s8-page-header">
+    <div>
+      <p class="s8-eyebrow">SIGE IFCE · TRANSPARÊNCIA E ACOMPANHAMENTO</p>
+      <h2>Relatórios gerenciais</h2>
+      <p class="s8-subtitle">Consulte, filtre e exporte dados consolidados para acompanhamento institucional.</p>
+    </div>
+  </header>
+
+  <form class="s8-filter-panel" data-s8-report-filter>
+    <div class="s8-filter-heading"><div><h3>Configuração do relatório</h3><p>Os relatórios respeitam o perfil de acesso e o escopo dos eventos permitidos.</p></div></div>
+    <div class="s8-filter-grid s8-report-filter-grid">
+      <label class="s8-filter-wide">Tipo de relatório<select name="type"><option value="events">Eventos e ações</option><option value="registrations">Inscrições</option><option value="attendance">Frequência</option><option value="certificates">Certificados</option></select></label>
+      <label>Data inicial<input type="date" name="startDateFrom"></label>
+      <label>Data final<input type="date" name="startDateTo"></label>
+      <label class="s8-filter-wide">Evento<select name="eventId"><option value="">Todos os eventos permitidos</option></select></label>
+      <label class="s8-filter-wide">Ação<select name="actionId"><option value="">Todas as ações</option></select></label>
+      <div class="s8-report-buttons">
+        <button class="s8-button s8-button-primary" type="submit">Consultar relatório</button>
+        <button class="s8-button s8-button-secondary" type="button" data-s8-export="pdf">Exportar PDF</button>
+        <button class="s8-button s8-button-secondary" type="button" data-s8-export="csv">Exportar CSV</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="s8-notice" data-s8-notice role="status" aria-live="polite" hidden></div>
+
+  <section class="s8-report-intro-grid" aria-label="Tipos de relatório disponíveis">
+    <article class="s8-report-type-card"><span class="s8-report-type-icon">01</span><div><h3>Eventos e ações</h3><p>Status, datas, quantidade de ações e certificados registrados.</p></div></article>
+    <article class="s8-report-type-card"><span class="s8-report-type-icon">02</span><div><h3>Inscrições</h3><p>Participante, atividade, status e datas de inscrição/cancelamento.</p></div></article>
+    <article class="s8-report-type-card"><span class="s8-report-type-icon">03</span><div><h3>Frequência</h3><p>Relação de inscritos ativos, presentes e ausentes por ação.</p></div></article>
+    <article class="s8-report-type-card"><span class="s8-report-type-icon">04</span><div><h3>Certificados</h3><p>Códigos de validação, carga horária, frequência e revogação.</p></div></article>
+  </section>
+
+  <section class="s8-panel s8-table-panel s8-report-results">
+    <div class="s8-panel-heading"><div><h3 data-s8-report-title>Resultado da consulta</h3><p data-s8-report-summary>Selecione os critérios e consulte o relatório.</p></div><span class="s8-panel-meta" data-s8-report-total>0 registros</span></div>
+    <div class="s8-table-wrap"><table class="s8-table"><thead data-s8-report-head><tr><th>Resultado</th></tr></thead><tbody data-s8-report-body><tr><td class="s8-empty">Nenhum relatório consultado.</td></tr></tbody></table></div>
+    <p class="s8-report-limit" data-s8-report-limit hidden>O resultado atingiu o limite de 10.000 registros. Refine os filtros para consultar o conjunto completo.</p>
+  </section>
+  <footer class="s8-footnote">As exportações incluem os filtros aplicados. CSV usa separador compatível com planilhas em português e protege campos que poderiam ser interpretados como fórmulas.</footer>
+</section>

@@ -294,6 +294,7 @@ export type ActionWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Action"> | Date | string
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
   registrations?: Prisma.RegistrationListRelationFilter
+  certificates?: Prisma.CertificateListRelationFilter
 }
 
 export type ActionOrderByWithRelationInput = {
@@ -313,6 +314,7 @@ export type ActionOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   event?: Prisma.EventOrderByWithRelationInput
   registrations?: Prisma.RegistrationOrderByRelationAggregateInput
+  certificates?: Prisma.CertificateOrderByRelationAggregateInput
 }
 
 export type ActionWhereUniqueInput = Prisma.AtLeast<{
@@ -335,6 +337,7 @@ export type ActionWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Action"> | Date | string
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
   registrations?: Prisma.RegistrationListRelationFilter
+  certificates?: Prisma.CertificateListRelationFilter
 }, "id">
 
 export type ActionOrderByWithAggregationInput = {
@@ -395,6 +398,7 @@ export type ActionCreateInput = {
   updatedAt?: Date | string
   event: Prisma.EventCreateNestedOneWithoutActionsInput
   registrations?: Prisma.RegistrationCreateNestedManyWithoutActionInput
+  certificates?: Prisma.CertificateCreateNestedManyWithoutActionInput
 }
 
 export type ActionUncheckedCreateInput = {
@@ -413,6 +417,7 @@ export type ActionUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutActionInput
+  certificates?: Prisma.CertificateUncheckedCreateNestedManyWithoutActionInput
 }
 
 export type ActionUpdateInput = {
@@ -431,6 +436,7 @@ export type ActionUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventUpdateOneRequiredWithoutActionsNestedInput
   registrations?: Prisma.RegistrationUpdateManyWithoutActionNestedInput
+  certificates?: Prisma.CertificateUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateInput = {
@@ -449,6 +455,7 @@ export type ActionUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutActionNestedInput
+  certificates?: Prisma.CertificateUncheckedUpdateManyWithoutActionNestedInput
 }
 
 export type ActionCreateManyInput = {
@@ -577,6 +584,11 @@ export type ActionScalarRelationFilter = {
   isNot?: Prisma.ActionWhereInput
 }
 
+export type ActionNullableScalarRelationFilter = {
+  is?: Prisma.ActionWhereInput | null
+  isNot?: Prisma.ActionWhereInput | null
+}
+
 export type ActionCreateNestedManyWithoutEventInput = {
   create?: Prisma.XOR<Prisma.ActionCreateWithoutEventInput, Prisma.ActionUncheckedCreateWithoutEventInput> | Prisma.ActionCreateWithoutEventInput[] | Prisma.ActionUncheckedCreateWithoutEventInput[]
   connectOrCreate?: Prisma.ActionCreateOrConnectWithoutEventInput | Prisma.ActionCreateOrConnectWithoutEventInput[]
@@ -637,6 +649,22 @@ export type ActionUpdateOneRequiredWithoutRegistrationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ActionUpdateToOneWithWhereWithoutRegistrationsInput, Prisma.ActionUpdateWithoutRegistrationsInput>, Prisma.ActionUncheckedUpdateWithoutRegistrationsInput>
 }
 
+export type ActionCreateNestedOneWithoutCertificatesInput = {
+  create?: Prisma.XOR<Prisma.ActionCreateWithoutCertificatesInput, Prisma.ActionUncheckedCreateWithoutCertificatesInput>
+  connectOrCreate?: Prisma.ActionCreateOrConnectWithoutCertificatesInput
+  connect?: Prisma.ActionWhereUniqueInput
+}
+
+export type ActionUpdateOneWithoutCertificatesNestedInput = {
+  create?: Prisma.XOR<Prisma.ActionCreateWithoutCertificatesInput, Prisma.ActionUncheckedCreateWithoutCertificatesInput>
+  connectOrCreate?: Prisma.ActionCreateOrConnectWithoutCertificatesInput
+  upsert?: Prisma.ActionUpsertWithoutCertificatesInput
+  disconnect?: Prisma.ActionWhereInput | boolean
+  delete?: Prisma.ActionWhereInput | boolean
+  connect?: Prisma.ActionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ActionUpdateToOneWithWhereWithoutCertificatesInput, Prisma.ActionUpdateWithoutCertificatesInput>, Prisma.ActionUncheckedUpdateWithoutCertificatesInput>
+}
+
 export type ActionCreateWithoutEventInput = {
   id?: string
   title: string
@@ -652,6 +680,7 @@ export type ActionCreateWithoutEventInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   registrations?: Prisma.RegistrationCreateNestedManyWithoutActionInput
+  certificates?: Prisma.CertificateCreateNestedManyWithoutActionInput
 }
 
 export type ActionUncheckedCreateWithoutEventInput = {
@@ -669,6 +698,7 @@ export type ActionUncheckedCreateWithoutEventInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutActionInput
+  certificates?: Prisma.CertificateUncheckedCreateNestedManyWithoutActionInput
 }
 
 export type ActionCreateOrConnectWithoutEventInput = {
@@ -732,6 +762,7 @@ export type ActionCreateWithoutRegistrationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   event: Prisma.EventCreateNestedOneWithoutActionsInput
+  certificates?: Prisma.CertificateCreateNestedManyWithoutActionInput
 }
 
 export type ActionUncheckedCreateWithoutRegistrationsInput = {
@@ -749,6 +780,7 @@ export type ActionUncheckedCreateWithoutRegistrationsInput = {
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  certificates?: Prisma.CertificateUncheckedCreateNestedManyWithoutActionInput
 }
 
 export type ActionCreateOrConnectWithoutRegistrationsInput = {
@@ -782,6 +814,7 @@ export type ActionUpdateWithoutRegistrationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventUpdateOneRequiredWithoutActionsNestedInput
+  certificates?: Prisma.CertificateUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateWithoutRegistrationsInput = {
@@ -799,6 +832,95 @@ export type ActionUncheckedUpdateWithoutRegistrationsInput = {
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  certificates?: Prisma.CertificateUncheckedUpdateManyWithoutActionNestedInput
+}
+
+export type ActionCreateWithoutCertificatesInput = {
+  id?: string
+  title: string
+  description: string
+  startDate: Date | string
+  endDate: Date | string
+  durationMinutes: number
+  capacity: number
+  location?: string | null
+  status?: $Enums.ActionStatus
+  canceledAt?: Date | string | null
+  closedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  event: Prisma.EventCreateNestedOneWithoutActionsInput
+  registrations?: Prisma.RegistrationCreateNestedManyWithoutActionInput
+}
+
+export type ActionUncheckedCreateWithoutCertificatesInput = {
+  id?: string
+  eventId: string
+  title: string
+  description: string
+  startDate: Date | string
+  endDate: Date | string
+  durationMinutes: number
+  capacity: number
+  location?: string | null
+  status?: $Enums.ActionStatus
+  canceledAt?: Date | string | null
+  closedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  registrations?: Prisma.RegistrationUncheckedCreateNestedManyWithoutActionInput
+}
+
+export type ActionCreateOrConnectWithoutCertificatesInput = {
+  where: Prisma.ActionWhereUniqueInput
+  create: Prisma.XOR<Prisma.ActionCreateWithoutCertificatesInput, Prisma.ActionUncheckedCreateWithoutCertificatesInput>
+}
+
+export type ActionUpsertWithoutCertificatesInput = {
+  update: Prisma.XOR<Prisma.ActionUpdateWithoutCertificatesInput, Prisma.ActionUncheckedUpdateWithoutCertificatesInput>
+  create: Prisma.XOR<Prisma.ActionCreateWithoutCertificatesInput, Prisma.ActionUncheckedCreateWithoutCertificatesInput>
+  where?: Prisma.ActionWhereInput
+}
+
+export type ActionUpdateToOneWithWhereWithoutCertificatesInput = {
+  where?: Prisma.ActionWhereInput
+  data: Prisma.XOR<Prisma.ActionUpdateWithoutCertificatesInput, Prisma.ActionUncheckedUpdateWithoutCertificatesInput>
+}
+
+export type ActionUpdateWithoutCertificatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumActionStatusFieldUpdateOperationsInput | $Enums.ActionStatus
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  event?: Prisma.EventUpdateOneRequiredWithoutActionsNestedInput
+  registrations?: Prisma.RegistrationUpdateManyWithoutActionNestedInput
+}
+
+export type ActionUncheckedUpdateWithoutCertificatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  durationMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  capacity?: Prisma.IntFieldUpdateOperationsInput | number
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumActionStatusFieldUpdateOperationsInput | $Enums.ActionStatus
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutActionNestedInput
 }
 
 export type ActionCreateManyEventInput = {
@@ -832,6 +954,7 @@ export type ActionUpdateWithoutEventInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registrations?: Prisma.RegistrationUpdateManyWithoutActionNestedInput
+  certificates?: Prisma.CertificateUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateWithoutEventInput = {
@@ -849,6 +972,7 @@ export type ActionUncheckedUpdateWithoutEventInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registrations?: Prisma.RegistrationUncheckedUpdateManyWithoutActionNestedInput
+  certificates?: Prisma.CertificateUncheckedUpdateManyWithoutActionNestedInput
 }
 
 export type ActionUncheckedUpdateManyWithoutEventInput = {
@@ -874,10 +998,12 @@ export type ActionUncheckedUpdateManyWithoutEventInput = {
 
 export type ActionCountOutputType = {
   registrations: number
+  certificates: number
 }
 
 export type ActionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   registrations?: boolean | ActionCountOutputTypeCountRegistrationsArgs
+  certificates?: boolean | ActionCountOutputTypeCountCertificatesArgs
 }
 
 /**
@@ -895,6 +1021,13 @@ export type ActionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
  */
 export type ActionCountOutputTypeCountRegistrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.RegistrationWhereInput
+}
+
+/**
+ * ActionCountOutputType without action
+ */
+export type ActionCountOutputTypeCountCertificatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CertificateWhereInput
 }
 
 
@@ -915,6 +1048,7 @@ export type ActionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
   registrations?: boolean | Prisma.Action$registrationsArgs<ExtArgs>
+  certificates?: boolean | Prisma.Action$certificatesArgs<ExtArgs>
   _count?: boolean | Prisma.ActionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["action"]>
 
@@ -975,6 +1109,7 @@ export type ActionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type ActionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
   registrations?: boolean | Prisma.Action$registrationsArgs<ExtArgs>
+  certificates?: boolean | Prisma.Action$certificatesArgs<ExtArgs>
   _count?: boolean | Prisma.ActionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ActionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -989,6 +1124,7 @@ export type $ActionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     event: Prisma.$EventPayload<ExtArgs>
     registrations: Prisma.$RegistrationPayload<ExtArgs>[]
+    certificates: Prisma.$CertificatePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1401,6 +1537,7 @@ export interface Prisma__ActionClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   event<T extends Prisma.EventDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EventDefaultArgs<ExtArgs>>): Prisma.Prisma__EventClient<runtime.Types.Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   registrations<T extends Prisma.Action$registrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Action$registrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RegistrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  certificates<T extends Prisma.Action$certificatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Action$certificatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CertificatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1866,6 +2003,30 @@ export type Action$registrationsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.RegistrationScalarFieldEnum | Prisma.RegistrationScalarFieldEnum[]
+}
+
+/**
+ * Action.certificates
+ */
+export type Action$certificatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Certificate
+   */
+  select?: Prisma.CertificateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Certificate
+   */
+  omit?: Prisma.CertificateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CertificateInclude<ExtArgs> | null
+  where?: Prisma.CertificateWhereInput
+  orderBy?: Prisma.CertificateOrderByWithRelationInput | Prisma.CertificateOrderByWithRelationInput[]
+  cursor?: Prisma.CertificateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CertificateScalarFieldEnum | Prisma.CertificateScalarFieldEnum[]
 }
 
 /**

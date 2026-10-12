@@ -27,7 +27,7 @@
             </div>
             <h2 class="titulo-cartao-funcao">Gerente / Organizador</h2>
             <p class="descricao-cartao-funcao">Gerencie eventos, inscrições, certificados e relatórios do sistema.</p>
-            <button class="botao-selecionar-funcao" onclick="window.selecionarFuncaoECadastrar('gestor')">Selecionar</button>
+            <button class="botao-selecionar-funcao" data-select-role="gestor">Selecionar</button>
         </article>
 
         <article class="cartao-funcao" data-funcao="professor">
@@ -39,7 +39,7 @@
             </div>
             <h2 class="titulo-cartao-funcao">Professor</h2>
             <p class="descricao-cartao-funcao">Inscreva-se em eventos, acompanhe suas atividades e emissão de certificados.</p>
-            <button class="botao-selecionar-funcao" onclick="window.selecionarFuncaoECadastrar('professor')">Selecionar</button>
+            <button class="botao-selecionar-funcao" data-select-role="professor">Selecionar</button>
         </article>
 
         <article class="cartao-funcao" data-funcao="aluno">
@@ -51,12 +51,12 @@
             </div>
             <h2 class="titulo-cartao-funcao">Aluno</h2>
             <p class="descricao-cartao-funcao">Explore eventos acadêmicos, realize inscrições e acompanhe sua presença.</p>
-            <button class="botao-selecionar-funcao" onclick="window.selecionarFuncaoECadastrar('aluno')">Selecionar</button>
+            <button class="botao-selecionar-funcao" data-select-role="aluno">Selecionar</button>
         </article>
 
     </div>
     
     <p class="texto-rodape-auth espacamento-topo-rodape">
-        Já possui uma conta? <a href="#" onclick="window.carregarComponenteAuth('login'); return false;">Faça seu login.</a>
+        Já possui uma conta? <a href="#" data-auth-component="login">Faça seu login.</a>
     </p>
 </div>
