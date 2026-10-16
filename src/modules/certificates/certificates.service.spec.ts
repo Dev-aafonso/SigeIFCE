@@ -16,7 +16,7 @@ import {
 import { CertificatesService } from './certificates.service';
 
 describe('CertificatesService (modelo por inscrição)', () => {
-  const prisma: any = {
+  const prisma = {
     registration: { findUnique: jest.fn() },
     certificate: {
       findUnique: jest.fn(),
@@ -24,10 +24,10 @@ describe('CertificatesService (modelo por inscrição)', () => {
       create: jest.fn(),
     },
   };
-  const pdfService: any = { generate: jest.fn() };
+  const pdfService = { generate: jest.fn() };
 
   let service: CertificatesService;
-  let currentRegistration: any;
+  let currentRegistration: ReturnType<typeof makeRegistration> | undefined;
   let originalCwd = '';
   let tempRoot = '';
 
@@ -44,7 +44,7 @@ describe('CertificatesService (modelo por inscrição)', () => {
     updatedAt: new Date('2026-09-01T10:00:00.000Z'),
   });
 
-  const makeRegistration = (overrides: Record<string, any> = {}) => {
+  const makeRegistration = (overrides: object = {}) => {
     const event = makeEvent();
     const action = {
       id: 'action-1',
@@ -86,7 +86,7 @@ describe('CertificatesService (modelo por inscrição)', () => {
     };
   };
 
-  const makeCertificateRecord = (overrides: Record<string, any> = {}) => {
+  const makeCertificateRecord = (overrides: object = {}) => {
     const registration = currentRegistration ?? makeRegistration();
     return {
       id: 'certificate-1',
@@ -117,7 +117,7 @@ describe('CertificatesService (modelo por inscrição)', () => {
     prisma.registration.findUnique.mockReset().mockImplementation(async () => currentRegistration);
     prisma.certificate.findUnique.mockReset();
     prisma.certificate.findMany.mockReset();
-    prisma.certificate.create.mockReset().mockImplementation(async ({ data }: any) =>
+    prisma.certificate.create.mockReset().mockImplementation(async ({ data }: { data: object }) =>
       makeCertificateRecord({
         ...data,
         id: 'certificate-created-1',

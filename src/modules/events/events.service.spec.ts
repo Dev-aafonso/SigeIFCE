@@ -16,7 +16,7 @@ import {
 } from '@jest/globals';
 
 describe('EventsService', () => {
-  const prisma: any = {
+  const prisma = {
     event: {
       create: jest.fn(),
       findUnique: jest.fn(),

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Param,
   Post,
   Req,
@@ -41,5 +42,24 @@ export class RegistrationsController {
     }
 
     return this.registrationsService.createForAction(userId, actionId);
+  }
+  @Delete('actions/:actionId')
+  async cancelForAction(
+    @Param('actionId') actionId: string,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const authenticatedUser = request.user;
+    const userId =
+      authenticatedUser?.id ??
+      authenticatedUser?.userId ??
+      authenticatedUser?.sub;
+
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Usuario autenticado nao identificado.',
+      );
+    }
+
+    return this.registrationsService.cancelForAction(userId, actionId);
   }
 }

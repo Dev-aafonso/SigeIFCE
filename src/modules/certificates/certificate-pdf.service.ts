@@ -94,7 +94,7 @@ export class CertificatePdfService {
     const right = pageWidth - 52;
     const contentWidth = right - left;
 
-    // Moldura discreta, adequada Ã  impressÃ£o em A4 horizontal.
+    // Moldura discreta, adequada Ã  impressÃ£o em A4 horizontal.
     doc.lineWidth(1.7).strokeColor(COLORS.green).rect(22, 22, pageWidth - 44, pageHeight - 44).stroke();
     doc.lineWidth(0.6).strokeColor(COLORS.lightGreen).rect(29, 29, pageWidth - 58, pageHeight - 58).stroke();
 

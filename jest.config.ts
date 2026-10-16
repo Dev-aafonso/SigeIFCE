@@ -1,6 +1,8 @@
-﻿import type { Config } from 'jest';
+import type { Config } from 'jest';
 
 const config: Config = {
+  roots: ['<rootDir>/src'],
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/test/e2e/'],
   rootDir: '.',
   testEnvironment: 'node',
   testRegex: '.*\.spec\.ts$',

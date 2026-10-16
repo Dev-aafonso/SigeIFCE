@@ -162,4 +162,63 @@ export class RegistrationsService {
 
     throw new ConflictException('N\u00e3o foi poss\u00edvel concluir a inscri\u00e7\u00e3o.');
   }
+  /**
+   * Cancela a inscricao do proprio participante antes do inicio da acao.
+   * Inscricoes com presenca registrada ou certificado emitido nao podem ser canceladas.
+   */
+  async cancelForAction(
+    userId: string,
+    actionId: string,
+  ): Promise<RegistrationResult> {
+    if (!userId || !actionId) {
+      throw new BadRequestException('Usuario e acao sao obrigatorios.');
+    }
+
+    const registration = await this.prisma.registration.findUnique({
+      where: {
+        userId_actionId: { userId, actionId },
+      },
+      include: {
+        action: { select: { id: true, status: true, startDate: true } },
+        presence: { select: { id: true } },
+        certificate: { select: { id: true } },
+      },
+    });
+
+    if (!registration) {
+      throw new NotFoundException('Inscricao nao encontrada para esta acao.');
+    }
+    if (registration.status !== RegistrationStatus.ACTIVE) {
+      throw new ConflictException('A inscricao nao esta ativa.');
+    }
+    if (registration.action.status !== ActionStatus.ATIVA) {
+      throw new ConflictException('A acao nao esta disponivel para cancelamento.');
+    }
+    if (registration.action.startDate <= new Date()) {
+      throw new ConflictException('Nao e possivel cancelar a inscricao apos o inicio da acao.');
+    }
+    if (registration.presence) {
+      throw new ConflictException('Nao e possivel cancelar uma inscricao com presenca registrada.');
+    }
+    if (registration.certificate) {
+      throw new ConflictException('Nao e possivel cancelar uma inscricao com certificado emitido.');
+    }
+
+    return this.prisma.registration.update({
+      where: { id: registration.id },
+      data: {
+        status: RegistrationStatus.CANCELLED,
+        cancelledAt: new Date(),
+      },
+      select: {
+        id: true,
+        userId: true,
+        actionId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        cancelledAt: true,
+      },
+    });
+  }
 }

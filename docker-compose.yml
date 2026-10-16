@@ -1,31 +1,50 @@
-﻿
-# ============================================================
-
-# SIGE IFCE
-
-# Ambiente PostgreSQL
-
-# ============================================================
+name: sige-ifce
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sige-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-postgres}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}"
+      POSTGRES_DB: "${POSTGRES_DB:-sige_ifce}"
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - sige_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
-postgres:
-image: postgres:16
-container_name: sige-postgres
-restart: unless-stopped
-
-`
-environment:
-  POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: postgres
-  POSTGRES_DB: sige_ifce
-
-ports:
-  - "5432:5432"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sige-ifce-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      COOKIE_SECURE: "${COOKIE_SECURE:-true}"
+      PORT: "3000"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}@postgres:5432/${POSTGRES_DB:-sige_ifce}?schema=public"
+      JWT_SECRET: "${JWT_SECRET:?Defina JWT_SECRET no arquivo .env}"
+      MOCK_MODE: "${MOCK_MODE:-false}"
+      APP_URL: "${APP_URL:-http://localhost:3000}"
+      CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost:3000}"
+      IFCE_CAMPUS_NAME: "${IFCE_CAMPUS_NAME:-Instituto Federal do Ceara - Campus Cedro}"
+      IFCE_LOGO_PATH: "${IFCE_LOGO_PATH:-assets/ifce-logo-horizontal.png}"
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - sige_certificate_storage:/app/storage/certificates
 
 volumes:
-  - sige_postgres_data:/var/lib/postgresql/data
-`
-
-volumes:
-sige_postgres_data:
+  sige_postgres_data:
+  sige_certificate_storage:

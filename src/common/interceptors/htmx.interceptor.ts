@@ -1,4 +1,4 @@
-﻿import {
+import {
   CallHandler,
   ExecutionContext,
   Injectable,
@@ -14,7 +14,7 @@ export class HtmxInterceptor
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<any> {
+  ): Observable<unknown> {
 
     const request =
       context.switchToHttp().getRequest();

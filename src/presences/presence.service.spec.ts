@@ -9,7 +9,7 @@ import { UserRole } from '../generated/prisma/client';
 import { PresenceService, PresencePrincipal } from './presence.service';
 
 describe('PresenceService — autorização e integridade', () => {
-  const prisma: any = {
+  const prisma = {
     action: { findUnique: jest.fn() },
     registration: { findUnique: jest.fn(), findMany: jest.fn() },
     presence: { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn() },
@@ -42,7 +42,7 @@ describe('PresenceService — autorização e integridade', () => {
 
   it('nega registro de presença a ALUNO antes de consultar inscrição', async () => {
     await expect(
-      service.create({ registrationId: 'registration-1' } as any, student),
+      service.create({ registrationId: 'registration-1' }, student),
     ).rejects.toBeInstanceOf(ForbiddenException);
 
     expect(prisma.registration.findUnique).not.toHaveBeenCalled();
@@ -118,7 +118,7 @@ describe('PresenceService — autorização e integridade', () => {
     prisma.registration.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.create({ registrationId: 'missing-registration' } as any, admin),
+      service.create({ registrationId: 'missing-registration' }, admin),
     ).rejects.toBeInstanceOf(NotFoundException);
 
     expect(prisma.presence.create).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('PresenceService — autorização e integridade', () => {
     );
 
     await expect(
-      service.create({ registrationId: 'registration-1' } as any, admin),
+      service.create({ registrationId: 'registration-1' }, admin),
     ).rejects.toBeInstanceOf(BadRequestException);
 
     expect(prisma.presence.create).not.toHaveBeenCalled();
@@ -142,7 +142,7 @@ describe('PresenceService — autorização e integridade', () => {
     );
 
     await expect(
-      service.create({ registrationId: 'registration-1' } as any, admin),
+      service.create({ registrationId: 'registration-1' }, admin),
     ).rejects.toBeInstanceOf(ConflictException);
 
     expect(prisma.presence.create).not.toHaveBeenCalled();
@@ -152,7 +152,7 @@ describe('PresenceService — autorização e integridade', () => {
     prisma.registration.findUnique.mockResolvedValue(registration());
     prisma.presence.create.mockResolvedValue({ id: 'presence-1' });
 
-    await service.create({ registrationId: 'registration-1' } as any, admin);
+    await service.create({ registrationId: 'registration-1' }, admin);
 
     expect(prisma.presence.create).toHaveBeenCalledWith(
       expect.objectContaining({

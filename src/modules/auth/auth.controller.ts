@@ -49,7 +49,7 @@ export class AuthController {
     response.clearCookie(COOKIE_NAME, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: this.isSecureCookie(),
     });
 
     return { message: 'Logout realizado com sucesso.' };
@@ -60,11 +60,19 @@ export class AuthController {
     return request.user;
   }
 
+  private isSecureCookie(): boolean {
+    const configured = process.env.COOKIE_SECURE?.trim().toLowerCase();
+
+    if (configured === 'true') return true;
+    if (configured === 'false') return false;
+
+    return process.env.NODE_ENV === 'production';
+  }
   private setAuthCookie(response: Response, token: string) {
     response.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: this.isSecureCookie(),
       maxAge: COOKIE_MAX_AGE,
       path: '/',
     });

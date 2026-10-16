@@ -692,3 +692,8 @@ O projeto encontra-se em fase de implementação e evolução dos módulos funci
 Projeto acadêmico desenvolvido no contexto do Instituto Federal de Educação, Ciência e Tecnologia do Ceará (IFCE).
 
 A definição da licença de distribuição do projeto deverá ser realizada conforme as diretrizes estabelecidas pela instituição e pela equipe responsável.
+
+## Instalacao e implantacao
+
+Consulte [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) para configurar o ambiente,
+executar com Docker Compose e rodar os testes automatizados.

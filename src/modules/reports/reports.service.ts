@@ -119,8 +119,8 @@ export class ReportsService {
     const eventWhere = this.eventWhere(principal, query);
     const actionWhere = this.actionWhere(principal, query);
 
-    let rows: ReportRow[] = [];
-    let truncated = false;
+    let rows: ReportRow[];
+    let truncated: boolean;
 
     if (type === 'events') {
       const events = await this.prisma.event.findMany({
@@ -250,7 +250,7 @@ export class ReportsService {
     const escape = (value: unknown): string => {
       let content = value === null || value === undefined ? '' : String(value);
       // Prevent spreadsheet formula execution when a CSV is opened in Excel/Calc.
-      if (/^\s*[=+@\-]/.test(content)) content = `'${content}`;
+      if (/^\s*[=+@-]/.test(content)) content = `'${content}`;
       if (/[";\r\n]/.test(content)) content = `"${content.replace(/"/g, '""')}"`;
       return content;
     };

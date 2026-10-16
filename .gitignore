@@ -22,3 +22,13 @@ Thumbs.db
 .setup-backup/
 
 storage/certificates/*.pdf
+/playwright-report/
+/test-results/
+# Backups locais e artefatos temporarios
+/.sprint*-backup/
+**/.sprint*-backup/
+*.bak
+*.backup
+*.pre-*.bak
+/storage/test-output/
+*.bak-*

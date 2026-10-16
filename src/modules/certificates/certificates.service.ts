@@ -23,6 +23,45 @@ type Requester = {
   role?: UserRole | string;
 };
 
+type CertificateParticipantSummary = {
+  id: string;
+  name: string;
+};
+
+type CertificateEventSummary = {
+  id: string;
+  title: string;
+  location: string | null;
+  startDate: Date;
+  endDate: Date;
+  organizerId?: string;
+};
+
+type CertificateActionSummary = {
+  id: string;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  durationMinutes: number;
+};
+
+type CertificatePublicRecord = {
+  id: string;
+  validationCode: string;
+  certifiedMinutes: number;
+  attendancePercent: number;
+  issuedAt: Date;
+  revokedAt: Date | null;
+  user?: CertificateParticipantSummary | null;
+  event?: CertificateEventSummary | null;
+  action?: CertificateActionSummary | null;
+};
+
+type CertificateAccessRecord = {
+  userId: string;
+  event?: { organizerId: string } | null;
+};
+
 function getPrismaErrorCode(error: unknown): string | undefined {
   if (typeof error !== 'object' || error === null || !('code' in error)) return undefined;
   const code = (error as { code?: unknown }).code;
@@ -249,7 +288,10 @@ export class CertificatesService {
     };
   }
 
-  private async assertCanAccess(certificate: any, requester: Requester): Promise<void> {
+  private async assertCanAccess(
+    certificate: CertificateAccessRecord,
+    requester: Requester,
+  ): Promise<void> {
     if (!requester.id) throw new ForbiddenException('Usuário autenticado sem identificador.');
 
     const isAdmin = requester.role === UserRole.ADMIN;
@@ -267,7 +309,12 @@ export class CertificatesService {
     return `${baseUrl}/certificates/validate/${encodeURIComponent(code)}`;
   }
 
-  private publicCertificate(certificate: any, participant?: any, action?: any, event?: any) {
+  private publicCertificate(
+    certificate: CertificatePublicRecord,
+    participant?: CertificateParticipantSummary | null,
+    action?: CertificateActionSummary | null,
+    event?: CertificateEventSummary | null,
+  ) {
     const resolvedEvent = event ?? certificate.event;
     const resolvedAction = action ?? certificate.action;
     const resolvedParticipant = participant ?? certificate.user;
