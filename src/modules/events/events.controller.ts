@@ -9,6 +9,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { UserRole } from '../../generated/prisma/enums';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -17,6 +18,15 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventsService } from './events.service';
 
+type AuthenticatedRequest = Request & {
+  user: {
+    id?: string;
+    sub?: string;
+    userId?: string;
+    role: UserRole;
+    email?: string;
+  };
+};
 @Controller('events')
 export class EventsController {
   constructor(
@@ -43,7 +53,7 @@ export class EventsController {
   @Get(':id/manage')
   findManageable(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.findManageable(
       id,
@@ -55,7 +65,7 @@ export class EventsController {
   @Post()
   create(
     @Body() dto: CreateEventDto,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.create(
       dto,
@@ -68,7 +78,7 @@ export class EventsController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateEventDto,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.update(
       id,
@@ -81,7 +91,7 @@ export class EventsController {
   @Post(':id/publish')
   publish(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.publish(
       id,
@@ -93,7 +103,7 @@ export class EventsController {
   @Post(':id/cancel')
   cancel(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.cancel(
       id,
@@ -105,7 +115,7 @@ export class EventsController {
   @Delete(':id')
   cancelByDelete(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.cancel(
       id,
@@ -117,7 +127,7 @@ export class EventsController {
   @Post(':id/close')
   close(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.close(
       id,

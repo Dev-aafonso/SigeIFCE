@@ -1,5 +1,59 @@
-<div class="module-wrapper fade-in">
-    <h2>Painel do Sistema</h2>
-    <hr>
-    <p>Bem-vindo ao Sistema de Gerenciamento de Eventos (SIGE IFCE).</p>
-</div>
+<section class="module-wrapper fade-in s8-shell s8-dashboard" data-s8-dashboard>
+  <header class="s8-page-header">
+    <div>
+      <p class="s8-eyebrow">SIGE IFCE · GESTÃO ESTRATÉGICA</p>
+      <h2>Dashboard institucional</h2>
+      <p class="s8-subtitle">Indicadores consolidados de eventos científicos, participação, frequência e certificação.</p>
+    </div>
+    <button class="s8-button s8-button-secondary" type="button" data-s8-refresh><span aria-hidden="true">↻</span> Atualizar dados</button>
+  </header>
+
+  <form class="s8-filter-panel" data-s8-dashboard-filter>
+    <div class="s8-filter-heading"><div><h3>Filtros de consulta</h3><p>O período considera a data de início do evento.</p></div><button type="reset" class="s8-text-button">Limpar filtros</button></div>
+    <div class="s8-filter-grid">
+      <label>Data inicial<input type="date" name="startDateFrom"></label>
+      <label>Data final<input type="date" name="startDateTo"></label>
+      <label class="s8-filter-wide">Evento<select name="eventId"><option value="">Todos os eventos permitidos</option></select></label>
+      <label class="s8-filter-wide">Ação<select name="actionId"><option value="">Todas as ações</option></select></label>
+      <div class="s8-filter-submit"><button class="s8-button s8-button-primary" type="submit">Aplicar filtros</button></div>
+    </div>
+  </form>
+
+  <div class="s8-notice" data-s8-notice role="status" aria-live="polite" hidden></div>
+
+  <section class="s8-kpi-grid" aria-label="Indicadores principais">
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-green">EV</span><span>Eventos</span></div><strong data-s8-kpi="events">—</strong><small>Dentro dos filtros aplicados</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-green">AÇ</span><span>Ações</span></div><strong data-s8-kpi="actions">—</strong><small>Atividades vinculadas aos eventos</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-red">IN</span><span>Inscrições ativas</span></div><strong data-s8-kpi="activeRegistrations">—</strong><small>Inscrições válidas no recorte</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-green">PA</span><span>Participantes únicos</span></div><strong data-s8-kpi="uniqueParticipants">—</strong><small>Sem duplicar quem participa de várias ações</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-green">PR</span><span>Presenças registradas</span></div><strong data-s8-kpi="presentRegistrations">—</strong><small>Inscrições ativas com presença</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-red">%</span><span>Taxa de presença</span></div><strong data-s8-kpi="attendanceRate">—</strong><small>Presenças ÷ inscrições ativas</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-green">CE</span><span>Certificados emitidos</span></div><strong data-s8-kpi="certificatesIssued">—</strong><small>Inclui registros posteriormente revogados</small></article>
+    <article class="s8-kpi-card"><div class="s8-kpi-label"><span class="s8-kpi-icon s8-green">CV</span><span>Certificados válidos</span></div><strong data-s8-kpi="certificatesValid">—</strong><small>Não revogados</small></article>
+  </section>
+
+  <section class="s8-content-grid">
+    <article class="s8-panel s8-panel-chart">
+      <div class="s8-panel-heading"><div><h3>Evolução das inscrições</h3><p>Últimos seis meses, conforme a data de criação da inscrição.</p></div><span class="s8-panel-meta">Inscrições ativas</span></div>
+      <div class="s8-trend" data-s8-trend><p class="s8-empty">Carregando série histórica…</p></div>
+    </article>
+    <article class="s8-panel">
+      <div class="s8-panel-heading"><div><h3>Status dos eventos</h3><p>Distribuição no recorte selecionado.</p></div></div>
+      <div class="s8-status-list" data-s8-event-statuses><p class="s8-empty">Carregando indicadores…</p></div>
+      <div class="s8-panel-divider"></div>
+      <div class="s8-panel-heading s8-compact-heading"><div><h3>Status das ações</h3></div></div>
+      <div class="s8-status-list" data-s8-action-statuses><p class="s8-empty">Carregando indicadores…</p></div>
+    </article>
+  </section>
+
+  <section class="s8-panel s8-table-panel">
+    <div class="s8-panel-heading"><div><h3>Eventos no período</h3><p>Consulta restrita aos eventos que seu perfil pode administrar.</p></div><span class="s8-panel-meta">Até 100 registros</span></div>
+    <div class="s8-table-wrap"><table class="s8-table"><thead><tr><th>Evento</th><th>Status</th><th>Início</th><th>Ações</th></tr></thead><tbody data-s8-events-table><tr><td colspan="4" class="s8-empty">Carregando eventos…</td></tr></tbody></table></div>
+  </section>
+
+  <section class="s8-panel s8-table-panel">
+    <div class="s8-panel-heading"><div><h3>Indicadores por ação</h3><p>Ocupação das vagas e consolidação de frequência.</p></div><span class="s8-panel-meta">Até 150 registros</span></div>
+    <div class="s8-table-wrap"><table class="s8-table"><thead><tr><th>Ação</th><th>Evento</th><th>Status</th><th>Inscrições</th><th>Presentes</th><th>Ocupação</th></tr></thead><tbody data-s8-actions-table><tr><td colspan="6" class="s8-empty">Carregando ações…</td></tr></tbody></table></div>
+  </section>
+  <footer class="s8-footnote" data-s8-generated-at>Os indicadores são calculados a partir do banco de dados do SIGE IFCE.</footer>
+</section>

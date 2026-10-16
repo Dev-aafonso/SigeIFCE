@@ -36,3 +36,11 @@ export const ActionStatus = {
 } as const
 
 export type ActionStatus = (typeof ActionStatus)[keyof typeof ActionStatus]
+
+
+export const RegistrationStatus = {
+  ACTIVE: 'ACTIVE',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type RegistrationStatus = (typeof RegistrationStatus)[keyof typeof RegistrationStatus]

@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     definirPerfilUsuario({ nome: 'ADM', cargo: 'ADM', urlAvatar: '' });
 
     botaoSair?.addEventListener('click', () => {
-        history.pushState({ module: 'auth' }, "", `/auth`);
+        history.pushState({ module: 'auth' }, "", "/#/auth/login");
         router.carregarModulo('auth');
     });
 
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (history.state?.module === moduloCarregar) return;
 
-        history.pushState({ module: moduloCarregar }, "", `/${moduloCarregar}`);
+        history.pushState({ module: moduloCarregar }, "", `/#/${moduloCarregar}`);
         router.carregarModulo(moduloCarregar);
     });
 });
@@ -235,11 +235,9 @@ document.addEventListener('DOMContentLoaded', () => {
             data.user &&
             data.user.role
           ) {
-            window.location.href =
-              "/sistema";
+            window.location.href = "/#/dashboard";
           } else {
-            window.location.href =
-              "/selecao-funcao";
+            window.location.href = "/#/auth/selecao-funcao";
           }
 
         } catch (error) {
@@ -344,8 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             "success"
           );
 
-          window.location.href =
-            "/selecao-funcao";
+          window.location.href = "/#/auth/selecao-funcao";
 
         } catch (error) {
 
@@ -379,8 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
             button.dataset.role;
 
           if (!getToken()) {
-            window.location.href =
-              "/login";
+            window.location.href = "/#/auth/login";
             return;
           }
 
@@ -433,8 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setTimeout(
               function () {
-                window.location.href =
-                  "/sistema";
+                window.location.href = "/#/dashboard";
               },
               500
             );

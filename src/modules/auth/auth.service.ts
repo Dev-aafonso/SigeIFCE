@@ -15,7 +15,7 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     if (dto.password !== dto.passwordConfirmation) {
-      throw new ConflictException('As senhas não coincidem.');
+      throw new ConflictException('As senhas nÃ£o coincidem.');
     }
 
     const existingUser = await this.prisma.user.findUnique({
@@ -23,16 +23,16 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('E-mail já cadastrado.');
+      throw new ConflictException('E-mail jÃ¡ cadastrado.');
     }
 
     const password = await argon2.hash(dto.password);
 
     const user = await this.prisma.user.create({
       data: {
+        name: dto.name.trim(),
         email: dto.email.toLowerCase(),
         password,
-        // role não é enviado: o Prisma aplica @default(ALUNO).
       },
     });
 
@@ -50,7 +50,7 @@ export class AuthService {
     });
 
     if (!user || !(await argon2.verify(user.password, dto.password))) {
-      throw new UnauthorizedException('E-mail ou senha inválidos.');
+      throw new UnauthorizedException('E-mail ou senha invÃ¡lidos.');
     }
 
     const accessToken = await this.createToken(user.id, user.email, user.role);
@@ -69,11 +69,13 @@ export class AuthService {
     });
   }
 
-  private publicUser(user: { id: string; email: string; role: UserRole }) {
+  private publicUser(user: { id: string; name: string; email: string; role: UserRole }) {
     return {
       id: user.id,
+      name: user.name,
       email: user.email,
       role: user.role,
     };
   }
 }
+

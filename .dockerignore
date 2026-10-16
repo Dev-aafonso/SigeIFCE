@@ -1,0 +1,36 @@
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated output
+node_modules
+dist
+coverage
+
+# Version control and editor settings
+.git
+.vscode
+.idea
+
+# Backups and temporary sprint artifacts
+.setup-backup
+.sprint*-backup
+**/.sprint*-backup
+*.bak
+*.backup
+*.pre-*.bak
+**/*.bak
+**/*.backup
+
+# Test artifacts and logs
+playwright-report
+test-results
+storage/test-output
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Generated certificate PDFs must not be baked into the image
+storage/certificates/*.pdf

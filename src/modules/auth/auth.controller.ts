@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 const COOKIE_NAME = 'access_token';
 const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000;
@@ -20,6 +21,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('register')
   async register(
     @Body() dto: RegisterDto,
@@ -31,6 +33,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   async login(
     @Body() dto: LoginDto,
@@ -46,7 +49,7 @@ export class AuthController {
     response.clearCookie(COOKIE_NAME, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: this.isSecureCookie(),
     });
 
     return { message: 'Logout realizado com sucesso.' };
@@ -57,11 +60,19 @@ export class AuthController {
     return request.user;
   }
 
+  private isSecureCookie(): boolean {
+    const configured = process.env.COOKIE_SECURE?.trim().toLowerCase();
+
+    if (configured === 'true') return true;
+    if (configured === 'false') return false;
+
+    return process.env.NODE_ENV === 'production';
+  }
   private setAuthCookie(response: Response, token: string) {
     response.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: this.isSecureCookie(),
       maxAge: COOKIE_MAX_AGE,
       path: '/',
     });

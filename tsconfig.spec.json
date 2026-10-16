@@ -1,4 +1,4 @@
-{
+﻿{
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
@@ -7,14 +7,13 @@
     "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["node", "jest"],
-    "isolatedModules": true
+    "isolatedModules": true,
+    "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
-    ".sprint4-backup",
-    ".sprint4-recovery"
+    ".sprint7-backup"
   ]
 }

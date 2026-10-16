@@ -8,18 +8,31 @@ class Router {
     init() {
         this.areaConteudo = document.getElementById('area-conteudo');
         
+        const obterSegmentosHash = () =>
+            window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+
         window.addEventListener('popstate', (evento) => {
-            const moduloUrl = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase() || 'auth';
+            const segmentos = obterSegmentosHash();
+            const moduloUrl = (segmentos[0] || 'auth').toLowerCase();
             const moduloCarregar = evento.state?.module || moduloUrl;
             this.carregarModulo(moduloCarregar);
         });
 
-        const segmentosCaminho = window.location.pathname.split('/').filter(Boolean);
-        const moduloInicial = (segmentosCaminho.length > 0 && segmentosCaminho[0] !== 'index.html') 
-                              ? segmentosCaminho[0].toLowerCase() 
-                              : 'auth';
+        const segmentosIniciais = obterSegmentosHash();
+        const caminhoInicial = window.location.pathname.split('/').filter(Boolean);
+        const moduloInicial = (segmentosIniciais[0] ||
+            ((caminhoInicial.length > 0 && caminhoInicial[0].toLowerCase() !== 'index.html')
+                ? caminhoInicial[0]
+                : 'auth')).toLowerCase();
+        const componenteInicial = moduloInicial === 'auth'
+            ? (segmentosIniciais[0] === 'auth' ? segmentosIniciais[1] : undefined)
+            : undefined;
+        const componentesPermitidos = new Set(['login', 'cadastro', 'selecao-funcao']);
+        const urlInicial = moduloInicial === 'auth'
+            ? `/#/auth/${componentesPermitidos.has(componenteInicial) ? componenteInicial : 'login'}`
+            : `/#/${moduloInicial}`;
 
-        history.replaceState({ module: moduloInicial }, "", `/${moduloInicial}`);
+        history.replaceState({ module: moduloInicial }, '', urlInicial);
         this.carregarModulo(moduloInicial);
     }
 
@@ -55,7 +68,11 @@ class Router {
             await this.carregarJS(`web/views/modules/${moduloSeguro}/${moduloSeguro}.js`);
 
             if (moduloSeguro === 'auth') {
-                window.carregarComponenteAuth('login');
+                const segmentos = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+                const componenteSolicitado = segmentos[0] === 'auth' ? segmentos[1] : undefined;
+                const componentesPermitidos = new Set(['login', 'cadastro', 'selecao-funcao']);
+                const componente = componentesPermitidos.has(componenteSolicitado) ? componenteSolicitado : 'login';
+                this.carregarComponenteAuth(componente);
             }
 
         } catch (erro) {
@@ -140,7 +157,13 @@ class Router {
 
 export const router = new Router();
 
-window.carregarComponenteAuth = (comp) => router.carregarComponenteAuth(comp);
+window.carregarComponenteAuth = (comp) => {
+    const permitidos = new Set(['login', 'cadastro', 'selecao-funcao']);
+    const nome = String(comp || 'login').toLowerCase();
+    const componente = permitidos.has(nome) ? nome : 'login';
+    history.pushState({ module: 'auth' }, '', `/#/auth/${componente}`);
+    return router.carregarComponenteAuth(componente);
+};
 window.navegarParaModulo = (mod) => router.carregarModulo(mod);
 
 (function () {

@@ -11,4 +11,7 @@
 export type * from './models/User'
 export type * from './models/Event'
 export type * from './models/Action'
+export type * from './models/Registration'
+export type * from './models/Presence'
+export type * from './models/Certificate'
 export type * from './commonInputTypes'

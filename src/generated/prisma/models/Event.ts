@@ -20,8 +20,18 @@ export type EventModel = runtime.Types.Result.DefaultSelection<Prisma.$EventPayl
 
 export type AggregateEvent = {
   _count: EventCountAggregateOutputType | null
+  _avg: EventAvgAggregateOutputType | null
+  _sum: EventSumAggregateOutputType | null
   _min: EventMinAggregateOutputType | null
   _max: EventMaxAggregateOutputType | null
+}
+
+export type EventAvgAggregateOutputType = {
+  minAttendancePercent: number | null
+}
+
+export type EventSumAggregateOutputType = {
+  minAttendancePercent: number | null
 }
 
 export type EventMinAggregateOutputType = {
@@ -32,6 +42,7 @@ export type EventMinAggregateOutputType = {
   endDate: Date | null
   location: string | null
   status: $Enums.EventStatus | null
+  minAttendancePercent: number | null
   publishedAt: Date | null
   canceledAt: Date | null
   closedAt: Date | null
@@ -48,6 +59,7 @@ export type EventMaxAggregateOutputType = {
   endDate: Date | null
   location: string | null
   status: $Enums.EventStatus | null
+  minAttendancePercent: number | null
   publishedAt: Date | null
   canceledAt: Date | null
   closedAt: Date | null
@@ -64,6 +76,7 @@ export type EventCountAggregateOutputType = {
   endDate: number
   location: number
   status: number
+  minAttendancePercent: number
   publishedAt: number
   canceledAt: number
   closedAt: number
@@ -74,6 +87,14 @@ export type EventCountAggregateOutputType = {
 }
 
 
+export type EventAvgAggregateInputType = {
+  minAttendancePercent?: true
+}
+
+export type EventSumAggregateInputType = {
+  minAttendancePercent?: true
+}
+
 export type EventMinAggregateInputType = {
   id?: true
   title?: true
@@ -82,6 +103,7 @@ export type EventMinAggregateInputType = {
   endDate?: true
   location?: true
   status?: true
+  minAttendancePercent?: true
   publishedAt?: true
   canceledAt?: true
   closedAt?: true
@@ -98,6 +120,7 @@ export type EventMaxAggregateInputType = {
   endDate?: true
   location?: true
   status?: true
+  minAttendancePercent?: true
   publishedAt?: true
   canceledAt?: true
   closedAt?: true
@@ -114,6 +137,7 @@ export type EventCountAggregateInputType = {
   endDate?: true
   location?: true
   status?: true
+  minAttendancePercent?: true
   publishedAt?: true
   canceledAt?: true
   closedAt?: true
@@ -161,6 +185,18 @@ export type EventAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: EventAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: EventSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: EventMinAggregateInputType
@@ -191,6 +227,8 @@ export type EventGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: EventCountAggregateInputType | true
+  _avg?: EventAvgAggregateInputType
+  _sum?: EventSumAggregateInputType
   _min?: EventMinAggregateInputType
   _max?: EventMaxAggregateInputType
 }
@@ -203,6 +241,7 @@ export type EventGroupByOutputType = {
   endDate: Date
   location: string | null
   status: $Enums.EventStatus
+  minAttendancePercent: number
   publishedAt: Date | null
   canceledAt: Date | null
   closedAt: Date | null
@@ -210,6 +249,8 @@ export type EventGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   _count: EventCountAggregateOutputType | null
+  _avg: EventAvgAggregateOutputType | null
+  _sum: EventSumAggregateOutputType | null
   _min: EventMinAggregateOutputType | null
   _max: EventMaxAggregateOutputType | null
 }
@@ -240,6 +281,7 @@ export type EventWhereInput = {
   endDate?: Prisma.DateTimeFilter<"Event"> | Date | string
   location?: Prisma.StringNullableFilter<"Event"> | string | null
   status?: Prisma.EnumEventStatusFilter<"Event"> | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFilter<"Event"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   canceledAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -248,6 +290,7 @@ export type EventWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Event"> | Date | string
   organizer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   actions?: Prisma.ActionListRelationFilter
+  certificates?: Prisma.CertificateListRelationFilter
 }
 
 export type EventOrderByWithRelationInput = {
@@ -258,6 +301,7 @@ export type EventOrderByWithRelationInput = {
   endDate?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  minAttendancePercent?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   canceledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -266,6 +310,7 @@ export type EventOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   organizer?: Prisma.UserOrderByWithRelationInput
   actions?: Prisma.ActionOrderByRelationAggregateInput
+  certificates?: Prisma.CertificateOrderByRelationAggregateInput
 }
 
 export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -279,6 +324,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeFilter<"Event"> | Date | string
   location?: Prisma.StringNullableFilter<"Event"> | string | null
   status?: Prisma.EnumEventStatusFilter<"Event"> | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFilter<"Event"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   canceledAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -287,6 +333,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Event"> | Date | string
   organizer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   actions?: Prisma.ActionListRelationFilter
+  certificates?: Prisma.CertificateListRelationFilter
 }, "id">
 
 export type EventOrderByWithAggregationInput = {
@@ -297,6 +344,7 @@ export type EventOrderByWithAggregationInput = {
   endDate?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  minAttendancePercent?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   canceledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -304,8 +352,10 @@ export type EventOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EventCountOrderByAggregateInput
+  _avg?: Prisma.EventAvgOrderByAggregateInput
   _max?: Prisma.EventMaxOrderByAggregateInput
   _min?: Prisma.EventMinOrderByAggregateInput
+  _sum?: Prisma.EventSumOrderByAggregateInput
 }
 
 export type EventScalarWhereWithAggregatesInput = {
@@ -319,6 +369,7 @@ export type EventScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeWithAggregatesFilter<"Event"> | Date | string
   location?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
   status?: Prisma.EnumEventStatusWithAggregatesFilter<"Event"> | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntWithAggregatesFilter<"Event"> | number
   publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
   canceledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
@@ -335,6 +386,7 @@ export type EventCreateInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
@@ -342,6 +394,7 @@ export type EventCreateInput = {
   updatedAt?: Date | string
   organizer: Prisma.UserCreateNestedOneWithoutEventsInput
   actions?: Prisma.ActionCreateNestedManyWithoutEventInput
+  certificates?: Prisma.CertificateCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateInput = {
@@ -352,6 +405,7 @@ export type EventUncheckedCreateInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
@@ -359,6 +413,7 @@ export type EventUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   actions?: Prisma.ActionUncheckedCreateNestedManyWithoutEventInput
+  certificates?: Prisma.CertificateUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventUpdateInput = {
@@ -369,6 +424,7 @@ export type EventUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -376,6 +432,7 @@ export type EventUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organizer?: Prisma.UserUpdateOneRequiredWithoutEventsNestedInput
   actions?: Prisma.ActionUpdateManyWithoutEventNestedInput
+  certificates?: Prisma.CertificateUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateInput = {
@@ -386,6 +443,7 @@ export type EventUncheckedUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -393,6 +451,7 @@ export type EventUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   actions?: Prisma.ActionUncheckedUpdateManyWithoutEventNestedInput
+  certificates?: Prisma.CertificateUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateManyInput = {
@@ -403,6 +462,7 @@ export type EventCreateManyInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
@@ -419,6 +479,7 @@ export type EventUpdateManyMutationInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -434,6 +495,7 @@ export type EventUncheckedUpdateManyInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -460,12 +522,17 @@ export type EventCountOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   location?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  minAttendancePercent?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   canceledAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type EventAvgOrderByAggregateInput = {
+  minAttendancePercent?: Prisma.SortOrder
 }
 
 export type EventMaxOrderByAggregateInput = {
@@ -476,6 +543,7 @@ export type EventMaxOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   location?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  minAttendancePercent?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   canceledAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
@@ -492,12 +560,17 @@ export type EventMinOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   location?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  minAttendancePercent?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   canceledAt?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type EventSumOrderByAggregateInput = {
+  minAttendancePercent?: Prisma.SortOrder
 }
 
 export type EventScalarRelationFilter = {
@@ -559,6 +632,14 @@ export type EnumEventStatusFieldUpdateOperationsInput = {
   set?: $Enums.EventStatus
 }
 
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
@@ -577,6 +658,20 @@ export type EventUpdateOneRequiredWithoutActionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutActionsInput, Prisma.EventUpdateWithoutActionsInput>, Prisma.EventUncheckedUpdateWithoutActionsInput>
 }
 
+export type EventCreateNestedOneWithoutCertificatesInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutCertificatesInput, Prisma.EventUncheckedCreateWithoutCertificatesInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutCertificatesInput
+  connect?: Prisma.EventWhereUniqueInput
+}
+
+export type EventUpdateOneRequiredWithoutCertificatesNestedInput = {
+  create?: Prisma.XOR<Prisma.EventCreateWithoutCertificatesInput, Prisma.EventUncheckedCreateWithoutCertificatesInput>
+  connectOrCreate?: Prisma.EventCreateOrConnectWithoutCertificatesInput
+  upsert?: Prisma.EventUpsertWithoutCertificatesInput
+  connect?: Prisma.EventWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EventUpdateToOneWithWhereWithoutCertificatesInput, Prisma.EventUpdateWithoutCertificatesInput>, Prisma.EventUncheckedUpdateWithoutCertificatesInput>
+}
+
 export type EventCreateWithoutOrganizerInput = {
   id?: string
   title: string
@@ -585,12 +680,14 @@ export type EventCreateWithoutOrganizerInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   actions?: Prisma.ActionCreateNestedManyWithoutEventInput
+  certificates?: Prisma.CertificateCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutOrganizerInput = {
@@ -601,12 +698,14 @@ export type EventUncheckedCreateWithoutOrganizerInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   actions?: Prisma.ActionUncheckedCreateNestedManyWithoutEventInput
+  certificates?: Prisma.CertificateUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutOrganizerInput = {
@@ -646,6 +745,7 @@ export type EventScalarWhereInput = {
   endDate?: Prisma.DateTimeFilter<"Event"> | Date | string
   location?: Prisma.StringNullableFilter<"Event"> | string | null
   status?: Prisma.EnumEventStatusFilter<"Event"> | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFilter<"Event"> | number
   publishedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   canceledAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
   closedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -662,12 +762,14 @@ export type EventCreateWithoutActionsInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organizer: Prisma.UserCreateNestedOneWithoutEventsInput
+  certificates?: Prisma.CertificateCreateNestedManyWithoutEventInput
 }
 
 export type EventUncheckedCreateWithoutActionsInput = {
@@ -678,12 +780,14 @@ export type EventUncheckedCreateWithoutActionsInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
   organizerId: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  certificates?: Prisma.CertificateUncheckedCreateNestedManyWithoutEventInput
 }
 
 export type EventCreateOrConnectWithoutActionsInput = {
@@ -710,12 +814,14 @@ export type EventUpdateWithoutActionsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organizer?: Prisma.UserUpdateOneRequiredWithoutEventsNestedInput
+  certificates?: Prisma.CertificateUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutActionsInput = {
@@ -726,12 +832,102 @@ export type EventUncheckedUpdateWithoutActionsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organizerId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  certificates?: Prisma.CertificateUncheckedUpdateManyWithoutEventNestedInput
+}
+
+export type EventCreateWithoutCertificatesInput = {
+  id?: string
+  title: string
+  description: string
+  startDate: Date | string
+  endDate: Date | string
+  location?: string | null
+  status?: $Enums.EventStatus
+  minAttendancePercent?: number
+  publishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  closedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizer: Prisma.UserCreateNestedOneWithoutEventsInput
+  actions?: Prisma.ActionCreateNestedManyWithoutEventInput
+}
+
+export type EventUncheckedCreateWithoutCertificatesInput = {
+  id?: string
+  title: string
+  description: string
+  startDate: Date | string
+  endDate: Date | string
+  location?: string | null
+  status?: $Enums.EventStatus
+  minAttendancePercent?: number
+  publishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  closedAt?: Date | string | null
+  organizerId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  actions?: Prisma.ActionUncheckedCreateNestedManyWithoutEventInput
+}
+
+export type EventCreateOrConnectWithoutCertificatesInput = {
+  where: Prisma.EventWhereUniqueInput
+  create: Prisma.XOR<Prisma.EventCreateWithoutCertificatesInput, Prisma.EventUncheckedCreateWithoutCertificatesInput>
+}
+
+export type EventUpsertWithoutCertificatesInput = {
+  update: Prisma.XOR<Prisma.EventUpdateWithoutCertificatesInput, Prisma.EventUncheckedUpdateWithoutCertificatesInput>
+  create: Prisma.XOR<Prisma.EventCreateWithoutCertificatesInput, Prisma.EventUncheckedCreateWithoutCertificatesInput>
+  where?: Prisma.EventWhereInput
+}
+
+export type EventUpdateToOneWithWhereWithoutCertificatesInput = {
+  where?: Prisma.EventWhereInput
+  data: Prisma.XOR<Prisma.EventUpdateWithoutCertificatesInput, Prisma.EventUncheckedUpdateWithoutCertificatesInput>
+}
+
+export type EventUpdateWithoutCertificatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizer?: Prisma.UserUpdateOneRequiredWithoutEventsNestedInput
+  actions?: Prisma.ActionUpdateManyWithoutEventNestedInput
+}
+
+export type EventUncheckedUpdateWithoutCertificatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organizerId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actions?: Prisma.ActionUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventCreateManyOrganizerInput = {
@@ -742,6 +938,7 @@ export type EventCreateManyOrganizerInput = {
   endDate: Date | string
   location?: string | null
   status?: $Enums.EventStatus
+  minAttendancePercent?: number
   publishedAt?: Date | string | null
   canceledAt?: Date | string | null
   closedAt?: Date | string | null
@@ -757,12 +954,14 @@ export type EventUpdateWithoutOrganizerInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   actions?: Prisma.ActionUpdateManyWithoutEventNestedInput
+  certificates?: Prisma.CertificateUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateWithoutOrganizerInput = {
@@ -773,12 +972,14 @@ export type EventUncheckedUpdateWithoutOrganizerInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   actions?: Prisma.ActionUncheckedUpdateManyWithoutEventNestedInput
+  certificates?: Prisma.CertificateUncheckedUpdateManyWithoutEventNestedInput
 }
 
 export type EventUncheckedUpdateManyWithoutOrganizerInput = {
@@ -789,6 +990,7 @@ export type EventUncheckedUpdateManyWithoutOrganizerInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  minAttendancePercent?: Prisma.IntFieldUpdateOperationsInput | number
   publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -803,10 +1005,12 @@ export type EventUncheckedUpdateManyWithoutOrganizerInput = {
 
 export type EventCountOutputType = {
   actions: number
+  certificates: number
 }
 
 export type EventCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   actions?: boolean | EventCountOutputTypeCountActionsArgs
+  certificates?: boolean | EventCountOutputTypeCountCertificatesArgs
 }
 
 /**
@@ -826,6 +1030,13 @@ export type EventCountOutputTypeCountActionsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.ActionWhereInput
 }
 
+/**
+ * EventCountOutputType without action
+ */
+export type EventCountOutputTypeCountCertificatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CertificateWhereInput
+}
+
 
 export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -835,6 +1046,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   endDate?: boolean
   location?: boolean
   status?: boolean
+  minAttendancePercent?: boolean
   publishedAt?: boolean
   canceledAt?: boolean
   closedAt?: boolean
@@ -843,6 +1055,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedAt?: boolean
   organizer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   actions?: boolean | Prisma.Event$actionsArgs<ExtArgs>
+  certificates?: boolean | Prisma.Event$certificatesArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["event"]>
 
@@ -854,6 +1067,7 @@ export type EventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   endDate?: boolean
   location?: boolean
   status?: boolean
+  minAttendancePercent?: boolean
   publishedAt?: boolean
   canceledAt?: boolean
   closedAt?: boolean
@@ -871,6 +1085,7 @@ export type EventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   endDate?: boolean
   location?: boolean
   status?: boolean
+  minAttendancePercent?: boolean
   publishedAt?: boolean
   canceledAt?: boolean
   closedAt?: boolean
@@ -888,6 +1103,7 @@ export type EventSelectScalar = {
   endDate?: boolean
   location?: boolean
   status?: boolean
+  minAttendancePercent?: boolean
   publishedAt?: boolean
   canceledAt?: boolean
   closedAt?: boolean
@@ -896,10 +1112,11 @@ export type EventSelectScalar = {
   updatedAt?: boolean
 }
 
-export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "startDate" | "endDate" | "location" | "status" | "publishedAt" | "canceledAt" | "closedAt" | "organizerId" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
+export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "startDate" | "endDate" | "location" | "status" | "minAttendancePercent" | "publishedAt" | "canceledAt" | "closedAt" | "organizerId" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
 export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   actions?: boolean | Prisma.Event$actionsArgs<ExtArgs>
+  certificates?: boolean | Prisma.Event$certificatesArgs<ExtArgs>
   _count?: boolean | Prisma.EventCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -914,6 +1131,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     organizer: Prisma.$UserPayload<ExtArgs>
     actions: Prisma.$ActionPayload<ExtArgs>[]
+    certificates: Prisma.$CertificatePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -923,6 +1141,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     endDate: Date
     location: string | null
     status: $Enums.EventStatus
+    minAttendancePercent: number
     publishedAt: Date | null
     canceledAt: Date | null
     closedAt: Date | null
@@ -1325,6 +1544,7 @@ export interface Prisma__EventClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   organizer<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   actions<T extends Prisma.Event$actionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$actionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ActionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  certificates<T extends Prisma.Event$certificatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Event$certificatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CertificatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1361,6 +1581,7 @@ export interface EventFieldRefs {
   readonly endDate: Prisma.FieldRef<"Event", 'DateTime'>
   readonly location: Prisma.FieldRef<"Event", 'String'>
   readonly status: Prisma.FieldRef<"Event", 'EventStatus'>
+  readonly minAttendancePercent: Prisma.FieldRef<"Event", 'Int'>
   readonly publishedAt: Prisma.FieldRef<"Event", 'DateTime'>
   readonly canceledAt: Prisma.FieldRef<"Event", 'DateTime'>
   readonly closedAt: Prisma.FieldRef<"Event", 'DateTime'>
@@ -1789,6 +2010,30 @@ export type Event$actionsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.ActionScalarFieldEnum | Prisma.ActionScalarFieldEnum[]
+}
+
+/**
+ * Event.certificates
+ */
+export type Event$certificatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Certificate
+   */
+  select?: Prisma.CertificateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Certificate
+   */
+  omit?: Prisma.CertificateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CertificateInclude<ExtArgs> | null
+  where?: Prisma.CertificateWhereInput
+  orderBy?: Prisma.CertificateOrderByWithRelationInput | Prisma.CertificateOrderByWithRelationInput[]
+  cursor?: Prisma.CertificateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CertificateScalarFieldEnum | Prisma.CertificateScalarFieldEnum[]
 }
 
 /**

@@ -32,3 +32,18 @@ export type Event = Prisma.EventModel
  * 
  */
 export type Action = Prisma.ActionModel
+/**
+ * Model Registration
+ * 
+ */
+export type Registration = Prisma.RegistrationModel
+/**
+ * Model Presence
+ * 
+ */
+export type Presence = Prisma.PresenceModel
+/**
+ * Model Certificate
+ * 
+ */
+export type Certificate = Prisma.CertificateModel

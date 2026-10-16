@@ -1,3 +1,4 @@
+import { Prisma } from '../../generated/prisma/client';
 import {
   BadRequestException,
   ConflictException,
@@ -170,7 +171,7 @@ export class EventsService {
       );
     }
 
-    const where: any = {
+    const where: Prisma.EventWhereInput = {
       status: EventStatus.PUBLICADO,
     };
 

@@ -53,7 +53,10 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Event: 'Event',
-  Action: 'Action'
+  Action: 'Action',
+  Registration: 'Registration',
+  Presence: 'Presence',
+  Certificate: 'Certificate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -74,6 +77,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const UserScalarFieldEnum = {
   id: 'id',
+  name: 'name',
   email: 'email',
   password: 'password',
   role: 'role'
@@ -90,6 +94,7 @@ export const EventScalarFieldEnum = {
   endDate: 'endDate',
   location: 'location',
   status: 'status',
+  minAttendancePercent: 'minAttendancePercent',
   publishedAt: 'publishedAt',
   canceledAt: 'canceledAt',
   closedAt: 'closedAt',
@@ -119,6 +124,48 @@ export const ActionScalarFieldEnum = {
 } as const
 
 export type ActionScalarFieldEnum = (typeof ActionScalarFieldEnum)[keyof typeof ActionScalarFieldEnum]
+
+
+export const RegistrationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  actionId: 'actionId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  cancelledAt: 'cancelledAt'
+} as const
+
+export type RegistrationScalarFieldEnum = (typeof RegistrationScalarFieldEnum)[keyof typeof RegistrationScalarFieldEnum]
+
+
+export const PresenceScalarFieldEnum = {
+  id: 'id',
+  registrationId: 'registrationId',
+  responsibleId: 'responsibleId',
+  registeredAt: 'registeredAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PresenceScalarFieldEnum = (typeof PresenceScalarFieldEnum)[keyof typeof PresenceScalarFieldEnum]
+
+
+export const CertificateScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  eventId: 'eventId',
+  validationCode: 'validationCode',
+  certifiedMinutes: 'certifiedMinutes',
+  attendancePercent: 'attendancePercent',
+  issuedAt: 'issuedAt',
+  filePath: 'filePath',
+  actionId: 'actionId',
+  registrationId: 'registrationId',
+  revokedAt: 'revokedAt'
+} as const
+
+export type CertificateScalarFieldEnum = (typeof CertificateScalarFieldEnum)[keyof typeof CertificateScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -7,6 +7,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { UserRole } from '../../generated/prisma/enums';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -14,6 +15,15 @@ import { ActionsService } from './actions.service';
 import { CreateActionDto } from './dto/create-action.dto';
 import { UpdateActionDto } from './dto/update-action.dto';
 
+type AuthenticatedRequest = Request & {
+  user: {
+    id?: string;
+    sub?: string;
+    userId?: string;
+    role: UserRole;
+    email?: string;
+  };
+};
 @Controller()
 export class ActionsController {
   constructor(
@@ -43,7 +53,7 @@ export class ActionsController {
   create(
     @Param('eventId') eventId: string,
     @Body() dto: CreateActionDto,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.create(
       eventId,
@@ -57,7 +67,7 @@ export class ActionsController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateActionDto,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.update(
       id,
@@ -70,7 +80,7 @@ export class ActionsController {
   @Post('actions/:id/cancel')
   cancel(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.cancel(
       id,
@@ -82,7 +92,7 @@ export class ActionsController {
   @Post('actions/:id/close')
   close(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.service.close(
       id,
