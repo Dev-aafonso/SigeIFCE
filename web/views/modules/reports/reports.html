@@ -1,0 +1,329 @@
+<section
+  class="module-wrapper fade-in modulo-relatorios"
+  aria-labelledby="titulo-relatorios"
+  data-testid="reports-module"
+>
+  <header class="cabecalho-relatorios">
+    <div>
+      <p class="sobretitulo-relatorios">ANÁLISE E ENCERRAMENTO</p>
+      <h2 id="titulo-relatorios">Relatórios e métricas</h2>
+      <p>
+        Acompanhe inscrições e frequência, consolide horas e exporte os dados do
+        evento.
+      </p>
+    </div>
+    <button
+      id="atualizar-relatorios"
+      class="botao-relatorio botao-relatorio-secundario"
+      type="button"
+    >
+      Atualizar métricas
+    </button>
+  </header>
+
+  <p
+    id="mensagem-relatorios"
+    class="mensagem-relatorios"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <section
+    class="cartao-filtros-relatorios"
+    aria-labelledby="titulo-filtros-relatorios"
+  >
+    <div class="titulo-secao-relatorios">
+      <div>
+        <h3 id="titulo-filtros-relatorios">Parâmetros do relatório</h3>
+        <p>
+          Selecione o evento para consultar os indicadores e delimitar as
+          exportações.
+        </p>
+      </div>
+    </div>
+    <form id="form-filtros-relatorios" class="form-filtros-relatorios">
+      <label class="campo-relatorio campo-evento-relatorio">
+        <span>Evento</span>
+        <select
+          id="evento-relatorio"
+          name="eventId"
+          data-testid="report-event"
+          required
+        >
+          <option value="">Carregando eventos...</option>
+        </select>
+        <label
+          id="campo-id-evento-relatorio"
+          class="campo-relatorio campo-evento-relatorio-id"
+          hidden
+        >
+          <span>ID do evento encerrado ou fora da lista</span>
+          <input
+            id="id-evento-relatorio"
+            name="eventIdManual"
+            data-testid="report-event-id"
+            autocomplete="off"
+            placeholder="Cole o identificador do evento"
+          />
+        </label>
+      </label>
+      <label class="campo-relatorio">
+        <span>Ação</span>
+        <select
+          id="acao-relatorio"
+          name="actionId"
+          data-testid="report-action"
+          disabled
+        >
+          <option value="">Todas as ações</option>
+        </select>
+      </label>
+      <label class="campo-relatorio">
+        <span>De</span>
+        <input
+          id="data-inicio-relatorio"
+          name="startDate"
+          data-testid="report-start-date"
+          type="date"
+        />
+      </label>
+      <label class="campo-relatorio">
+        <span>Até</span>
+        <input
+          id="data-fim-relatorio"
+          name="endDate"
+          data-testid="report-end-date"
+          type="date"
+        />
+      </label>
+      <label class="campo-relatorio">
+        <span>Status de participação</span>
+        <select id="status-relatorio" name="status" data-testid="report-status">
+          <option value="">Todos</option>
+          <option value="PRESENT">Presente</option>
+          <option value="ABSENT">Ausente</option>
+          <option value="REGISTERED">Inscrito</option>
+        </select>
+      </label>
+      <button
+        id="consultar-metricas-relatorio"
+        class="botao-relatorio botao-relatorio-primario"
+        type="submit"
+        data-testid="query-report-metrics"
+      >
+        Consultar métricas
+      </button>
+    </form>
+  </section>
+
+  <section
+    class="secao-relatorio"
+    aria-labelledby="titulo-indicadores-relatorio"
+  >
+    <header class="titulo-secao-relatorios">
+      <div>
+        <h3 id="titulo-indicadores-relatorio">Indicadores do evento</h3>
+        <p id="subtitulo-metricas-relatorio">
+          Selecione um evento para visualizar os dados.
+        </p>
+      </div>
+    </header>
+    <div class="grade-indicadores-relatorios" aria-live="polite">
+      <article class="indicador-relatorio indicador-inscritos">
+        <span class="icone-indicador-relatorio" aria-hidden="true">♙</span>
+        <div>
+          <p>Inscritos</p>
+          <strong id="total-inscritos-relatorio">—</strong>
+        </div>
+      </article>
+      <article class="indicador-relatorio indicador-presentes">
+        <span class="icone-indicador-relatorio" aria-hidden="true">✓</span>
+        <div>
+          <p>Presentes</p>
+          <strong id="total-presentes-relatorio">—</strong>
+        </div>
+      </article>
+      <article class="indicador-relatorio indicador-ausentes">
+        <span class="icone-indicador-relatorio" aria-hidden="true">−</span>
+        <div>
+          <p>Ausentes</p>
+          <strong id="total-ausentes-relatorio">—</strong>
+        </div>
+      </article>
+      <article class="indicador-relatorio indicador-ocupacao">
+        <span class="icone-indicador-relatorio" aria-hidden="true">▤</span>
+        <div>
+          <p>Ocupação das vagas</p>
+          <strong id="taxa-ocupacao-relatorio">—</strong>
+        </div>
+      </article>
+      <article class="indicador-relatorio indicador-frequencia">
+        <span class="icone-indicador-relatorio" aria-hidden="true">◷</span>
+        <div>
+          <p>Frequência</p>
+          <strong id="taxa-frequencia-relatorio">—</strong>
+        </div>
+      </article>
+    </div>
+    <p
+      id="estado-metricas-relatorio"
+      class="estado-relatorios"
+      role="status"
+      aria-live="polite"
+    >
+      Escolha um evento para carregar os indicadores.
+    </p>
+    <div id="graficos-relatorios" class="grade-graficos-relatorios" hidden>
+      <article class="cartao-grafico-relatorio">
+        <header>
+          <h4>Presença por ação</h4>
+          <p>Participantes presentes e ausentes</p>
+        </header>
+        <div
+          id="grafico-presenca-relatorio"
+          class="grafico-relatorio"
+          role="img"
+          aria-label="Gráfico de presença e ausência por ação"
+        ></div>
+        <div class="legenda-grafico-relatorio" aria-hidden="true">
+          <span><i class="legenda-presente"></i>Presentes</span>
+          <span><i class="legenda-ausente"></i>Ausentes</span>
+        </div>
+      </article>
+      <article class="cartao-grafico-relatorio">
+        <header>
+          <h4>Inscritos e vagas</h4>
+          <p>Ocupação da capacidade por ação</p>
+        </header>
+        <div
+          id="grafico-ocupacao-relatorio"
+          class="grafico-relatorio"
+          role="img"
+          aria-label="Gráfico de inscritos e capacidade por ação"
+        ></div>
+        <div class="legenda-grafico-relatorio" aria-hidden="true">
+          <span><i class="legenda-inscritos"></i>Inscritos</span>
+          <span><i class="legenda-vagas"></i>Vagas</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section
+    class="secao-relatorio"
+    aria-labelledby="titulo-consolidacao-relatorio"
+  >
+    <header class="titulo-secao-relatorios">
+      <div>
+        <h3 id="titulo-consolidacao-relatorio">Consolidação de horas</h3>
+        <p>Resumo por ação para fechamento do evento.</p>
+      </div>
+    </header>
+    <div class="tabela-relatorios-wrapper">
+      <table class="tabela-relatorios">
+        <caption class="rotulo-somente-leitor">
+          Consolidação de presença e carga horária por ação
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Ação</th>
+            <th scope="col">Inscritos</th>
+            <th scope="col">Presentes</th>
+            <th scope="col">Ausentes</th>
+            <th scope="col">Carga horária</th>
+            <th scope="col">Horas certificadas</th>
+          </tr>
+        </thead>
+        <tbody id="linhas-consolidacao-relatorio"></tbody>
+      </table>
+      <p
+        id="estado-consolidacao-relatorio"
+        class="estado-relatorios estado-tabela-relatorios"
+      >
+        A consolidação será exibida após a consulta.
+      </p>
+    </div>
+  </section>
+
+  <section
+    class="secao-relatorio secao-exportacao-relatorios"
+    aria-labelledby="titulo-exportacao-relatorio"
+  >
+    <header class="titulo-secao-relatorios">
+      <div>
+        <p class="sobretitulo-relatorios">ARQUIVOS</p>
+        <h3 id="titulo-exportacao-relatorio">Exportar relatórios</h3>
+        <p>
+          Os filtros selecionados serão aplicados ao arquivo quando suportados
+          pela API.
+        </p>
+      </div>
+    </header>
+    <div class="grade-exportacao-relatorios">
+      <article class="cartao-exportacao-relatorio">
+        <div>
+          <h4>Participantes</h4>
+          <p>Inscrições e situação de participação no período selecionado.</p>
+        </div>
+        <div class="acoes-exportacao-relatorio">
+          <button
+            class="botao-relatorio botao-relatorio-secundario"
+            type="button"
+            data-export-report="participants"
+            data-format="pdf"
+          >
+            Exportar PDF
+          </button>
+          <button
+            class="botao-relatorio botao-relatorio-secundario"
+            type="button"
+            data-export-report="participants"
+            data-format="csv"
+          >
+            Exportar CSV
+          </button>
+          <button
+            class="botao-relatorio botao-relatorio-secundario"
+            type="button"
+            data-export-report="participants"
+            data-format="xlsx"
+          >
+            Exportar Excel
+          </button>
+        </div>
+      </article>
+      <article class="cartao-exportacao-relatorio">
+        <div>
+          <h4>Consolidação de frequência</h4>
+          <p>Presenças, ausências e carga horária consolidada.</p>
+        </div>
+        <div class="acoes-exportacao-relatorio">
+          <button
+            class="botao-relatorio botao-relatorio-secundario"
+            type="button"
+            data-export-report="attendance"
+            data-format="pdf"
+          >
+            Exportar PDF
+          </button>
+          <button
+            class="botao-relatorio botao-relatorio-secundario"
+            type="button"
+            data-export-report="attendance"
+            data-format="csv"
+          >
+            Exportar CSV
+          </button>
+          <button
+            class="botao-relatorio botao-relatorio-secundario"
+            type="button"
+            data-export-report="attendance"
+            data-format="xlsx"
+          >
+            Exportar Excel
+          </button>
+        </div>
+      </article>
+    </div>
+  </section>
+</section>

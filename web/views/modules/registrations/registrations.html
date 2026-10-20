@@ -1,0 +1,385 @@
+<section
+  class="module-wrapper fade-in modulo-inscricoes"
+  aria-labelledby="titulo-inscricoes"
+  data-testid="registrations-module"
+>
+  <header class="cabecalho-inscricoes">
+    <div>
+      <p id="sobretitulo-inscricoes" class="sobretitulo-inscricoes">
+        ÁREA DO PARTICIPANTE
+      </p>
+      <h2 id="titulo-inscricoes">Minhas inscrições</h2>
+      <p id="descricao-inscricoes">
+        Acompanhe suas participações e encontre novas atividades.
+      </p>
+    </div>
+    <button
+      class="botao-inscricao botao-inscricao-secundario botao-exportar-admin"
+      type="button"
+      data-inscricao-action="export"
+      hidden
+    >
+      <span aria-hidden="true">⇩</span> Exportar
+    </button>
+    <button
+      class="botao-inscricao botao-inscricao-primario botao-nova-inscricao"
+      type="button"
+      data-inscricao-action="open-selector"
+      data-testid="open-registration-selector"
+    >
+      <span aria-hidden="true">+</span>
+      Inscrever-se em ações
+    </button>
+  </header>
+
+  <p
+    id="mensagem-inscricoes"
+    class="mensagem-inscricoes"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <section class="resumo-inscricoes" aria-label="Resumo das inscrições">
+    <article class="cartao-resumo-inscricao">
+      <span class="icone-resumo-inscricao" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M20 11.1V12a8 8 0 1 1-4.75-7.32"></path>
+          <path d="m8.8 11.8 2.4 2.4L20.5 5"></path>
+        </svg>
+      </span>
+      <div>
+        <p>Inscrições ativas</p>
+        <strong id="total-inscricoes-ativas">—</strong>
+      </div>
+    </article>
+    <article class="cartao-resumo-inscricao">
+      <span
+        class="icone-resumo-inscricao icone-resumo-cinza"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M3.5 11a8.5 8.5 0 0 1 14.6-5.9L20.5 8"></path>
+          <path d="M20.5 3.5V8H16"></path>
+          <path d="M20.5 13a8.5 8.5 0 0 1-14.6 5.9L3.5 16"></path>
+          <path d="M3.5 20.5V16H8"></path>
+        </svg>
+      </span>
+      <div>
+        <p>Cancelamentos</p>
+        <strong id="total-inscricoes-canceladas">—</strong>
+      </div>
+    </article>
+    <article class="cartao-resumo-inscricao">
+      <span class="icone-resumo-inscricao icone-resumo-azul" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M6.5 3.5h8l4 4v13h-12z"></path>
+          <path d="M14.5 3.5v4h4"></path>
+          <path d="M9.5 12h6"></path>
+          <path d="M9.5 16h6"></path>
+        </svg>
+      </span>
+      <div>
+        <p>Atividades no histórico</p>
+        <strong id="total-inscricoes">—</strong>
+      </div>
+    </article>
+  </section>
+
+  <section
+    class="secao-inscricoes"
+    aria-labelledby="titulo-historico-inscricoes"
+  >
+    <header class="cabecalho-historico-inscricoes">
+      <div>
+        <h3 id="titulo-historico-inscricoes">Histórico</h3>
+        <p id="descricao-historico-inscricoes">
+          Suas inscrições e atividades canceladas.
+        </p>
+      </div>
+      <button
+        class="botao-inscricao botao-inscricao-secundario"
+        type="button"
+        data-inscricao-action="refresh"
+        data-testid="refresh-registrations"
+      >
+        Atualizar
+      </button>
+    </header>
+
+    <nav class="abas-inscricoes" aria-label="Filtrar histórico">
+      <button
+        type="button"
+        class="aba-inscricao ativa"
+        data-inscricao-filter="ALL"
+        aria-pressed="true"
+      >
+        Todas <span id="contador-todas">0</span>
+      </button>
+      <button
+        type="button"
+        class="aba-inscricao"
+        data-inscricao-filter="ACTIVE"
+        aria-pressed="false"
+      >
+        Ativas <span id="contador-ativas">0</span>
+      </button>
+      <button
+        type="button"
+        class="aba-inscricao aba-inscricao-admin"
+        data-inscricao-filter="PENDING"
+        aria-pressed="false"
+        hidden
+      >
+        Pendentes <span id="contador-pendentes">0</span>
+      </button>
+      <button
+        type="button"
+        class="aba-inscricao aba-inscricao-admin"
+        data-inscricao-filter="CONFIRMED"
+        aria-pressed="false"
+        hidden
+      >
+        Confirmadas <span id="contador-confirmadas">0</span>
+      </button>
+      <button
+        type="button"
+        class="aba-inscricao"
+        data-inscricao-filter="CANCELLED"
+        aria-pressed="false"
+      >
+        Canceladas <span id="contador-canceladas">0</span>
+      </button>
+    </nav>
+
+    <form
+      id="filtros-inscricoes"
+      class="filtros-inscricoes"
+      role="search"
+      aria-label="Pesquisar inscrições"
+    >
+      <label class="campo-pesquisa-inscricao">
+        <span class="icone-pesquisa-inscricao" aria-hidden="true"></span>
+        <span id="rotulo-busca-inscricoes" class="rotulo-somente-leitor"
+          >Pesquisar evento ou atividade</span
+        >
+        <input
+          id="busca-inscricoes"
+          type="search"
+          data-testid="search-registrations"
+          placeholder="Pesquisar evento ou atividade..."
+          autocomplete="off"
+        />
+      </label>
+      <label class="campo-filtro-inscricao">
+        <span class="rotulo-somente-leitor">Filtrar por evento</span>
+        <select
+          id="filtro-evento-inscricoes"
+          data-testid="filter-registrations-event"
+        >
+          <option value="">Todos os eventos</option>
+        </select>
+      </label>
+      <label class="campo-filtro-inscricao">
+        <span class="rotulo-somente-leitor">Filtrar por status</span>
+        <select
+          id="filtro-status-inscricoes"
+          data-testid="filter-registrations-status"
+        >
+          <option value="">Todos os status</option>
+          <option value="ACTIVE">Ativa</option>
+          <option value="CANCELLED">Cancelada</option>
+        </select>
+      </label>
+      <button
+        class="botao-inscricao botao-inscricao-secundario botao-exportar-inscricoes"
+        type="button"
+        data-inscricao-action="export"
+      >
+        <span aria-hidden="true">⇩</span> Exportar
+      </button>
+    </form>
+
+    <div class="tabela-inscricoes-wrapper">
+      <table class="tabela-inscricoes">
+        <caption class="rotulo-somente-leitor">
+          Inscrições do usuário autenticado
+        </caption>
+        <thead>
+          <tr>
+            <th id="cabecalho-coluna-principal" scope="col">Evento</th>
+            <th id="cabecalho-coluna-secundaria" scope="col">Ação</th>
+            <th scope="col">Data da inscrição</th>
+            <th scope="col">Status</th>
+            <th scope="col">
+              <span class="rotulo-somente-leitor">Ações</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="lista-minhas-inscricoes"></tbody>
+      </table>
+      <div
+        id="estado-inscricoes"
+        class="estado-inscricoes"
+        role="status"
+        aria-live="polite"
+        hidden
+      ></div>
+    </div>
+    <footer class="rodape-inscricoes">
+      <p id="contagem-historico-inscricoes">Carregando inscrições...</p>
+      <nav
+        id="paginacao-inscricoes"
+        class="paginacao-inscricoes"
+        aria-label="Paginação das inscrições"
+      ></nav>
+    </footer>
+  </section>
+
+  <dialog
+    id="dialog-detalhes-inscricao"
+    class="dialog-confirmacao-inscricao"
+    aria-labelledby="titulo-detalhes-inscricao"
+  >
+    <div class="conteudo-detalhes-inscricao">
+      <header class="cabecalho-dialog-inscricoes">
+        <div>
+          <p class="sobretitulo-inscricoes">DETALHES</p>
+          <h3 id="titulo-detalhes-inscricao">Inscrição</h3>
+        </div>
+        <button
+          class="botao-fechar-inscricoes"
+          type="button"
+          data-inscricao-action="close-details"
+          aria-label="Fechar detalhes"
+        ></button>
+      </header>
+      <dl id="lista-detalhes-inscricao" class="lista-detalhes-inscricao"></dl>
+    </div>
+  </dialog>
+
+  <dialog
+    id="dialog-seletor-acoes"
+    class="dialog-inscricoes"
+    aria-labelledby="titulo-seletor-acoes"
+  >
+    <form id="form-seletor-acoes" class="formulario-seletor-acoes">
+      <header class="cabecalho-dialog-inscricoes">
+        <div>
+          <p class="sobretitulo-inscricoes">NOVA PARTICIPAÇÃO</p>
+          <h3 id="titulo-seletor-acoes">Escolha suas ações</h3>
+          <p>Selecione uma ou mais atividades disponíveis.</p>
+        </div>
+        <button
+          class="botao-fechar-inscricoes"
+          type="button"
+          data-inscricao-action="close-selector"
+          aria-label="Fechar seleção de ações"
+        ></button>
+      </header>
+      <label class="campo-evento-seletor">
+        <span>Evento</span>
+        <select id="seletor-evento-acoes" required>
+          <option value="">Carregando eventos...</option>
+        </select>
+      </label>
+      <p
+        id="mensagem-seletor-acoes"
+        class="mensagem-seletor-acoes"
+        role="status"
+        aria-live="polite"
+      ></p>
+      <div
+        id="lista-acoes-seletor"
+        class="lista-acoes-seletor"
+        aria-live="polite"
+        aria-busy="false"
+      ></div>
+      <footer class="acoes-dialog-inscricoes">
+        <p id="resumo-selecao-acoes">Nenhuma ação selecionada</p>
+        <div>
+          <button
+            class="botao-inscricao botao-inscricao-secundario"
+            type="button"
+            data-inscricao-action="close-selector"
+          >
+            Fechar
+          </button>
+          <button
+            id="confirmar-inscricao-acoes"
+            class="botao-inscricao botao-inscricao-primario"
+            type="submit"
+            data-testid="confirm-registration"
+            disabled
+          >
+            Confirmar inscrição
+          </button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog
+    id="dialog-cancelar-inscricao"
+    class="dialog-confirmacao-inscricao"
+    aria-labelledby="titulo-cancelar-inscricao"
+  >
+    <form method="dialog" id="form-confirmar-cancelamento">
+      <span class="icone-alerta-cancelamento" aria-hidden="true">!</span>
+      <h3 id="titulo-cancelar-inscricao">Cancelar inscrição?</h3>
+      <p id="descricao-cancelar-inscricao">
+        Você deixará de participar desta ação. Essa operação não poderá ser
+        desfeita.
+      </p>
+      <p
+        id="mensagem-cancelamento-inscricao"
+        class="mensagem-cancelamento-inscricao"
+        role="alert"
+        aria-live="assertive"
+      ></p>
+      <div class="acoes-confirmacao-inscricao">
+        <button
+          class="botao-inscricao botao-inscricao-secundario"
+          value="keep"
+          formnovalidate
+        >
+          Manter inscrição
+        </button>
+        <button
+          class="botao-inscricao botao-inscricao-perigo"
+          value="confirm"
+          data-testid="confirm-cancellation"
+          formnovalidate
+        >
+          Cancelar inscrição
+        </button>
+      </div>
+    </form>
+  </dialog>
+</section>
