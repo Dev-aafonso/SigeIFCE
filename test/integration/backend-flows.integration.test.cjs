@@ -423,4 +423,91 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     response = await ctx.student.get('/reports').timeout({ deadline: 15000 });
     expectStatus(response, 403, 'Aluno sem permissao para relatorios');
   });
+  // TESTES ADICIONAIS AUTH-02 AUTH-03 USR-01
+  await t.test('AUTH-02: login rejeita credenciais inválidas sem emitir cookie', async () => {
+    const invalidEmail = await agent().post('/auth/login').send({
+      email: `inexistente-${runId}@example.test`,
+      password: 'Senha-Incorreta-123!',
+    }).timeout({ deadline: 15000 });
+
+    expectStatus(invalidEmail, 401, 'Login com email inexistente');
+    assert.equal(invalidEmail.headers['set-cookie'], undefined,
+      'Login inválido não deve emitir cookie de autenticação');
+
+    const invalidPassword = await agent().post('/auth/login').send({
+      email: organizerEmail,
+      password: 'Senha-Incorreta-123!',
+    }).timeout({ deadline: 15000 });
+
+    expectStatus(invalidPassword, 401, 'Login com senha incorreta');
+    assert.equal(invalidPassword.headers['set-cookie'], undefined,
+      'Senha incorreta não deve emitir cookie de autenticação');
+
+    assert.equal(
+      invalidEmail.body.message,
+      invalidPassword.body.message,
+      'As respostas não devem revelar se o email existe',
+    );
+  });
+
+  await t.test('AUTH-03: logout limpa o cookie e o agente perde a sessão', async () => {
+    const client = agent();
+
+    let response = await client.post('/auth/login').send({
+      email: organizerEmail,
+      password: organizerPassword,
+    }).timeout({ deadline: 15000 });
+
+    expectStatus(response, [200, 201], 'Login antes do logout');
+    assert.ok(response.headers['set-cookie'], 'Login não emitiu cookie');
+
+    response = await client.post('/auth/logout').timeout({ deadline: 15000 });
+    expectStatus(response, [200, 201], 'Logout');
+
+    const cookies = response.headers['set-cookie'] || [];
+    const clearingCookie = cookies.find((cookie) => /^access_token=/.test(cookie));
+    assert.ok(clearingCookie, 'Logout não enviou instrução para limpar access_token');
+    assert.match(clearingCookie, /Expires=/i,
+      'Cookie de logout deveria ter expiração explícita');
+
+    response = await client.get('/auth/me').timeout({ deadline: 15000 });
+    expectStatus(response, 401, 'Identidade após logout');
+  });
+
+  await t.test('USR-01: cadastro rejeita dados inválidos e email duplicado', async () => {
+    const base = newStudentPayload(91);
+
+    const invalid = await agent().post('/auth/register').send({
+      ...base,
+      email: 'email-invalido',
+      password: '123',
+      passwordConfirmation: 'Outra-Senha-123!',
+      isAdmin: true,
+    }).timeout({ deadline: 15000 });
+
+    expectStatus(invalid, 400, 'Cadastro com dados inválidos');
+    assert.ok(invalid.body.message, 'Resposta de validação sem mensagem');
+
+    const duplicate = await agent().post('/auth/register').send({
+      ...base,
+      email: ctx.studentUser.email,
+    }).timeout({ deadline: 15000 });
+
+    expectStatus(duplicate, 409, 'Cadastro com email já utilizado');
+  });
+
+  await t.test('USR-02: organizador não pode administrar usuários', async () => {
+    for (const [method, route, payload] of [
+      ['get', '/users', undefined],
+      ['get', `/users/${ctx.studentUser.id}`, undefined],
+      ['patch', `/users/${ctx.studentUser.id}/role`, { role: 'ADMIN' }],
+      ['delete', `/users/${ctx.studentUser.id}`, undefined],
+    ]) {
+      let operation = ctx.organizer[method](route);
+      if (payload) operation = operation.send(payload);
+
+      const response = await operation.timeout({ deadline: 15000 });
+      expectStatus(response, 403, `Organizador sem permissão: ${method.toUpperCase()} ${route}`);
+    }
+  });
 });
