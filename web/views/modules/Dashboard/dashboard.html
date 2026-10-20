@@ -1,0 +1,145 @@
+<section
+  class="module-wrapper fade-in painel-perfil"
+  aria-labelledby="titulo-painel-perfil"
+  data-testid="dashboard-module"
+>
+  <header class="cabecalho-painel-perfil">
+    <p class="sobretitulo-painel">SIGE IFCE</p>
+    <h2 id="titulo-painel-perfil">Painel do Sistema</h2>
+    <p id="descricao-painel-perfil">
+      Bem-vindo ao Sistema de Gerenciamento de Eventos.
+    </p>
+  </header>
+
+  <section
+    id="painel-metricas-administrativas"
+    class="painel-metricas-administrativas"
+    aria-labelledby="titulo-metricas-administrativas"
+    hidden
+  >
+    <header class="cabecalho-metricas-administrativas">
+      <div>
+        <p class="sobretitulo-painel">VISÃO GERENCIAL</p>
+        <h3 id="titulo-metricas-administrativas">Indicadores do evento</h3>
+        <p>
+          Resumo de inscrições e frequência conforme os dados disponibilizados
+          pela API.
+        </p>
+      </div>
+      <div class="controles-metricas-administrativas">
+        <label
+          for="evento-dashboard-administrativo"
+          class="rotulo-somente-leitor"
+          >Selecionar evento para os indicadores</label
+        >
+        <select
+          id="evento-dashboard-administrativo"
+          data-testid="dashboard-event"
+          aria-label="Selecionar evento para os indicadores"
+        >
+          <option value="">Carregando eventos...</option>
+        </select>
+        <button
+          id="atualizar-dashboard-administrativo"
+          class="botao-atualizar-dashboard"
+          data-testid="refresh-dashboard-metrics"
+          type="button"
+        >
+          Atualizar
+        </button>
+      </div>
+    </header>
+    <p
+      id="estado-dashboard-administrativo"
+      class="estado-dashboard-administrativo"
+      role="status"
+      aria-live="polite"
+    >
+      Selecione um evento para carregar os indicadores.
+    </p>
+    <div class="grade-metricas-administrativas" aria-live="polite">
+      <article class="cartao-metrica-administrativa">
+        <span class="icone-metrica-administrativa" aria-hidden="true">♙</span>
+        <div>
+          <p>Inscritos</p>
+          <strong id="dashboard-total-inscritos">—</strong>
+        </div>
+      </article>
+      <article class="cartao-metrica-administrativa">
+        <span
+          class="icone-metrica-administrativa icone-metrica-presenca"
+          aria-hidden="true"
+          >✓</span
+        >
+        <div>
+          <p>Presentes</p>
+          <strong id="dashboard-total-presentes">—</strong>
+        </div>
+      </article>
+      <article class="cartao-metrica-administrativa">
+        <span
+          class="icone-metrica-administrativa icone-metrica-ausencia"
+          aria-hidden="true"
+          >−</span
+        >
+        <div>
+          <p>Ausentes</p>
+          <strong id="dashboard-total-ausentes">—</strong>
+        </div>
+      </article>
+      <article class="cartao-metrica-administrativa">
+        <span
+          class="icone-metrica-administrativa icone-metrica-ocupacao"
+          aria-hidden="true"
+          >▤</span
+        >
+        <div>
+          <p>Ocupação das vagas</p>
+          <strong id="dashboard-ocupacao">—</strong>
+        </div>
+      </article>
+      <article class="cartao-metrica-administrativa">
+        <span
+          class="icone-metrica-administrativa icone-metrica-frequencia"
+          aria-hidden="true"
+          >◷</span
+        >
+        <div>
+          <p>Frequência</p>
+          <strong id="dashboard-frequencia">—</strong>
+        </div>
+      </article>
+    </div>
+    <div
+      id="dashboard-graficos-acoes"
+      class="graficos-dashboard-administrativo"
+      hidden
+    >
+      <article class="cartao-grafico-dashboard">
+        <h4>Inscritos por ação</h4>
+        <div
+          id="dashboard-grafico-inscritos"
+          role="img"
+          aria-label="Gráfico de inscrições por ação"
+        ></div>
+      </article>
+      <article class="cartao-grafico-dashboard">
+        <h4>Frequência por ação</h4>
+        <div
+          id="dashboard-grafico-frequencia"
+          role="img"
+          aria-label="Gráfico de presentes por ação"
+        ></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="atalhos-perfil" aria-labelledby="titulo-atalhos-perfil">
+    <h3 id="titulo-atalhos-perfil">Acessos disponíveis para seu perfil</h3>
+    <nav
+      id="atalhos-painel-perfil"
+      class="grade-atalhos-perfil"
+      aria-label="Acessos disponíveis"
+    ></nav>
+  </section>
+</section>
