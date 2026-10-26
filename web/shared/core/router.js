@@ -47,7 +47,10 @@ class Router {
             this.atualizarBotaoAtivo(moduloSeguro);
         }
 
-        this.carregarCSS(`web/views/modules/${moduloSeguro}/${moduloSeguro}.css`);
+        const pastaModulo = moduloSeguro === 'dashboard' ? 'Dashboard' : moduloSeguro;
+        if (['auth', 'dashboard', 'events', 'users'].includes(moduloSeguro)) {
+            this.carregarCSS(`/web/views/modules/${pastaModulo}/${moduloSeguro}.css`);
+        }
 
         try {
             if (this.cacheModulos.has(moduloSeguro)) {
@@ -55,8 +58,7 @@ class Router {
             } else {
                 this.areaConteudo.innerHTML = '<div class="estado-carregamento"><p aria-live="polite">Carregando...</p></div>';
                 
-                const pastaModulo = moduloSeguro === 'dashboard' ? 'Dashboard' : moduloSeguro;
-                const resposta = await fetch(`web/views/modules/${pastaModulo}/${moduloSeguro}.html`);
+                const resposta = await fetch(`/web/views/modules/${pastaModulo}/${moduloSeguro}.html`, { credentials: 'same-origin' });
                 
                 if (!resposta.ok) throw new Error(`HTTP Error: ${resposta.status}`);
 
@@ -65,7 +67,20 @@ class Router {
                 this.areaConteudo.innerHTML = html;
             }
 
-            await this.carregarJS(`web/views/modules/${moduloSeguro}/${moduloSeguro}.js`);
+            await this.carregarJS(`/web/views/modules/${pastaModulo}/${moduloSeguro}.js`);
+            const inicializadores = {
+                dashboard: 'inicializarPainelPerfil',
+                events: 'inicializarModuloEventos',
+                users: 'inicializarGerenciamentoUsuarios',
+                registrations: 'inicializarModuloInscricoes',
+                participants: 'inicializarModuloParticipantes',
+                certificates: 'inicializarModuloCertificados',
+                reports: 'inicializarModuloRelatorios',
+                config: 'inicializarModuloConfig'
+            };
+            const iniciar = window[inicializadores[moduloSeguro]];
+            if (typeof iniciar === 'function') await iniciar();
+            document.dispatchEvent(new CustomEvent('sige:module-loaded', { detail: { module: moduloSeguro } }));
 
             if (moduloSeguro === 'auth') {
                 const segmentos = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
@@ -76,11 +91,12 @@ class Router {
             }
 
         } catch (erro) {
+            console.error('SIGE: erro ao carregar módulo', moduloSeguro, erro);
             this.areaConteudo.innerHTML = `
                 <div class="module-wrapper fade-in" role="alert">
                     <h2>Erro de Navegação</h2>
                     <hr>
-                    <p>O módulo <strong>${moduloSeguro}</strong> ainda não foi implementado.</p>
+                    <p>Não foi possível carregar o módulo <strong>${moduloSeguro}</strong>. Consulte o console do navegador para identificar o recurso com falha.</p>
                 </div>`;
         }
     }
@@ -91,14 +107,15 @@ class Router {
 
         const compSeguro = componente.toLowerCase();
 
-        this.carregarCSS(`web/views/components/${compSeguro}/${compSeguro}.css`);
+        this.carregarCSS(`/web/views/components/${compSeguro}/${compSeguro}.css`);
 
         try {
-            const resposta = await fetch(`web/views/components/${compSeguro}/${compSeguro}.html`);
+            const resposta = await fetch(`/web/views/components/${compSeguro}/${compSeguro}.html`, { credentials: 'same-origin' });
             if (!resposta.ok) throw new Error();
             areaAlvo.innerHTML = await resposta.text();
 
-            await this.carregarJS(`web/views/components/${compSeguro}/${compSeguro}.js`);
+            await this.carregarJS(`/web/views/components/${compSeguro}/${compSeguro}.js`);
+            document.dispatchEvent(new CustomEvent('sige:auth-component-loaded', { detail: { component: compSeguro } }));
 
             if (compSeguro === 'cadastro') {
                 const funcaoSalva = sessionStorage.getItem('funcao_cadastro') || 'aluno';
@@ -120,19 +137,22 @@ class Router {
     }
 
     carregarJS(caminho) {
-        return new Promise((resolve) => {
-            if (this.recursosAtivos.has(caminho)) {
-                resolve();
-                return;
-            }
+        if (this.recursosAtivos.has(caminho)) return Promise.resolve();
+        if (!this.scriptPromises) this.scriptPromises = new Map();
+        if (this.scriptPromises.has(caminho)) return this.scriptPromises.get(caminho);
+        const promessa = new Promise((resolve, reject) => {
             const script = document.createElement('script');
+            script.type = 'module';
             script.src = caminho;
-            script.onload = () => {
-                this.recursosAtivos.add(caminho);
-                resolve();
-            };
-            script.onerror = () => resolve(); 
+            script.onload = () => { this.recursosAtivos.add(caminho); resolve(); };
+            script.onerror = () => reject(new Error(`Falha ao carregar JavaScript: ${caminho}`));
             document.head.appendChild(script);
+        });
+        this.scriptPromises.set(caminho, promessa);
+        return promessa.catch((erro) => {
+            this.scriptPromises.delete(caminho);
+            console.error(erro);
+            throw erro;
         });
     }
 
@@ -164,34 +184,10 @@ window.carregarComponenteAuth = (comp) => {
     history.pushState({ module: 'auth' }, '', `/#/auth/${componente}`);
     return router.carregarComponenteAuth(componente);
 };
-window.navegarParaModulo = (mod) => router.carregarModulo(mod);
-
-(function () {
-  "use strict";
-
-  const path =
-    window.location.pathname;
-
-  const publicRoutes = [
-    "/",
-    "/login",
-    "/cadastro",
-    "/selecao-funcao",
-  ];
-
-  if (
-    publicRoutes.includes(path)
-  ) {
-    return;
-  }
-
-  const token =
-    localStorage.getItem(
-      "sige_access_token"
-    );
-
-  if (!token) {
-    window.location.href =
-      "/login";
-  }
-})();
+window.navegarParaModulo = (mod) => {
+    const modulo = String(mod || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!modulo) return Promise.resolve();
+    const destino = `/#/${modulo}`;
+    if (window.location.hash !== `#/${modulo}`) history.pushState({ module: modulo }, '', destino);
+    return router.carregarModulo(modulo);
+};

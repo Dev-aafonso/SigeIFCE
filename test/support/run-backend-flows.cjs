@@ -6,7 +6,16 @@ const os = require('node:os');
 const crypto = require('node:crypto');
 const net = require('node:net');
 const { spawn, spawnSync } = require('node:child_process');
-const { Client } = require('pg');
+const { Client: PgClient } = require('pg');
+class Client extends PgClient {
+  constructor(config) {
+    super({
+      ...config,
+      connectionTimeoutMillis: 10000,
+      query_timeout: 30000,
+    });
+  }
+}
 const dotenv = require('dotenv');
 
 const ROOT = process.cwd();
@@ -33,6 +42,7 @@ function shell(command, env) {
     encoding: 'utf8',
     windowsHide: true,
     maxBuffer: 16 * 1024 * 1024,
+    timeout: 300000,
   });
   if (result.stdout) process.stdout.write(redact(result.stdout));
   if (result.stderr) process.stderr.write(redact(result.stderr));
@@ -147,8 +157,8 @@ async function dropDatabase() {
 (async () => {
   try {
     const branch = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: ROOT, encoding: 'utf8', windowsHide: true });
-    if (branch.status !== 0 || branch.stdout.trim() !== 'feature/SPRINT10-12') {
-      throw new Error(`Branch inesperada (${branch.stdout ? branch.stdout.trim() : 'desconhecida'}). O runner so executa em feature/SPRINT10-12.`);
+    if (branch.status !== 0 || !['feature/SPRINT10-12', 'integracao/teste-develop-main'].includes(branch.stdout.trim())) {
+      throw new Error(`Branch inesperada (${branch.stdout ? branch.stdout.trim() : 'desconhecida'}). O runner so executa nas branches autorizadas.`);
     }
     if (!fs.existsSync(ENV_PATH)) throw new Error('.env nao encontrado; nenhum banco foi criado.');
     const envFile = dotenv.parse(fs.readFileSync(ENV_PATH));
@@ -168,7 +178,7 @@ async function dropDatabase() {
       throw new Error('DATABASE_URL parece apontar para um banco temporario ou nao tem nome. Nenhuma alteracao foi feita.');
     }
 
-    console.log(`Branch: feature/SPRINT10-12`);
+    console.log(`Branch: ${branch.stdout.trim()}`);
     console.log(`Banco de origem detectado (sem credenciais): ${sourceDb}`);
     console.log(`Criando banco descartavel: ${DB_NAME}`);
     const admin = new Client({ connectionString: adminUrl });
@@ -234,7 +244,6 @@ async function dropDatabase() {
       }
     }
     console.log('Entry point compilado: ' + path.relative(ROOT, entryPoint));
-    serverLogFd = fs.openSync(LOG_PATH, 'a');
     server = spawn(process.execPath, [entryPoint], {
       cwd: ROOT,
       env: runEnv,
@@ -247,7 +256,54 @@ async function dropDatabase() {
     await waitForServer(base, server, LOG_PATH);
 
     console.log('\n4/5 Executando fluxos HTTP com usuarios e dados descartaveis...');
-    shell('node --test test/integration/backend-flows.integration.test.cjs', runEnv);
+    await new Promise((resolve, reject) => {
+      const testFile = path.join(ROOT, 'test', 'integration', 'backend-flows.integration.test.cjs');
+      const child = spawn(process.execPath, [
+        '--test',
+        testFile,
+      ], {
+        cwd: ROOT,
+        env: runEnv,
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+
+      let finished = false;
+      const timeout = setTimeout(() => {
+        if (finished) return;
+        finished = true;
+
+        if (process.platform === 'win32') {
+          spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+            windowsHide: true,
+            timeout: 10000,
+          });
+        } else {
+          child.kill('SIGKILL');
+        }
+
+        reject(new Error('Testes HTTP excederam 180 segundos.'));
+      }, 180000);
+
+      child.stdout.on('data', (chunk) => process.stdout.write(redact(chunk.toString())));
+      child.stderr.on('data', (chunk) => process.stderr.write(redact(chunk.toString())));
+
+      child.once('error', (error) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+        reject(error);
+      });
+
+      child.once('close', (code) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timeout);
+
+        if (code === 0) resolve();
+        else reject(new Error('Testes HTTP falharam com codigo ' + code));
+      });
+    });
     exitStatus = 0;
     console.log('\nFluxos de backend concluidos sem falhas.');
   } catch (error) {

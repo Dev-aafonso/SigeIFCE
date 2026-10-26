@@ -1,5 +1,478 @@
-<div class="module-wrapper fade-in">
-    <h2>Eventos</h2>
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque quod ullam beatae magnam, mollitia sit molestias facilis consequatur aliquam repellat, pariatur labore alias fugiat unde nulla quos excepturi ipsum est.</p>
-</div>
+<section
+  class="module-wrapper fade-in modulo-eventos"
+  aria-labelledby="titulo-modulo-eventos"
+  data-testid="events-module"
+>
+  <header class="cabecalho-eventos">
+    <div>
+      <h2 id="titulo-modulo-eventos">Eventos</h2>
+      <p>Encontre eventos e acompanhe as inscrições disponíveis.</p>
+    </div>
+    <button
+      id="novo-evento"
+      class="botao-evento botao-evento-primario"
+      type="button"
+      data-testid="create-event"
+      hidden
+    >
+      <span aria-hidden="true">+</span>
+      Novo evento
+    </button>
+  </header>
+
+  <p
+    id="mensagem-eventos"
+    class="mensagem-eventos"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <section
+    class="secao-eventos secao-lista-eventos"
+    aria-labelledby="titulo-pesquisa-eventos"
+  >
+    <form
+      id="filtros-eventos"
+      class="filtros-eventos"
+      aria-label="Pesquisar e filtrar eventos"
+    >
+      <label class="campo-evento campo-evento-busca" for="busca-eventos">
+        <span class="rotulo-somente-leitor">Pesquisar eventos</span>
+        <span class="icone-busca-eventos" aria-hidden="true"></span>
+        <input
+          id="busca-eventos"
+          name="title"
+          type="search"
+          data-testid="search-events"
+          maxlength="200"
+          placeholder="Pesquisar eventos..."
+          autocomplete="off"
+        />
+      </label>
+      <span class="rotulo-filtros-eventos" aria-hidden="true">Filtros:</span>
+      <label class="campo-filtro-evento">
+        <span class="rotulo-somente-leitor">Filtrar por categoria</span>
+        <select
+          id="filtro-categoria-eventos"
+          name="category"
+          aria-label="Filtrar por categoria"
+        >
+          <option value="">Categoria: Todas</option>
+        </select>
+      </label>
+      <label class="campo-filtro-evento">
+        <span class="rotulo-somente-leitor"
+          >Filtrar por situação das inscrições</span
+        >
+        <select
+          id="filtro-status-eventos"
+          name="registrationStatus"
+          aria-label="Filtrar por situação das inscrições"
+        >
+          <option value="">Status: Todos</option>
+          <option value="OPEN">Inscrições abertas</option>
+          <option value="FULL">Lotado</option>
+          <option value="UNAVAILABLE">Indisponível</option>
+        </select>
+      </label>
+      <details class="filtros-data-eventos">
+        <summary>Datas</summary>
+        <div class="campos-filtro-data-eventos">
+          <label class="campo-evento">
+            <span>Início a partir de</span>
+            <input name="startDateFrom" type="date" />
+          </label>
+          <label class="campo-evento">
+            <span>Início até</span>
+            <input name="startDateTo" type="date" />
+          </label>
+        </div>
+      </details>
+      <button
+        id="limpar-filtros-eventos"
+        class="botao-evento botao-evento-perigo botao-evento-secundario"
+        type="button"
+      >
+        Limpar
+      </button>
+    </form>
+
+    <div class="resumo-lista-eventos">
+      <h3 id="titulo-pesquisa-eventos">Eventos disponíveis</h3>
+      <p id="contagem-eventos" aria-live="polite">Buscando eventos...</p>
+    </div>
+
+    <div
+      id="lista-eventos-publicos"
+      class="grade-eventos-publicos"
+      role="list"
+      aria-label="Eventos publicados"
+      aria-live="polite"
+      aria-busy="true"
+      data-testid="public-events-list"
+    ></div>
+    <p
+      id="estado-vazio-eventos"
+      class="estado-vazio-eventos"
+      role="status"
+      hidden
+    ></p>
+    <nav
+      id="paginacao-eventos"
+      class="paginacao-eventos"
+      aria-label="Paginação dos eventos"
+    ></nav>
+  </section>
+
+  <section
+    id="secao-gerenciamento-eventos"
+    class="secao-eventos secao-gerenciamento-eventos"
+    aria-labelledby="titulo-gerenciamento-eventos"
+    hidden
+  >
+    <div class="titulo-secao-eventos">
+      <div>
+        <h3 id="titulo-gerenciamento-eventos">Gerenciar eventos</h3>
+        <p>
+          Abra um evento do seu escopo pelo identificador ou selecione um criado
+          neste navegador.
+        </p>
+      </div>
+    </div>
+    <form id="abrir-evento-form" class="abrir-evento-form">
+      <label class="campo-evento">
+        <span>Eventos criados neste navegador</span>
+        <select id="eventos-recentes">
+          <option value="">Selecione um evento salvo</option>
+        </select>
+      </label>
+      <label class="campo-evento">
+        <span>Identificador do evento</span>
+        <input
+          id="identificador-evento"
+          name="eventId"
+          data-testid="managed-event-id"
+          autocomplete="off"
+          required
+        />
+      </label>
+      <button
+        class="botao-evento botao-evento-primario"
+        type="submit"
+        data-testid="open-event-management"
+      >
+        Abrir gerenciamento
+      </button>
+    </form>
+    <div
+      id="painel-gerenciamento-evento"
+      class="painel-gerenciamento-evento"
+    ></div>
+  </section>
+
+  <dialog id="dialog-criar-evento" class="dialog-evento">
+    <form
+      id="form-criar-evento"
+      class="formulario-evento"
+      data-testid="create-event-form"
+      novalidate
+    >
+      <header class="cabecalho-dialog-evento">
+        <div>
+          <p class="sobretitulo-eventos">Novo cadastro</p>
+          <h3 id="titulo-wizard-evento">Cadastrar evento</h3>
+          <p id="descricao-wizard-evento">
+            Preencha as informações gerais do evento.
+          </p>
+        </div>
+        <button
+          class="botao-evento botao-evento-perigo botao-evento-secundario botao-fechar-evento"
+          type="button"
+          data-event-action="close-create"
+        >
+          Fechar
+        </button>
+      </header>
+      <ol class="etapas-wizard-evento" aria-label="Etapas do cadastro">
+        <li
+          class="etapa-wizard-evento ativa"
+          data-wizard-indicator="0"
+          aria-current="step"
+        >
+          <span>1</span> Informações gerais
+        </li>
+        <li class="etapa-wizard-evento" data-wizard-indicator="1">
+          <span>2</span> Configurações
+        </li>
+        <li class="etapa-wizard-evento" data-wizard-indicator="2">
+          <span>3</span> Programação
+        </li>
+        <li class="etapa-wizard-evento" data-wizard-indicator="3">
+          <span>4</span> Revisão
+        </li>
+      </ol>
+      <p
+        id="erro-wizard-evento"
+        class="erro-wizard-evento"
+        role="alert"
+        aria-live="assertive"
+      ></p>
+
+      <section
+        class="etapa-formulario-evento"
+        data-wizard-step="0"
+        aria-labelledby="titulo-etapa-geral"
+      >
+        <h4 id="titulo-etapa-geral">Informações gerais</h4>
+        <label class="campo-evento">
+          <span>Título do evento *</span>
+          <input
+            name="title"
+            data-testid="event-title"
+            required
+            minlength="3"
+            maxlength="200"
+            autocomplete="off"
+          />
+        </label>
+        <label class="campo-evento">
+          <span>Tipo do evento *</span>
+          <select name="eventType" required>
+            <option value="">Selecione o tipo</option>
+            <option value="CONGRESSO">Congresso</option>
+            <option value="SIMPOSIO">Simpósio</option>
+            <option value="WORKSHOP">Workshop</option>
+            <option value="MINICURSO">Minicurso</option>
+            <option value="HACKATHON">Hackathon</option>
+            <option value="FEIRA">Feira</option>
+          </select>
+          <span class="ajuda-campo-evento"
+            >O tipo aparece na revisão, mas a API atual ainda não o salva.</span
+          >
+        </label>
+        <label class="campo-evento">
+          <span>Descrição *</span>
+          <textarea
+            name="description"
+            data-testid="event-description"
+            required
+            minlength="10"
+            maxlength="5000"
+            rows="4"
+          ></textarea>
+        </label>
+        <div class="campos-data-evento">
+          <label class="campo-evento">
+            <span>Data e hora de início *</span>
+            <input
+              name="startDate"
+              data-testid="event-start-date"
+              type="datetime-local"
+              required
+            />
+          </label>
+          <label class="campo-evento">
+            <span>Data e hora de término *</span>
+            <input
+              name="endDate"
+              data-testid="event-end-date"
+              type="datetime-local"
+              required
+            />
+          </label>
+        </div>
+        <label class="campo-evento">
+          <span>Local</span>
+          <input name="location" maxlength="255" />
+        </label>
+        <label class="campo-evento campo-imagem-evento">
+          <span>Imagem de capa</span>
+          <input
+            name="coverImage"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            aria-describedby="ajuda-imagem-capa"
+          />
+          <span id="ajuda-imagem-capa" class="ajuda-imagem-capa"
+            >Escolha uma imagem JPG, PNG ou WebP de até 5 MB. A API atual ainda
+            não oferece upload; a imagem será usada como prévia neste
+            formulário.</span
+          >
+          <span class="preview-capa-evento" hidden>
+            <img alt="Prévia da imagem de capa do evento" />
+          </span>
+          <span
+            class="erro-imagem-capa"
+            role="status"
+            aria-live="polite"
+          ></span>
+        </label>
+      </section>
+
+      <section
+        class="etapa-formulario-evento etapa-configuracoes-evento"
+        data-wizard-step="1"
+        aria-labelledby="titulo-etapa-configuracoes"
+        hidden
+      >
+        <h4 id="titulo-etapa-configuracoes">Configurações</h4>
+        <p class="ajuda-wizard-evento">
+          Defina as preferências para inscrições, certificados e comunicação do
+          evento.
+        </p>
+        <div class="opcoes-configuracao-evento">
+          <label class="opcao-configuracao-evento">
+            <span class="texto-configuracao-evento">
+              <strong>Inscrições abertas automaticamente</strong>
+              <span>Abrir inscrições assim que o evento for publicado</span>
+            </span>
+            <input
+              name="registrationOpenAutomatically"
+              type="checkbox"
+              role="switch"
+              checked
+            />
+          </label>
+          <label class="opcao-configuracao-evento">
+            <span class="texto-configuracao-evento">
+              <strong>Permitir cancelamento de inscrição</strong>
+              <span>Participantes podem cancelar até 24h antes</span>
+            </span>
+            <input
+              name="allowRegistrationCancellation"
+              type="checkbox"
+              role="switch"
+              checked
+            />
+          </label>
+          <label class="opcao-configuracao-evento">
+            <span class="texto-configuracao-evento">
+              <strong>Emitir certificado automaticamente</strong>
+              <span>Emitir após confirmação de 75% de presença</span>
+            </span>
+            <input
+              name="issueCertificateAutomatically"
+              type="checkbox"
+              role="switch"
+              checked
+            />
+          </label>
+          <label class="opcao-configuracao-evento">
+            <span class="texto-configuracao-evento">
+              <strong>Notificar participantes por e-mail</strong>
+              <span>Enviar e-mail de confirmação e lembretes</span>
+            </span>
+            <input
+              name="notifyParticipantsByEmail"
+              type="checkbox"
+              role="switch"
+              checked
+            />
+          </label>
+        </div>
+        <p class="aviso-configuracoes-evento">
+          Essas preferências são exibidas e incluídas na revisão do formulário,
+          mas ainda não são persistidas: a API atual não possui campos para
+          elas.
+        </p>
+      </section>
+
+      <section
+        class="etapa-formulario-evento"
+        data-wizard-step="2"
+        aria-labelledby="titulo-etapa-programacao"
+        hidden
+      >
+        <h4 id="titulo-etapa-programacao">Programação do evento</h4>
+        <p class="ajuda-wizard-evento">
+          Adicione pelo menos uma ação para habilitar a publicação. A duração é
+          calculada pelos horários informados.
+        </p>
+        <div id="acoes-rascunho-evento" class="acoes-rascunho-evento"></div>
+        <button
+          id="adicionar-acao-rascunho"
+          class="botao-evento botao-evento-secundario"
+          type="button"
+          data-testid="add-event-action"
+        >
+          Adicionar outra ação
+        </button>
+      </section>
+
+      <section
+        class="etapa-formulario-evento"
+        data-wizard-step="3"
+        aria-labelledby="titulo-etapa-revisao"
+        hidden
+      >
+        <h4 id="titulo-etapa-revisao">Revise antes de salvar</h4>
+        <div id="resumo-rascunho-evento" class="resumo-rascunho-evento"></div>
+        <p class="ajuda-wizard-evento">
+          O evento será criado como rascunho. Você poderá revisar e publicar
+          depois que a API confirmar os dados.
+        </p>
+      </section>
+
+      <div class="acoes-formulario-evento">
+        <button
+          class="botao-evento botao-evento-perigo botao-evento-secundario"
+          type="button"
+          data-event-action="wizard-cancel"
+        >
+          Cancelar
+        </button>
+        <button
+          id="voltar-etapa-evento"
+          class="botao-evento botao-evento-secundario"
+          type="button"
+          data-event-action="wizard-back"
+          hidden
+        >
+          Voltar
+        </button>
+        <button
+          id="avancar-etapa-evento"
+          class="botao-evento botao-evento-primario"
+          type="button"
+          data-event-action="wizard-next"
+          data-testid="event-wizard-next"
+        >
+          Próximo
+        </button>
+        <button
+          id="salvar-rascunho-evento"
+          class="botao-evento botao-evento-primario"
+          type="submit"
+          data-testid="save-event-draft"
+          hidden
+        >
+          Salvar rascunho
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog
+    id="dialog-detalhes-evento"
+    class="dialog-evento dialog-detalhes-evento"
+    aria-labelledby="titulo-modal-detalhes-evento"
+  >
+    <div class="layout-modal-detalhes-evento">
+      <div class="capa-modal-evento capa-evento--1">
+        <img id="imagem-modal-evento" alt="" hidden />
+        <span id="categoria-modal-evento" class="categoria-evento"></span>
+        <button
+          class="botao-fechar-detalhes-evento"
+          type="button"
+          data-event-action="close-event-details"
+          aria-label="Fechar detalhes do evento"
+        ></button>
+      </div>
+      <section
+        id="conteudo-modal-detalhes-evento"
+        class="conteudo-modal-detalhes-evento"
+        aria-live="polite"
+      ></section>
+    </div>
+  </dialog>
+</section>

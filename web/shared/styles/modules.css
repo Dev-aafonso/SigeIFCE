@@ -1,0 +1,116 @@
+/* SIGE IFCE — camada visual compartilhada dos módulos integrados.
+   Não substitui as folhas próprias de Dashboard, Eventos, Usuários ou Autenticação. */
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) {
+  --sige-borda: var(--cor-divisor);
+  --sige-verde: var(--ativo-borda);
+  --sige-fundo: var(--fundo-modulo);
+  --sige-muted: var(--texto-suave);
+  display: grid;
+  gap: clamp(1.15rem,2vw,1.8rem);
+  max-width: 86rem;
+  margin: 0 auto;
+}
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where([hidden]) { display: none !important; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(h2,h3,h4,h5) { color: var(--texto-claro); line-height: 1.3; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) h2 { font-size: clamp(1.55rem,2.2vw,2rem); margin: .3rem 0; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) h3 { font-size: 1.12rem; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(button,input,select) { font: inherit; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(button,a) { -webkit-tap-highlight-color: transparent; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(button,a,input,select):focus-visible { outline: 3px solid var(--anel-foco); outline-offset: 2px; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) button:disabled { opacity: .55; cursor: not-allowed; }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(input,select) {
+  background: var(--fundo-controle); color: var(--texto-principal); border: 1px solid var(--borda-controle);
+  border-radius: 9px; min-height: 43px; padding: .6rem .8rem; width: 100%; min-width: 0;
+}
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(input,select):focus { border-color: var(--ativo-borda); }
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) :where(.sobretitulo-inscricoes,.sobretitulo-certificados,.sobretitulo-relatorios) {
+  font-size: .72rem; font-weight: 800; letter-spacing: .095em; text-transform: uppercase; color: var(--ativo-texto);
+}
+:where(.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios,.cabecalho-secao-certificados,.cabecalho-historico-inscricoes,.titulo-secao-relatorios,.titulo-secao-relatorio) {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap: 1rem;
+}
+:where(.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) > div:first-child { flex: 1 1 18rem; }
+:where(.botao-inscricao,.botao-certificado,.botao-relatorio) {
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:42px;border:1px solid var(--borda-controle);border-radius:9px;
+  padding:.63rem 1rem;text-decoration:none;font-size:.875rem;font-weight:650;
+  background:var(--fundo-modulo);color:var(--texto-claro);cursor:pointer;transition:background .18s,border-color .18s,transform .18s;
+}
+:where(.botao-inscricao,.botao-certificado,.botao-relatorio):not(:disabled):hover { border-color:var(--ativo-borda); transform:translateY(-1px); }
+:where(.botao-inscricao-primario,.botao-certificado-primario,.botao-relatorio-primario) { background:var(--ativo-borda);color:white;border-color:var(--ativo-borda); }
+:where(.botao-inscricao-primario,.botao-certificado-primario,.botao-relatorio-primario):not(:disabled):hover { filter:brightness(.93); }
+:where(.botao-inscricao-secundario,.botao-certificado-secundario,.botao-relatorio-secundario) { background:var(--fundo-modulo);color:var(--texto-principal); }
+:where(.mensagem-inscricoes,.mensagem-certificados,.mensagem-relatorios) { min-height:1.2rem; font-size:.86rem; }
+:where(.mensagem-inscricoes,.mensagem-certificados,.mensagem-relatorios)[data-tipo="erro"] {color:var(--cor-erro);}
+:where(.mensagem-inscricoes,.mensagem-certificados,.mensagem-relatorios)[data-tipo="sucesso"] {color:var(--cor-sucesso);}
+:where(.secao-inscricoes,.secao-certificados,.secao-relatorio,.cartao-filtros-relatorios,.cartao-gestao-certificados) {
+  min-width:0; background:var(--sige-fundo,var(--fundo-modulo)); border:1px solid var(--cor-divisor);
+  border-radius:14px; padding:clamp(1rem,2vw,1.5rem); box-shadow:var(--sombra-sm);
+}
+:where(.resumo-inscricoes,.resumo-certificados,.grade-indicadores-relatorios) { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:1rem; }
+:where(.cartao-resumo-inscricao,.cartao-resumo-certificado,.indicador-relatorio) {
+  display:flex;align-items:center;gap:1rem;min-width:0;min-height:110px;
+  padding:1.1rem 1.2rem;border:1px solid var(--cor-divisor);border-radius:12px;
+  background:var(--fundo-modulo); box-shadow:var(--sombra-sm);
+}
+:where(.cartao-resumo-inscricao,.cartao-resumo-certificado,.indicador-relatorio) strong { display:block;color:var(--texto-claro);font-size:clamp(1.5rem,2.5vw,2rem);font-weight:750;margin-top:.25rem; }
+:where(.cartao-resumo-inscricao,.cartao-resumo-certificado,.indicador-relatorio) p {font-size:.85rem;line-height:1.4;}
+:where(.icone-resumo-inscricao,.icone-resumo-certificado,.icone-indicador-relatorio) {
+  width:46px;height:46px;display:grid;place-items:center;flex-shrink:0;
+  border-radius:11px;color:var(--ativo-texto);background:var(--ativo-fundo);font-size:1.5rem;font-weight:750;
+}
+.icone-resumo-inscricao svg {width:23px;height:23px;}
+:where(.icone-resumo-cinza,.icone-horas-certificado){color:var(--texto-principal);background:var(--botao-hover);}
+.icone-resumo-azul{color:var(--cor-informacao);background:var(--botao-hover);}
+:where(.cabecalho-historico-inscricoes,.cabecalho-secao-certificados,.titulo-secao-relatorios) {margin-bottom:1.2rem;}
+:where(.abas-inscricoes,.acoes-exportacao-relatorio,.acoes-emissao-certificados) {display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}
+.abas-inscricoes {border-bottom:1px solid var(--cor-divisor);margin-bottom:1rem;padding-bottom:.4rem;}
+.aba-inscricao {background:transparent;border:0;border-radius:8px;color:var(--texto-suave);padding:.6rem .85rem;cursor:pointer;font-size:.88rem;font-weight:650;}
+.aba-inscricao:hover,.aba-inscricao.ativa {background:var(--ativo-fundo);color:var(--ativo-texto);}
+.aba-inscricao span {margin-left:.35rem;opacity:.8;}
+:where(.filtros-inscricoes,.filtros-participantes,.form-evento-certificados,.form-filtros-relatorios) {display:flex;flex-wrap:wrap;align-items:end;gap:.8rem;margin:1rem 0;}
+:where(.campo-pesquisa-inscricao,.campo-filtro-inscricao,.campo-filtro-participantes,.campo-certificado,.campo-relatorio) {display:grid;gap:.4rem;min-width:12rem;flex:1 1 12rem;font-size:.85rem;font-weight:600;color:var(--texto-principal);}
+:where(.campo-pesquisa-inscricao,.campo-evento-participantes,.campo-evento-relatorio,.campo-certificado) {flex:2 1 18rem;}
+:where(.tabela-inscricoes-wrapper,.tabela-relatorios-wrapper,.tabela-participantes-wrapper,.tabela-usuarios-conteiner) {width:100%;overflow-x:auto;border-radius:10px;border:1px solid var(--cor-divisor);}
+:where(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios) {border-collapse:collapse;width:100%;min-width:660px;text-align:left;font-size:.88rem;color:var(--texto-principal);}
+:where(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios) th {background:var(--botao-hover);color:var(--texto-claro);font-weight:700;white-space:nowrap;}
+:where(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios) :where(th,td) {padding:.9rem 1rem;border-bottom:1px solid var(--cor-divisor);vertical-align:middle;}
+:where(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios) tr:last-child td {border-bottom:0;}
+:where(.estado-inscricoes,.estado-participantes,.estado-certificados,.estado-relatorios) {padding:1rem 0;color:var(--texto-suave);font-size:.88rem;}
+:where(.resumo-evento-participantes,.resumo-frequencia,.detalhes-gestao-certificados) {display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin:1rem 0;}
+:where(.resumo-frequencia,.metricas-gestao-certificados) {padding:1rem;background:var(--botao-hover);border-radius:10px;}
+:where(.resumo-frequencia) > * {flex:1;min-width:100px;text-align:center;}
+.lista-certificados {display:grid;gap:.85rem;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));}
+.cartao-certificado-item {display:flex;flex-direction:column;gap:.6rem;border:1px solid var(--cor-divisor);padding:1rem;border-radius:12px;min-width:0;}
+.cartao-certificado-item h4 {overflow-wrap:anywhere;}
+.cartao-certificado-item p {font-size:.84rem;}
+.cartao-certificado-item .acoes-certificado-item {display:flex;flex-wrap:wrap;gap:.5rem;margin-top:auto;}
+.metricas-gestao-certificados {display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin:1rem 0;}
+.metricas-gestao-certificados dt {font-size:.8rem;color:var(--texto-suave);}
+.metricas-gestao-certificados dd {font-size:1.05rem;color:var(--texto-claro);font-weight:700;margin:.3rem 0 0;}
+:where(.resultado-emissao-certificados,.cartao-exportacao-relatorio,.cartao-grafico-relatorio) {padding:1rem;border:1px solid var(--cor-divisor);border-radius:10px;min-width:0;}
+.grade-exportacao-relatorios {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:1rem;}
+.cartao-exportacao-relatorio {display:grid;gap:1rem;align-content:space-between;}
+.grade-graficos-relatorios {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1rem;}
+.grafico-relatorio {display:grid;gap:.6rem;min-height:80px;margin-top:1rem;}
+.linha-grafico-sige {display:grid;grid-template-columns:minmax(85px,1fr) 2fr;gap:.6rem;align-items:center;font-size:.8rem;}
+.barra-grafico-sige {height:15px;background:var(--botao-hover);border-radius:100px;overflow:hidden;}
+.barra-grafico-sige > span {display:block;height:100%;background:var(--ativo-borda);border-radius:100px;}
+.legenda-grafico-relatorio {display:flex;gap:1rem;flex-wrap:wrap;margin-top:.8rem;font-size:.8rem;color:var(--texto-suave);}
+.legenda-grafico-relatorio span {display:flex;align-items:center;gap:.4rem;}
+.legenda-grafico-relatorio i {width:10px;height:10px;border-radius:50%;background:var(--ativo-borda);display:block;}
+:where(.dialog-certificado,.dialog-confirmar-emissao,.modulo-inscricoes dialog,.modulo-participantes dialog) {max-width:min(96vw,780px);width:min(96vw,720px);max-height:90dvh;overflow:auto;border:1px solid var(--cor-divisor);border-radius:14px;background:var(--fundo-modulo);color:var(--texto-principal);padding:1.4rem;margin:auto;box-shadow:var(--sombra-xl);}
+:where(.dialog-certificado,.dialog-confirmar-emissao,.modulo-inscricoes dialog,.modulo-participantes dialog)::backdrop {background:rgba(10,20,15,.6);}
+.conteudo-dialog-certificado {display:grid;gap:1.1rem;}
+#arquivo-preview-certificado {width:100%;height:min(68vh,650px);border:1px solid var(--cor-divisor);border-radius:8px;}
+.botao-fechar-preview {background:transparent;border:0;font-size:1.7rem;color:var(--texto-principal);cursor:pointer;}
+.aviso-papel-cadastro {border:1px solid var(--borda-barra-lateral);border-radius:10px;padding:.8rem 1rem;background:var(--ativo-fundo);font-size:.83rem;color:var(--texto-principal);line-height:1.5;margin:1rem 0;}
+:where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) .estado-erro-sige {color:var(--cor-erro);}
+@media (max-width:720px) {
+  :where(.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios) {gap:1rem;}
+  :where(.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) {align-items:stretch;}
+  :where(.botao-inscricao,.botao-certificado,.botao-relatorio) {min-height:44px;}
+  :where(.filtros-inscricoes,.filtros-participantes,.form-evento-certificados,.form-filtros-relatorios) > * {flex:1 1 100%;}
+  .grade-graficos-relatorios {grid-template-columns:minmax(0,1fr);}
+}
+@media (prefers-reduced-motion:reduce) { :where(.botao-inscricao,.botao-certificado,.botao-relatorio) {transition:none;} }

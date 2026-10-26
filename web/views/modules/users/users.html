@@ -1,5 +1,40 @@
-<div class="module-wrapper fade-in">
-    <h2>Usuários</h2>
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque quod ullam beatae magnam, mollitia sit molestias facilis consequatur aliquam repellat, pariatur labore alias fugiat unde nulla quos excepturi ipsum est.</p>
+<div class="module-wrapper fade-in gerenciamento-usuarios">
+  <header class="cabecalho-usuarios">
+    <div>
+      <h2>Gerenciar usuários</h2>
+      <p>Consulte as contas e atualize seus perfis de acesso.</p>
+    </div>
+    <button
+      class="botao-atualizar-usuarios"
+      id="atualizar-usuarios"
+      type="button"
+    >
+      Atualizar lista
+    </button>
+  </header>
+
+  <p
+    id="mensagem-usuarios"
+    class="mensagem-usuarios"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <div class="tabela-usuarios-conteiner">
+    <table class="tabela-usuarios">
+      <thead>
+        <tr>
+          <th scope="col">E-mail</th>
+          <th scope="col">Identificador</th>
+          <th scope="col">Perfil</th>
+          <th scope="col">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="lista-usuarios">
+        <tr>
+          <td colspan="4">Carregando usuários...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
