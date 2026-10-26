@@ -1,5 +1,259 @@
-<div class="module-wrapper fade-in">
-    <h2>Participantes</h2>
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque quod ullam beatae magnam, mollitia sit molestias facilis consequatur aliquam repellat, pariatur labore alias fugiat unde nulla quos excepturi ipsum est.</p>
-</div>
+<section
+  class="module-wrapper fade-in modulo-participantes"
+  aria-labelledby="titulo-participantes"
+  data-testid="attendance-module"
+>
+  <header class="cabecalho-participantes">
+    <div>
+      <p class="sobretitulo-inscricoes">PAINEL DO ORGANIZADOR</p>
+      <h2 id="titulo-participantes">Participantes</h2>
+      <p>Consulte as inscrições das ações dos eventos do seu escopo.</p>
+    </div>
+    <button
+      id="atualizar-participantes"
+      class="botao-inscricao botao-inscricao-secundario"
+      type="button"
+      data-participantes-action="refresh"
+    >
+      Atualizar lista
+    </button>
+  </header>
+
+  <p
+    id="mensagem-participantes"
+    class="mensagem-inscricoes"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <section
+    class="secao-inscricoes"
+    aria-labelledby="titulo-filtros-participantes"
+  >
+    <header class="cabecalho-historico-inscricoes">
+      <div>
+        <h3 id="titulo-filtros-participantes">Lista de chamada</h3>
+        <p>
+          Carregue um evento do seu escopo para consultar e registrar a
+          frequência por ação.
+        </p>
+      </div>
+    </header>
+    <form id="form-evento-participantes" class="filtros-participantes">
+      <label class="campo-filtro-participantes campo-evento-participantes">
+        <span>Evento</span>
+        <input
+          id="id-evento-participantes"
+          name="eventId"
+          data-testid="attendance-event-id"
+          autocomplete="off"
+          required
+          placeholder="ID do evento"
+        />
+      </label>
+      <button
+        class="botao-inscricao botao-inscricao-primario"
+        type="submit"
+        data-testid="load-attendance-event"
+      >
+        Carregar evento
+      </button>
+    </form>
+    <div
+      id="resumo-evento-participantes"
+      class="resumo-evento-participantes"
+      hidden
+    ></div>
+
+    <div
+      id="filtros-lista-participantes"
+      class="filtros-inscricoes filtros-lista-participantes"
+      hidden
+    >
+      <label class="campo-pesquisa-inscricao">
+        <span class="icone-pesquisa-inscricao" aria-hidden="true"></span>
+        <span class="rotulo-somente-leitor">Pesquisar por participante</span>
+        <input
+          id="busca-participantes"
+          type="search"
+          data-testid="search-attendance"
+          placeholder="Pesquisar por nome, documento ou e-mail..."
+          autocomplete="off"
+        />
+      </label>
+      <label class="campo-filtro-inscricao">
+        <span>Selecionar ação</span>
+        <select id="filtro-acao-participantes" aria-label="Selecionar ação">
+          <option value="">Todas as ações</option>
+        </select>
+      </label>
+      <label class="campo-filtro-inscricao">
+        <span>Status da presença</span>
+        <select
+          id="filtro-status-participantes"
+          data-testid="filter-attendance-status"
+        >
+          <option value="">Todos</option>
+          <option value="PRESENT">Presentes</option>
+          <option value="ABSENT">Ausentes</option>
+        </select>
+      </label>
+      <button
+        id="abrir-leitor-presenca"
+        class="botao-inscricao botao-inscricao-secundario botao-leitor-presenca"
+        type="button"
+        data-testid="open-attendance-scanner"
+        hidden
+      >
+        Ler QR Code
+      </button>
+    </div>
+
+    <p
+      id="estado-leitor-presenca"
+      class="ajuda-leitor-presenca"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></p>
+    <div
+      id="resumo-frequencia"
+      class="resumo-frequencia"
+      aria-label="Resumo de frequência"
+      hidden
+    >
+      <span id="total-inscritos-presenca">0 inscritos</span>
+      <span id="total-presentes-presenca">0 presentes</span>
+      <span id="total-ausentes-presenca">0 ausentes</span>
+    </div>
+
+    <div class="tabela-inscricoes-wrapper">
+      <table class="tabela-inscricoes tabela-participantes">
+        <caption class="rotulo-somente-leitor">
+          Lista de chamada e frequência dos participantes inscritos
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Participante</th>
+            <th scope="col">Ação</th>
+            <th scope="col">Data da inscrição</th>
+            <th scope="col">Presença</th>
+            <th scope="col">Registrado por</th>
+            <th scope="col">
+              <span class="rotulo-somente-leitor">Ações</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="lista-participantes"></tbody>
+      </table>
+      <div
+        id="estado-participantes"
+        class="estado-inscricoes"
+        role="status"
+        aria-live="polite"
+      >
+        Informe um evento para carregar a lista de participantes.
+      </div>
+    </div>
+    <footer class="rodape-inscricoes">
+      <p id="contagem-participantes">Nenhum participante carregado.</p>
+    </footer>
+  </section>
+
+  <dialog
+    id="dialog-leitor-presenca"
+    class="dialog-inscricoes dialog-leitor-presenca"
+    aria-labelledby="titulo-leitor-presenca"
+  >
+    <section class="conteudo-leitor-presenca">
+      <header class="cabecalho-dialog-inscricoes">
+        <div>
+          <p class="sobretitulo-inscricoes">CONTROLE DE PRESENÇA</p>
+          <h3 id="titulo-leitor-presenca">Ler QR Code do participante</h3>
+          <p>
+            A câmera exige permissão e uma conexão segura (HTTPS ou localhost).
+          </p>
+        </div>
+        <button
+          class="botao-fechar-inscricoes"
+          type="button"
+          data-presenca-action="close-scanner"
+          aria-label="Fechar leitor de QR Code"
+        ></button>
+      </header>
+      <video
+        id="video-leitor-presenca"
+        class="video-leitor-presenca"
+        playsinline
+        muted
+        aria-label="Pré-visualização da câmera"
+      ></video>
+      <p
+        id="mensagem-leitor-presenca"
+        class="mensagem-leitor-presenca"
+        role="status"
+        aria-live="polite"
+      ></p>
+      <form id="form-token-presenca" class="form-token-presenca">
+        <label class="campo-evento-seletor">
+          <span>Token do ingresso</span>
+          <input
+            id="token-presenca"
+            name="token"
+            data-testid="attendance-token"
+            autocomplete="off"
+            required
+          />
+        </label>
+        <button
+          id="enviar-token-presenca"
+          class="botao-inscricao botao-inscricao-primario"
+          type="submit"
+          data-testid="submit-attendance-token"
+        >
+          Registrar pelo token
+        </button>
+      </form>
+      <button
+        class="botao-inscricao botao-inscricao-secundario botao-parar-leitor"
+        type="button"
+        data-presenca-action="close-scanner"
+      >
+        Fechar leitor
+      </button>
+    </section>
+  </dialog>
+
+  <dialog
+    id="dialog-confirmar-presenca"
+    class="dialog-inscricoes dialog-confirmar-presenca"
+    aria-labelledby="titulo-confirmar-presenca"
+  >
+    <section class="conteudo-leitor-presenca">
+      <header class="cabecalho-dialog-inscricoes">
+        <div>
+          <p class="sobretitulo-inscricoes">CONFIRMAÇÃO DE FREQUÊNCIA</p>
+          <h3 id="titulo-confirmar-presenca">Registrar presença?</h3>
+          <p id="descricao-confirmar-presenca"></p>
+        </div>
+      </header>
+      <div class="acoes-confirmacao-inscricao">
+        <button
+          id="cancelar-confirmacao-presenca"
+          class="botao-inscricao botao-inscricao-secundario"
+          type="button"
+        >
+          Voltar
+        </button>
+        <button
+          id="confirmar-presenca"
+          class="botao-inscricao botao-inscricao-primario"
+          type="button"
+          data-testid="confirm-attendance"
+        >
+          Confirmar presença
+        </button>
+      </div>
+    </section>
+  </dialog>
+</section>

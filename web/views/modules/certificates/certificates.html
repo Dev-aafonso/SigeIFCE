@@ -1,5 +1,240 @@
-<div class="module-wrapper fade-in">
-    <h2>Certificados</h2>
-    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-    <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Atque quod ullam beatae magnam, mollitia sit molestias facilis consequatur aliquam repellat, pariatur labore alias fugiat unde nulla quos excepturi ipsum est.</p>
-</div>
+<section
+  class="module-wrapper fade-in modulo-certificados"
+  aria-labelledby="titulo-certificados"
+>
+  <header class="cabecalho-certificados">
+    <div>
+      <p class="sobretitulo-certificados">DOCUMENTOS DIGITAIS</p>
+      <h2 id="titulo-certificados">Meus Certificados</h2>
+      <p id="descricao-certificados">
+        Consulte seus certificados emitidos e acompanhe sua carga horária.
+      </p>
+    </div>
+    <button id="abrir-validacao-certificado" type="button" class="botao-certificado botao-certificado-secundario">Validar certificado</button>
+  </header>
+
+  <p
+    id="mensagem-certificados"
+    class="mensagem-certificados"
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  <section class="resumo-certificados" aria-label="Resumo dos certificados">
+    <article class="cartao-resumo-certificado">
+      <span class="icone-resumo-certificado" aria-hidden="true">✓</span>
+      <div>
+        <p>Certificados disponíveis</p>
+        <strong id="total-certificados">—</strong>
+      </div>
+    </article>
+    <article class="cartao-resumo-certificado">
+      <span
+        class="icone-resumo-certificado icone-horas-certificado"
+        aria-hidden="true"
+        >◷</span
+      >
+      <div>
+        <p>Carga horária acumulada</p>
+        <strong id="total-horas-certificados">—</strong>
+      </div>
+    </article>
+  </section>
+
+  <section
+    class="secao-certificados"
+    aria-labelledby="titulo-lista-certificados"
+  >
+    <header class="cabecalho-secao-certificados">
+      <div>
+        <h3 id="titulo-lista-certificados">Certificados emitidos</h3>
+        <p>Os documentos são disponibilizados em PDF após a emissão.</p>
+      </div>
+      <button
+        id="atualizar-certificados"
+        class="botao-certificado botao-certificado-secundario"
+        type="button"
+        data-testid="refresh-certificates"
+      >
+        Atualizar
+      </button>
+    </header>
+    <div
+      id="estado-lista-certificados"
+      class="estado-certificados"
+      role="status"
+      aria-live="polite"
+    >
+      Carregando certificados...
+    </div>
+    <div
+      id="lista-certificados"
+      class="lista-certificados"
+      aria-busy="true"
+    ></div>
+  </section>
+
+  <section
+    id="painel-gestao-certificados"
+    class="secao-certificados secao-gestao-certificados"
+    aria-labelledby="titulo-gestao-certificados"
+    hidden
+  >
+    <header class="cabecalho-secao-certificados">
+      <div>
+        <p class="sobretitulo-certificados">PAINEL DO ORGANIZADOR</p>
+        <h3 id="titulo-gestao-certificados">
+          Gestão de certificados por evento
+        </h3>
+        <p>
+          Consulte a liberação e solicite a emissão para participantes
+          elegíveis.
+        </p>
+      </div>
+    </header>
+    <form id="form-evento-certificados" class="form-evento-certificados">
+      <label class="campo-certificado">
+        <span>Identificador do evento</span>
+        <input
+          id="id-evento-certificados"
+          name="eventId"
+          data-testid="certificate-event-id"
+          autocomplete="off"
+          required
+          placeholder="ID do evento"
+        />
+      </label>
+      <button
+        id="carregar-evento-certificados"
+        class="botao-certificado botao-certificado-primario"
+        type="submit"
+        data-testid="load-certificate-event"
+      >
+        Consultar evento
+      </button>
+    </form>
+    <p
+      id="mensagem-gestao-certificados"
+      class="mensagem-certificados"
+      role="status"
+      aria-live="polite"
+    ></p>
+    <article
+      id="detalhes-evento-certificados"
+      class="cartao-gestao-certificados"
+      hidden
+    >
+      <div class="detalhes-gestao-certificados">
+        <div>
+          <h4 id="nome-evento-certificados"></h4>
+          <p id="metadados-evento-certificados"></p>
+        </div>
+        <span id="status-evento-certificados" class="status-certificado"></span>
+      </div>
+      <dl class="metricas-gestao-certificados">
+        <div>
+          <dt>Liberação</dt>
+          <dd id="liberacao-certificados">Não informado</dd>
+        </div>
+        <div>
+          <dt>Emitidos</dt>
+          <dd id="emitidos-certificados">Não informado</dd>
+        </div>
+        <div>
+          <dt>Elegibilidade</dt>
+          <dd id="elegibilidade-certificados">Validada pelo sistema</dd>
+        </div>
+      </dl>
+      <section
+        id="resultado-emissao-certificados"
+        class="resultado-emissao-certificados"
+        aria-live="polite"
+        hidden
+      >
+        <h5>Participantes avaliados na emissão</h5>
+        <p id="resumo-emissao-certificados"></p>
+        <ul id="lista-elegibilidade-certificados"></ul>
+      </section>
+      <button
+        id="emitir-certificados"
+        class="botao-certificado botao-certificado-primario"
+        type="button"
+        data-testid="request-certificates"
+      >
+        Solicitar emissão
+      </button>
+    </article>
+  </section>
+
+  <dialog id="dialog-validar-certificado" class="dialog-certificado" aria-labelledby="titulo-validar-certificado">
+    <form id="form-validar-certificado" class="conteudo-dialog-certificado">
+      <h3 id="titulo-validar-certificado">Consultar autenticidade</h3>
+      <label class="campo-certificado">Código do certificado
+        <input id="codigo-validacao-certificado" autocomplete="off" required placeholder="SIGE-..." />
+      </label>
+      <p id="resultado-validacao-certificado" role="status" aria-live="polite"></p>
+      <div class="acoes-emissao-certificados">
+        <button type="button" id="fechar-validacao-certificado" class="botao-certificado botao-certificado-secundario">Fechar</button>
+        <button type="submit" class="botao-certificado botao-certificado-primario">Validar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog
+    id="dialog-preview-certificado"
+    class="dialog-certificado"
+    aria-labelledby="titulo-preview-certificado"
+  >
+    <section class="conteudo-dialog-certificado">
+      <header class="cabecalho-secao-certificados">
+        <div>
+          <p class="sobretitulo-certificados">VISUALIZAÇÃO DO DOCUMENTO</p>
+          <h3 id="titulo-preview-certificado">Prévia do certificado</h3>
+        </div>
+        <button
+          id="fechar-preview-certificado"
+          class="botao-fechar-preview"
+          type="button"
+          aria-label="Fechar prévia"
+        >
+          ×
+        </button>
+      </header>
+      <iframe
+        id="arquivo-preview-certificado"
+        title="Prévia do certificado em PDF"
+      ></iframe>
+    </section>
+  </dialog>
+
+  <dialog
+    id="dialog-confirmar-emissao-certificados"
+    class="dialog-confirmar-emissao"
+    aria-labelledby="titulo-confirmar-emissao-certificados"
+  >
+    <section class="conteudo-dialog-certificado">
+      <header>
+        <p class="sobretitulo-certificados">CONFIRMAÇÃO</p>
+        <h3 id="titulo-confirmar-emissao-certificados">Solicitar emissão?</h3>
+        <p id="descricao-confirmar-emissao-certificados"></p>
+      </header>
+      <div class="acoes-emissao-certificados">
+        <button
+          id="cancelar-emissao-certificados"
+          class="botao-certificado botao-certificado-secundario"
+          type="button"
+        >
+          Voltar
+        </button>
+        <button
+          id="confirmar-emissao-certificados"
+          class="botao-certificado botao-certificado-primario"
+          type="button"
+          data-testid="confirm-issue-certificates"
+        >
+          Confirmar emissão
+        </button>
+      </div>
+    </section>
+  </dialog>
+</section>

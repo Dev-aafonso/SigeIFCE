@@ -1,16 +1,13 @@
-import type { Config } from 'jest';
+﻿import type { Config } from 'jest';
 
 const config: Config = {
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/src', '<rootDir>/test/unit'],
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/test/e2e/'],
   rootDir: '.',
   testEnvironment: 'node',
-  testRegex: '.*\.spec\.ts$',
-
-  moduleFileExtensions: ['ts', 'js', 'json', 'mts', 'cts'],
-
+  testRegex: '.*\.spec\.(ts|mjs)$',
+  moduleFileExtensions: ['ts', 'js', 'json', 'mts', 'cts', 'mjs'],
   extensionsToTreatAsEsm: ['.ts'],
-
   transform: {
     '^.+\.tsx?$': [
       'ts-jest',
@@ -20,16 +17,9 @@ const config: Config = {
       },
     ],
   },
-
-  collectCoverageFrom: [
-    'src/**/*.ts',
-  ],
-
+  collectCoverageFrom: ['src/**/*.ts'],
   coverageDirectory: './coverage',
-
-  moduleDirectories: [
-    'node_modules',
-  ],
+  moduleDirectories: ['node_modules'],
 };
 
 export default config;

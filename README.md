@@ -12,15 +12,15 @@ O **SIGE IFCE** tem como objetivo fornecer uma plataforma para gerenciamento cen
 
 O sistema contempla funcionalidades relacionadas a:
 
-* gerenciamento de usuários e perfis;
-* autenticação e controle de acesso;
-* criação e gerenciamento de eventos;
-* gerenciamento de ações vinculadas aos eventos;
-* inscrições em eventos e ações;
-* acompanhamento da participação dos usuários;
-* emissão e gerenciamento de certificados;
-* controle de permissões;
-* disponibilização de informações e recursos administrativos.
+- gerenciamento de usuários e perfis;
+- autenticação e controle de acesso;
+- criação e gerenciamento de eventos;
+- gerenciamento de ações vinculadas aos eventos;
+- inscrições em eventos e ações;
+- acompanhamento da participação dos usuários;
+- emissão e gerenciamento de certificados;
+- controle de permissões;
+- disponibilização de informações e recursos administrativos.
 
 A aplicação utiliza uma arquitetura modular inspirada nos princípios de **Domain-Driven Design (DDD)**, buscando manter as responsabilidades separadas e os domínios do sistema isolados.
 
@@ -30,27 +30,27 @@ A aplicação utiliza uma arquitetura modular inspirada nos princípios de **Dom
 
 ## Backend
 
-* **Node.js** — ambiente de execução JavaScript;
-* **TypeScript** — tipagem estática e desenvolvimento do backend;
-* **NestJS** — framework principal da aplicação;
-* **Prisma ORM** — camada de acesso ao banco de dados;
-* **PostgreSQL** — sistema gerenciador de banco de dados;
-* **Class Validator** — validação dos dados recebidos pela aplicação.
+- **Node.js** — ambiente de execução JavaScript;
+- **TypeScript** — tipagem estática e desenvolvimento do backend;
+- **NestJS** — framework principal da aplicação;
+- **Prisma ORM** — camada de acesso ao banco de dados;
+- **PostgreSQL** — sistema gerenciador de banco de dados;
+- **Class Validator** — validação dos dados recebidos pela aplicação.
 
 ## Interface
 
-* **HTML5** — estrutura das páginas;
-* **CSS3** — estilização da interface;
-* **Handlebars** — renderização dos templates;
-* **HTMX** — atualização dinâmica de partes da interface sem necessidade de uma SPA tradicional.
+- **HTML5** — estrutura das páginas;
+- **CSS3** — estilização da interface;
+- **JavaScript nativo** — navegação modular, interações e chamadas REST com `fetch`;
+- **CSS próprio** — identidade visual responsiva com temas claro e escuro.
 
 ## Ferramentas
 
-* **Git** — controle de versão;
-* **GitHub** — hospedagem do repositório e colaboração;
-* **Visual Studio Code** — ambiente de desenvolvimento;
-* **Docker** — configuração e execução de serviços;
-* **GitHub Actions** — integração e automação do processo de desenvolvimento.
+- **Git** — controle de versão;
+- **GitHub** — hospedagem do repositório e colaboração;
+- **Visual Studio Code** — ambiente de desenvolvimento;
+- **Docker** — configuração e execução de serviços;
+- **GitHub Actions** — integração e automação do processo de desenvolvimento.
 
 ---
 
@@ -99,29 +99,40 @@ src/
 
 ### Camada visual
 
-Os templates são mantidos separadamente do código de negócio:
+A interface é uma aplicação modular servida pelo NestJS. O HTML, CSS e JavaScript
+de cada módulo ficam em `web/views/modules/`; recursos compartilhados ficam em
+`web/shared/`. O roteador carrega os módulos sob demanda e consulta a API REST
+na mesma origem por padrão.
 
 ```text
-views/
-├── layouts/
-├── pages/
-└── components/
+web/
+├── shared/
+│   ├── core/
+│   └── styles/
+└── views/
+    ├── components/
+    └── modules/
 ```
 
-Essa separação permite que as regras de negócio permaneçam concentradas no backend enquanto a camada de apresentação permanece responsável pela geração do HTML.
+O frontend usa HTML semântico, JavaScript nativo e folhas CSS próprias. Bootstrap
+e HTMX não são dependências ativas da interface.
 
 ---
 
 # Fluxo da Aplicação
-
-O fluxo principal do sistema é baseado em requisições HTTP processadas pelo NestJS e renderizadas dinamicamente para o navegador.
 
 ```text
 ┌──────────────┐
 │   Browser    │
 └──────┬───────┘
        │
-       │ HTMX
+       │ HTML, CSS e JavaScript
+       ▼
+┌──────────────┐
+│  Módulo web  │
+└──────┬───────┘
+       ▼
+│ REST / fetch │
        ▼
 ┌──────────────┐
 │  Controller  │
@@ -140,44 +151,10 @@ O fluxo principal do sistema é baseado em requisições HTTP processadas pelo N
 └──────────────┘
 ```
 
-Quando uma requisição é realizada pelo HTMX, o backend pode retornar apenas o fragmento HTML necessário para atualizar determinada região da interface.
-
-Exemplo:
-
-```html
-<form
-    hx-post="/events"
-    hx-target="#lista-eventos"
-    hx-swap="beforeend">
-```
-
-Nesse cenário:
-
-1. o usuário envia o formulário;
-2. o HTMX realiza a requisição;
-3. o Controller recebe os dados;
-4. o Service executa as regras de negócio;
-5. o Prisma persiste os dados no PostgreSQL;
-6. o NestJS renderiza o fragmento HTML correspondente;
-7. o HTMX insere o resultado na página.
-
----
-
-# Respostas HTMX
-
-O backend utiliza os cabeçalhos HTTP fornecidos pelo HTMX para controlar o comportamento da interface.
-
-Entre os principais recursos utilizados estão:
-
-| Cabeçalho     | Finalidade                                              |
-| ------------- | ------------------------------------------------------- |
-| `HX-Request`  | Identificar requisições realizadas pelo HTMX            |
-| `HX-Target`   | Identificar o elemento alvo da atualização              |
-| `HX-Redirect` | Realizar redirecionamentos após operações bem-sucedidas |
-| `HX-Trigger`  | Disparar eventos no frontend                            |
-| `HX-Refresh`  | Solicitar atualização da página                         |
-
-A aplicação possui componentes globais responsáveis pelo tratamento desses comportamentos, incluindo interceptadores, filtros e decorators.
+As páginas e os módulos são entregues pelo NestJS. O roteador do frontend carrega
+o HTML do módulo selecionado, inicializa seus comportamentos e usa `fetch` para
+consultar ou atualizar recursos REST. O servidor valida a requisição e aplica as
+regras de negócio antes de persistir os dados.
 
 ---
 
@@ -185,25 +162,19 @@ A aplicação possui componentes globais responsáveis pelo tratamento desses co
 
 A aplicação diferencia erros de validação, autenticação, autorização e falhas internas.
 
-Para erros de validação de formulários, o backend pode retornar novamente o fragmento HTML do formulário contendo as mensagens de erro.
-
-Exemplo conceitual:
+O frontend apresenta estados de carregamento, validação, sucesso, erro e lista
+vazia. A API retorna códigos HTTP e mensagens para que cada módulo informe o
+resultado da operação sem expor detalhes internos.
 
 ```text
 Requisição
     ↓
-Validação
+Validação no cliente e no servidor
     ↓
-Dados inválidos
+Resposta REST
     ↓
-HTTP 422
-    ↓
-Renderização do formulário
-    ↓
-HTMX substitui o fragmento
+Atualização da interface ou mensagem acessível
 ```
-
-Para falhas internas, podem ser utilizados mecanismos como `HX-Trigger` para permitir que a interface apresente mensagens de erro ao usuário.
 
 ---
 
@@ -233,12 +204,6 @@ sige-ifce/
 │   ├── schema.prisma
 │   └── seed.ts
 │
-├── public/
-│   ├── css/
-│   ├── js/
-│   ├── images/
-│   └── icons/
-│
 ├── src/
 │   ├── common/
 │   ├── database/
@@ -249,10 +214,9 @@ sige-ifce/
 │   ├── integration/
 │   └── e2e/
 │
-├── views/
-│   ├── layouts/
-│   ├── pages/
-│   └── components/
+├── web/
+│   ├── shared/
+│   └── views/
 │
 ├── .env.example
 ├── .gitignore
@@ -270,11 +234,11 @@ sige-ifce/
 
 Antes de executar o projeto, certifique-se de possuir:
 
-* **Node.js**;
-* **npm**;
-* **Git**;
-* **Docker e Docker Compose** ou uma instalação local do PostgreSQL;
-* **Visual Studio Code** recomendado para desenvolvimento.
+- **Node.js**;
+- **npm**;
+- **Git**;
+- **Docker e Docker Compose** ou uma instalação local do PostgreSQL;
+- **Visual Studio Code** recomendado para desenvolvimento.
 
 Para verificar as instalações:
 
@@ -409,7 +373,8 @@ npm run start:prod
 | `npm run start:prod`      | Executa a versão compilada         |
 | `npm run build`           | Compila o projeto                  |
 | `npm run lint`            | Executa análise estática           |
-| `npm run format`          | Formata o código                   |
+| `npm run format`          | Formata interface e documentação   |
+| `npm run format:check`    | Verifica a formatação com Prettier |
 | `npm test`                | Executa testes unitários           |
 | `npm run test:watch`      | Executa testes em modo observação  |
 | `npm run test:cov`        | Gera cobertura de testes           |
@@ -609,10 +574,10 @@ npm run build
 
 O objetivo é garantir que:
 
-* o código siga o padrão definido;
-* os testes estejam passando;
-* o projeto compile corretamente;
-* alterações incompatíveis sejam identificadas antes do merge.
+- o código siga o padrão definido;
+- os testes estejam passando;
+- o projeto compile corretamente;
+- alterações incompatíveis sejam identificadas antes do merge.
 
 ---
 
@@ -697,3 +662,8 @@ A definição da licença de distribuição do projeto deverá ser realizada con
 
 Consulte [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) para configurar o ambiente,
 executar com Docker Compose e rodar os testes automatizados.
+
+Para utilizar as telas, consulte o [Manual do Usuário](docs/documentation/Manual-do-Usuario.md).
+O manual inclui capturas ilustrativas da área de Inscrições em desktop e celular.
+Para atualizar as imagens demonstrativas, execute
+`npm run test:e2e -- test/e2e/sprint12-docs.spec.ts`.
