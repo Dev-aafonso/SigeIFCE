@@ -5,6 +5,8 @@ coverage/
 .env
 .env.local
 .env.production
+.env.*
+!.env.example
 
 *.log
 
@@ -32,3 +34,5 @@ storage/certificates/*.pdf
 *.pre-*.bak
 /storage/test-output/
 *.bak-*
+
+/_sige-rn06-backups/

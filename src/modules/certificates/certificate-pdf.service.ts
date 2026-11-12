@@ -7,14 +7,56 @@ import { resolve } from 'node:path';
 export interface CertificatePdfData {
   participantName: string;
   eventTitle: string;
-  actionTitle: string;
-  actionStartDate: Date;
-  actionEndDate: Date;
+  scope?: 'EVENT' | 'ACTION';
+  actionTitle?: string;
+  actionStartDate?: Date;
+  actionEndDate?: Date;
+  eventStartDate?: Date;
+  eventEndDate?: Date;
+  enrolledMinutes?: number;
+  attendancePercent?: number;
   certifiedMinutes: number;
   validationCode: string;
   verificationUrl: string;
   issuedAt: Date;
   campusName?: string | null;
+}
+
+const CERTIFICATE_TIME_ZONE = 'America/Fortaleza';
+
+/** A duração de uma participação deve ser mostrada em horas e minutos, sem decimais. */
+export function formatCertificateDuration(totalMinutes: number): string {
+  if (!Number.isSafeInteger(totalMinutes) || totalMinutes < 0) {
+    throw new RangeError('Carga horária certificada inválida.');
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours === 0) return `${minutes}min`;
+  return minutes === 0 ? `${hours}h` : `${hours}h${String(minutes).padStart(2, '0')}min`;
+}
+
+function formatCertificateDate(value: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    timeZone: CERTIFICATE_TIME_ZONE,
+  }).format(value);
+}
+
+/** Compara as datas locais (Fortaleza), não os dias UTC. */
+export function formatCertificatePeriod(
+  startDate: Date | undefined,
+  endDate: Date | undefined,
+  scope: 'EVENT' | 'ACTION',
+): string {
+  if (!startDate || !endDate) return 'Período não informado';
+  const first = formatCertificateDate(startDate);
+  const last = formatCertificateDate(endDate);
+  if (first === last) {
+    return `${scope === 'EVENT' ? 'Data do evento' : 'Data da ação'}: ${first}`;
+  }
+  return `Período: ${first} a ${last}`;
 }
 
 const COLORS = {
@@ -47,7 +89,7 @@ export class CertificatePdfService {
         info: {
           Title: `Certificado - ${this.repairMojibake(data.participantName)}`,
           Author: 'SIGE IFCE',
-          Subject: `${this.repairMojibake(data.actionTitle)} - ${this.repairMojibake(data.eventTitle)}`,
+          Subject: data.scope === 'EVENT' ? this.repairMojibake(data.eventTitle) : `${this.repairMojibake(data.actionTitle ?? '')} - ${this.repairMojibake(data.eventTitle)}`,
           Creator: 'SIGE IFCE - Sistema de Gerenciamento de Eventos Cient\u00edficos',
         },
       });
@@ -104,32 +146,29 @@ export class CertificatePdfService {
     doc.strokeColor(COLORS.red).lineWidth(2.2).moveTo(pageWidth / 2 - 28, 112).lineTo(pageWidth / 2 + 28, 112).stroke();
 
     this.centeredLine(doc, 'CERTIFICADO', 132, contentWidth, 'CertificateBold', 27, 22, COLORS.ink);
-    this.centeredLine(doc, 'PARTICIPA\u00c7\u00c3O EM A\u00c7\u00c3O CIENT\u00cdFICA', 165, contentWidth, 'CertificateBold', 9, 8, COLORS.green, 1.7);
+    this.centeredLine(doc, data.scope === 'EVENT' ? 'PARTICIPA\u00c7\u00c3O EM EVENTO CIENT\u00cdFICO' : 'PARTICIPA\u00c7\u00c3O EM A\u00c7\u00c3O CIENT\u00cdFICA', 165, contentWidth, 'CertificateBold', 9, 8, COLORS.green, 1.7);
 
     doc.font('CertificateRegular').fontSize(12).fillColor(COLORS.muted)
       .text('Certificamos que', left, 207, { width: contentWidth, align: 'center' });
 
     this.centeredLine(doc, data.participantName, 230, contentWidth, 'CertificateBold', 23, 15, COLORS.darkGreen);
 
+    const isEvent = data.scope === 'EVENT';
     doc.font('CertificateRegular').fontSize(12).fillColor(COLORS.ink)
-      .text('participou da a\u00e7\u00e3o', left, 270, { width: contentWidth, align: 'center' });
-
-    this.centeredLine(doc, data.actionTitle, 293, contentWidth, 'CertificateBold', 17, 11, COLORS.ink);
-
+      .text(isEvent ? 'participou do evento científico' : 'participou da ação', left, 270, { width: contentWidth, align: 'center' });
+    this.centeredLine(doc, isEvent ? data.eventTitle : (data.actionTitle ?? 'Ação'), 293, contentWidth, 'CertificateBold', 17, 11, COLORS.ink);
     doc.font('CertificateRegular').fontSize(11).fillColor(COLORS.muted)
-      .text('vinculada ao evento', left, 326, { width: contentWidth, align: 'center' });
+      .text(isEvent ? 'com participação consolidada nas atividades do evento' : 'vinculada ao evento', left, 326, { width: contentWidth, align: 'center' });
+    this.centeredLine(doc, isEvent ? 'Instituto Federal do Ceará' : data.eventTitle, 346, contentWidth, 'CertificateBold', 14, 9, COLORS.ink);
 
-    this.centeredLine(doc, data.eventTitle, 346, contentWidth, 'CertificateBold', 14, 9, COLORS.ink);
-
-    const dateRange = `${this.formatDate(data.actionStartDate)} a ${this.formatDate(data.actionEndDate)}`;
-    const hours = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(data.certifiedMinutes / 60);
-    const isEternallyPersonalized =
-      data.participantName.trim().toLocaleLowerCase('pt-BR') === 'minha ruivinha linda' &&
-      data.actionTitle.trim().toLocaleLowerCase('pt-BR') === 'amor da vida de josé' &&
-      data.eventTitle.trim().toLocaleLowerCase('pt-BR') === 'amar josé';
-    const details = isEternallyPersonalized
-      ? `Per\u00edodo: ${dateRange}. Tempo de participa\u00e7\u00e3o: Eternamente.`
-      : `Per\u00edodo: ${dateRange}. Carga hor\u00e1ria certificada: ${hours} ${data.certifiedMinutes / 60 === 1 ? 'hora' : 'horas'}.`;
+    const startDate = isEvent ? data.eventStartDate : data.actionStartDate;
+    const endDate = isEvent ? data.eventEndDate : data.actionEndDate;
+    const period = formatCertificatePeriod(startDate, endDate, isEvent ? 'EVENT' : 'ACTION');
+    const hours = formatCertificateDuration(data.certifiedMinutes);
+    const attendance = isEvent && typeof data.attendancePercent === 'number'
+      ? ` Frequência: ${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(data.attendancePercent)}%.`
+      : '';
+    const details = `${period}. Carga horária certificada: ${hours}.${attendance}`;
     doc.font('CertificateRegular').fontSize(10.5).fillColor(COLORS.ink)
       .text(this.repairMojibake(details), left, 373, { width: contentWidth, align: 'center' });
 
@@ -140,18 +179,19 @@ export class CertificatePdfService {
     doc.font('CertificateRegular').fontSize(9.5).fillColor(COLORS.muted)
       .text(this.repairMojibake(issuanceLine), left, 394, { width: contentWidth, align: 'center' });
 
-    // Linhas reservadas para assinaturas institucionais.
-    const signatureY = 435;
-    const signatureGap = 34;
-    const signatureWidth = (contentWidth - signatureGap) / 2;
-    const leftSignatureX = left;
-    const rightSignatureX = left + signatureWidth + signatureGap;
+    // Não simula assinaturas manuscritas nem atribui responsabilidade a pessoas não identificadas.
+    // O código único e o QR Code permitem conferir a autenticidade diretamente no SIGE.
+    const electronicBoxX = left + 116;
+    const electronicBoxWidth = contentWidth - 232;
     doc.lineWidth(0.75).strokeColor(COLORS.rule)
-      .moveTo(leftSignatureX + 25, signatureY).lineTo(leftSignatureX + signatureWidth - 25, signatureY).stroke()
-      .moveTo(rightSignatureX + 25, signatureY).lineTo(rightSignatureX + signatureWidth - 25, signatureY).stroke();
-    doc.font('CertificateRegular').fontSize(8.5).fillColor(COLORS.muted)
-      .text('Respons\u00e1vel pela a\u00e7\u00e3o', leftSignatureX, signatureY + 7, { width: signatureWidth, align: 'center' })
-      .text('Coordena\u00e7\u00e3o do evento', rightSignatureX, signatureY + 7, { width: signatureWidth, align: 'center' });
+      .roundedRect(electronicBoxX, 422, electronicBoxWidth, 38, 5).stroke();
+    doc.font('CertificateBold').fontSize(9).fillColor(COLORS.darkGreen)
+      .text('REGISTRO DE CERTIFICAÇÃO ELETRÔNICA', electronicBoxX + 12, 428, {
+        width: electronicBoxWidth - 24, align: 'center',
+      });
+    doc.font('CertificateRegular').fontSize(8.3).fillColor(COLORS.muted)
+      .text('Emissão automatizada pelo SIGE IFCE. Autenticidade verificável por código e QR Code.',
+        electronicBoxX + 10, 444, { width: electronicBoxWidth - 20, align: 'center' });
 
     // RodapÃ© com identificador e QR Code. O QR aponta para a consulta pÃºblica da API.
     doc.lineWidth(0.6).strokeColor(COLORS.lightGreen).moveTo(left, 474).lineTo(right, 474).stroke();
@@ -249,11 +289,6 @@ export class CertificatePdfService {
   }
 
   private formatDate(value: Date): string {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'America/Fortaleza',
-    }).format(value);
+    return formatCertificateDate(value);
   }
 }

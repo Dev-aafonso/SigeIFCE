@@ -148,8 +148,9 @@ function backButton() {
   return '<button type="button" class="botao-opcao-modal botao-voltar-conta" data-account-action="home">Voltar ao perfil</button>';
 }
 
-function openProfileForm(dialog) {
-  const user = getUser();
+async function openProfileForm(dialog) {
+  let user = getUser();
+  try { user = { ...user, ...await requestApi(API_ROUTES.profile, {}) }; } catch (error) { window.sigeNotify?.("Não foi possível carregar seus dados. Tente novamente.", "erro"); return; }
   renderAccountView(
     dialog,
     "Meus Dados",
@@ -164,6 +165,9 @@ function openProfileForm(dialog) {
                 <label for="email-conta">E-mail *</label>
                 <input id="email-conta" name="email" type="email" value="${escapeHtml(user.email || "")}" autocomplete="email" required>
             </div>
+            <div class="grupo-formulario"><label for="matricula-conta">Matrícula no SUAP</label><input id="matricula-conta" name="enrollmentNumber" maxlength="100" value="${escapeHtml(user.enrollmentNumber || '')}"></div>
+            <div class="grupo-formulario"><label for="curso-conta">Curso</label><input id="curso-conta" name="course" maxlength="150" value="${escapeHtml(user.course || '')}"></div>
+            <div class="grupo-formulario"><label for="campus-conta">Campus</label><input id="campus-conta" name="campus" maxlength="150" value="${escapeHtml(user.campus || '')}"></div>
             <p id="mensagem-dados-conta" class="mensagem-conta" role="alert" aria-live="polite"></p>
             <button class="botao-primario" type="submit">Salvar alterações</button>
             ${backButton()}
@@ -273,7 +277,7 @@ function saveProfile(event) {
 
   submitAccountForm(event, {
     url: API_ROUTES.profile,
-    body: () => ({ name, email }),
+    body: () => ({ name, email, enrollmentNumber: form.elements.enrollmentNumber.value, course: form.elements.course.value, campus: form.elements.campus.value }),
     loading: "Salvando seus dados...",
     success: (response) => {
       const current = getUser();
@@ -345,9 +349,14 @@ function initializeAccount() {
           if (typeof result?.message !== "string") {
             throw new Error("Logout was not confirmed by the server.");
           }
-          localStorage.removeItem(STORAGE_KEYS.token);
-          localStorage.removeItem(STORAGE_KEYS.user);
-          window.location.assign("/auth");
+          try {
+            localStorage.removeItem(STORAGE_KEYS.token);
+            localStorage.removeItem(STORAGE_KEYS.user);
+          } catch (error) {
+            console.error("Não foi possível limpar os dados locais da sessão.", error);
+          }
+          if (dialog.open) dialog.close();
+          window.location.replace("/#/auth/login");
         })
         .catch(() => {
           button.disabled = false;

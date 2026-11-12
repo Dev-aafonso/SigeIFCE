@@ -38,8 +38,17 @@ jobs:
       - name: Generate Prisma
         run: npx prisma generate
 
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
       - name: Build
         run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Frontend tests
+        run: npm run test:frontend
 
       - name: Test
         run: npm test -- --runInBand

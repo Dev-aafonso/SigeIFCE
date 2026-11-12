@@ -48,8 +48,10 @@
           data-testid="attendance-event-id"
           autocomplete="off"
           required
-          placeholder="ID do evento"
+          placeholder="Digite o nome do evento"
+          list="eventos-participantes"
         />
+        <datalist id="eventos-participantes"></datalist>
       </label>
       <button
         class="botao-inscricao botao-inscricao-primario"
@@ -77,7 +79,7 @@
           id="busca-participantes"
           type="search"
           data-testid="search-attendance"
-          placeholder="Pesquisar por nome, documento ou e-mail..."
+          placeholder="Pesquisar por nome ou e-mail..."
           autocomplete="off"
         />
       </label>
@@ -135,6 +137,10 @@
         <thead>
           <tr>
             <th scope="col">Participante</th>
+            <th scope="col">Matrícula / Curso</th>
+            <th scope="col">Campus</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Status</th>
             <th scope="col">Ação</th>
             <th scope="col">Data da inscrição</th>
             <th scope="col">Presença</th>

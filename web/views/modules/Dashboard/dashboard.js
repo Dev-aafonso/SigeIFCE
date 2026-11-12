@@ -4,21 +4,20 @@ import {
   MODULE_LABELS,
 } from "../../../shared/core/access-control.mjs";
 
-const storedUser = (() => {
+function obterUsuarioAtual() {
   try {
     const user = JSON.parse(localStorage.getItem("sige_user") || "{}");
     return user && typeof user === "object" ? user : {};
-  } catch (error) {
-    console.error("Não foi possível ler o perfil salvo.", error);
+  } catch {
     return {};
   }
-})();
-
-const role = typeof storedUser.role === "string" ? storedUser.role : "";
-const name =
-  storedUser.name || storedUser.nome || storedUser.email || "usuário";
+}
 
 window.inicializarPainelPerfil = () => {
+  // O módulo é importado uma única vez; o usuário deve ser lido a cada navegação.
+  const usuario = obterUsuarioAtual();
+  const role = typeof usuario.role === "string" ? usuario.role : "";
+  const name = usuario.name || usuario.nome || usuario.email || "usuário";
   const description = document.getElementById("descricao-painel-perfil");
   const title = document.getElementById("titulo-painel-perfil");
   const shortcuts = document.getElementById("atalhos-painel-perfil");
@@ -28,6 +27,7 @@ window.inicializarPainelPerfil = () => {
   if (description)
     description.textContent = `Perfil atual: ${getRoleLabel(role)}. Acesse as áreas disponíveis para sua função.`;
   initializeAdministrativeMetrics(role);
+  initializeOverview(role);
   shortcuts.replaceChildren();
 
   const modules = getAllowedModules(role).filter(
@@ -45,13 +45,23 @@ window.inicializarPainelPerfil = () => {
     button.className = "atalho-perfil";
     button.type = "button";
 
+    // Reutiliza os ícones da navegação para manter a identidade de cada módulo.
+    const iconContainer = document.createElement("span");
+    iconContainer.className = "icone-atalho-perfil";
+    iconContainer.setAttribute("aria-hidden", "true");
+    const menuButton = Array.from(document.querySelectorAll(".botao-menu[data-module]"))
+      .find((item) => item.dataset.module === module);
+    const icon = menuButton?.querySelector("svg")?.cloneNode(true);
+    if (icon) iconContainer.append(icon);
+    const text = document.createElement("span");
+    text.className = "texto-atalho-perfil";
     const label = document.createElement("strong");
     label.textContent = MODULE_LABELS[module];
     const hint = document.createElement("span");
     hint.textContent = "Abrir módulo";
-    button.append(label, hint);
+    text.append(label, hint);
+    button.append(iconContainer, text);
     button.addEventListener("click", () => {
-      history.pushState({ module }, "", `/#/${module}`);
       window.navegarParaModulo?.(module);
     });
     shortcuts.append(button);
@@ -61,7 +71,7 @@ window.inicializarPainelPerfil = () => {
 function initializeAdministrativeMetrics(currentRole) {
   const panel = document.getElementById("painel-metricas-administrativas");
   if (!panel) return;
-  if (!["ADMIN", "ORGANIZADOR"].includes(currentRole.trim().toUpperCase())) {
+  if (!["ADMIN", "ORGANIZADOR", "PROFESSOR"].includes(currentRole.trim().toUpperCase())) {
     panel.hidden = true;
     return;
   }
@@ -250,89 +260,57 @@ function initializeAdministrativeMetrics(currentRole) {
       target.append(empty);
       return;
     }
-    const width = Math.max(340, actions.length * 94 + 44);
-    const height = 164;
-    const chartHeight = 112;
-    const top = 10;
-    const max = Math.max(
-      1,
-      ...actions.map(
-        (action) =>
-          toNumber(...maximumKeys.map((key) => action[key])) ??
-          toNumber(...valueKeys.map((key) => action[key])) ??
-          0,
-      ),
-    );
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    svg.setAttribute("aria-hidden", "true");
-    for (let tick = 0; tick <= 2; tick += 1) {
-      const y = top + (chartHeight * tick) / 2;
-      const line = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "line",
-      );
-      line.setAttribute("x1", "32");
-      line.setAttribute("x2", String(width - 8));
-      line.setAttribute("y1", String(y));
-      line.setAttribute("y2", String(y));
-      line.setAttribute("class", "grade-grafico-dashboard");
-      svg.append(line);
+    const isAttendance = targetId === "dashboard-grafico-frequencia";
+    const primaryLabel = isAttendance ? "Presentes" : "Inscritos";
+    const comparisonLabel = isAttendance ? "Inscritos" : "Capacidade";
+    const values = actions.map((action) => ({
+      name: action.title || action.name || action.nome || "Ação",
+      value: Math.max(0, toNumber(...valueKeys.map((key) => action[key])) ?? 0),
+      limit: toNumber(...maximumKeys.map((key) => action[key])),
+    }));
+    const max = Math.max(1, ...values.flatMap(({ value, limit }) => [value, Math.max(0, limit ?? 0)]));
+    const legend = document.createElement("div");
+    legend.className = "legenda-acoes-dashboard";
+    for (const [label, className] of [[comparisonLabel, "comparacao"], [primaryLabel, "principal"]]) {
+      const item = document.createElement("span");
+      const swatch = document.createElement("i");
+      swatch.className = className;
+      swatch.setAttribute("aria-hidden", "true");
+      item.append(swatch, document.createTextNode(label));
+      legend.append(item);
     }
-    actions.forEach((action, index) => {
-      const value = toNumber(...valueKeys.map((key) => action[key])) ?? 0;
-      const limit = toNumber(...maximumKeys.map((key) => action[key]));
-      const center = 44 + index * ((width - 48) / actions.length);
-      const barWidth = Math.min(28, (width / actions.length) * 0.42);
-      const addBar = (barValue, x, className) => {
-        const bar = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "rect",
-        );
-        bar.setAttribute("x", String(x));
-        bar.setAttribute(
-          "y",
-          String(top + chartHeight - (barValue / max) * chartHeight),
-        );
-        bar.setAttribute("width", String(barWidth));
-        bar.setAttribute("height", String((barValue / max) * chartHeight));
-        bar.setAttribute("rx", "3");
-        bar.setAttribute("class", className);
-        const titleNode = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "title",
-        );
-        titleNode.textContent = `${action.title || action.name || action.nome || "Ação"}: ${format(barValue)}`;
-        bar.append(titleNode);
-        svg.append(bar);
+    target.append(legend);
+    const scroll = document.createElement("div");
+    scroll.className = "grafico-acoes-rolagem";
+    const chart = document.createElement("div");
+    chart.className = "grafico-acoes-colunas";
+    chart.setAttribute("role", "list");
+    values.forEach(({ name, value, limit }) => {
+      const column = document.createElement("div");
+      column.className = "grafico-acao-coluna";
+      column.setAttribute("role", "listitem");
+      const bars = document.createElement("div");
+      bars.className = "grafico-acao-barras";
+      bars.setAttribute("aria-hidden", "true");
+      const addBar = (amount, className) => {
+        const bar = document.createElement("span");
+        bar.className = `grafico-acao-barra ${className}`;
+        bar.style.height = `${(Math.max(0, amount) / max) * 100}%`;
+        bars.append(bar);
       };
-      if (limit !== null) {
-        addBar(limit, center - barWidth - 1, "barra-dashboard-secundaria");
-        addBar(value, center + 1, "barra-dashboard-primaria");
-      } else {
-        addBar(value, center - barWidth / 2, "barra-dashboard-primaria");
-      }
-      const label = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "text",
-      );
-      label.setAttribute("x", String(center));
-      label.setAttribute("y", String(top + chartHeight + 18));
-      label.setAttribute("text-anchor", "middle");
-      const titleNode = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "title",
-      );
-      titleNode.textContent =
-        action.title || action.name || action.nome || "Ação";
-      label.textContent =
-        titleNode.textContent.length > 12
-          ? `${titleNode.textContent.slice(0, 11)}â€¦`
-          : titleNode.textContent;
-      label.append(titleNode);
-      svg.append(label);
+      if (limit !== null) addBar(limit, "comparacao");
+      addBar(value, "principal");
+      const label = document.createElement("span");
+      label.className = "grafico-acao-nome";
+      label.textContent = name;
+      const detail = document.createElement("span");
+      detail.className = "grafico-acao-valores";
+      detail.textContent = `${primaryLabel}: ${format(value)}${limit !== null ? ` · ${comparisonLabel}: ${format(limit)}` : ""}`;
+      column.append(bars, label, detail);
+      chart.append(column);
     });
-    target.append(svg);
+    scroll.append(chart);
+    target.append(scroll);
   };
   const loadMetrics = async () => {
     const eventId = select.value;
@@ -353,17 +331,30 @@ function initializeAdministrativeMetrics(currentRole) {
     }
     setState("Carregando indicadores...");
     try {
-      const response = await readJson(
-        `/relatorios/metricas/evento/${encodeURIComponent(eventId)}`,
-      );
+      const [overview, actionRows] = await Promise.all([
+        readJson(`/dashboard/overview?eventId=${encodeURIComponent(eventId)}`),
+        readJson(`/dashboard/actions?eventId=${encodeURIComponent(eventId)}`),
+      ]);
       if (currentSequence !== sequence) return;
-      const envelope = unwrap(response) || {};
-      const data =
-        envelope.metrics ||
-        envelope.metricas ||
-        envelope.statistics ||
-        envelope.estatisticas ||
-        envelope;
+      const totals = overview.totals || {};
+      const entries = Array.isArray(actionRows) ? actionRows : [];
+      const actionsForCharts = entries.map((action) => ({
+        ...action,
+        registrations: action.activeRegistrations ?? 0,
+        present: action.presentRegistrations ?? 0,
+      }));
+      const data = {
+        registrations: totals.activeRegistrations ?? 0,
+        present: totals.presentRegistrations ?? 0,
+        absent: totals.absentRegistrations ?? 0,
+        attendanceRate: totals.attendanceRate ?? 0,
+        capacity: entries.reduce((sum, action) => sum + Number(action.capacity || 0), 0),
+        actions: actionsForCharts,
+      };
+      const certificatesInfo = document.getElementById('dashboard-resumo-certificados');
+      if (certificatesInfo) {
+        certificatesInfo.textContent = `Certificados válidos: ${totals.certificatesValid ?? 0} · Eventos: ${totals.certificatesConsolidated ?? 0} · Ações legadas: ${totals.certificatesLegacy ?? 0}`;
+      }
       const actions = updateIndicators(data);
       const hasSummary =
         [
@@ -430,7 +421,7 @@ function initializeAdministrativeMetrics(currentRole) {
   const loadEvents = async () => {
     select.disabled = true;
     try {
-      const response = await readJson("/events?limit=100&page=1");
+      const response = await readJson("/dashboard/filters");
       const envelope = unwrap(response);
       const events = Array.isArray(response)
         ? response
@@ -476,4 +467,79 @@ function initializeAdministrativeMetrics(currentRole) {
       select.value ? loadMetrics() : loadEvents(),
     );
   loadEvents();
+}
+
+
+function initializeOverview(role) {
+  const panel = document.getElementById("dashboard-visao-geral");
+  if (!panel) return;
+  panel.hidden = !["ADMIN", "ORGANIZADOR", "PROFESSOR"].includes(role.trim().toUpperCase());
+  if (panel.hidden) return;
+  const state = document.getElementById("dashboard-visao-estado");
+  const el = (tag, text, className) => {
+    const node = document.createElement(tag);
+    if (text != null) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  };
+  const empty = (target, message) => target.replaceChildren(el("p", message, "dashboard-vazio"));
+  document.getElementById("dashboard-ver-eventos").onclick = () => window.navegarParaModulo?.("events");
+  state.textContent = "Carregando visão geral...";
+  fetch("/dashboard/summary", { credentials: "same-origin", headers: { Accept: "application/json" } })
+    .then(response => { if (!response.ok) throw new Error(); return response.json(); })
+    .then(data => {
+      state.textContent = "";
+      const upcoming = document.getElementById("dashboard-proximos");
+      upcoming.replaceChildren();
+      if (!data.upcoming.length) empty(upcoming, "Nenhum evento próximo disponível.");
+      data.upcoming.forEach(event => {
+        const date = new Date(event.startDate);
+        const row = el("div", null, "dashboard-linha");
+        const badge = el("span", null, "dashboard-data");
+        badge.append(el("strong", new Intl.DateTimeFormat("pt-BR", { day: "2-digit" }).format(date)), el("small", new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(date).replace(".", "").toUpperCase()));
+        const info = el("div", null, "dashboard-linha-info");
+        info.append(el("strong", event.title), el("small", `${event.location || "Local não informado"} · ${new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(date)}`));
+        row.append(badge, info, el("span", event.status === "EM_ANDAMENTO" ? "Em andamento" : "Publicado", "dashboard-situacao"));
+        upcoming.append(row);
+      });
+      const activity = document.getElementById("dashboard-atividade");
+      activity.replaceChildren();
+      if (!data.activity.length) empty(activity, "Nenhuma atividade recente disponível.");
+      data.activity.forEach(item => {
+        const row = el("div", null, "dashboard-linha");
+        const initials = item.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+        const info = el("div", null, "dashboard-linha-info");
+        const text = el("p"); text.append(el("strong", item.name), document.createTextNode(` ${item.kind} `), el("strong", item.event, "dashboard-destaque"));
+        info.append(text, el("small", new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(item.date))));
+        row.append(el("span", initials, "dashboard-avatar"), info); activity.append(row);
+      });
+      drawOverviewChart("dashboard-eventos-grafico", data.events.slice(0, 5), false);
+      drawOverviewChart("dashboard-tendencia", data.trend, true);
+    }).catch(() => { state.textContent = "Não foi possível carregar a visão geral. Atualize a página para tentar novamente."; });
+}
+
+function drawOverviewChart(id, rows, lineChart) {
+  const target = document.getElementById(id); target.replaceChildren();
+  if (!rows.length) { const p = document.createElement("p"); p.className = "dashboard-vazio"; p.textContent = "Sem dados disponíveis."; target.append(p); return; }
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg"); svg.setAttribute("viewBox", "0 0 600 220"); svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", lineChart ? "Participantes únicos por mês: inscrições e presenças" : "Inscrições e capacidade por evento");
+  const node = (tag, attrs, text) => { const n = document.createElementNS(ns, tag); Object.entries(attrs).forEach(([key, value]) => n.setAttribute(key, String(value))); if (text != null) n.textContent = text; svg.append(n); return n; };
+  const first = row => lineChart ? row.registrations : row.capacity;
+  const second = row => lineChart ? row.presences : row.registrations;
+  const max = Math.max(1, ...rows.flatMap(row => [first(row), second(row)]));
+  for (let i = 0; i <= 4; i++) { const y = 20 + i * 38; node("line", { x1: 42, x2: 585, y1: y, y2: y, class: "dashboard-gridline" }); node("text", { x: 35, y: y + 4, "text-anchor": "end" }, Math.round(max * (4-i)/4)); }
+  const x = index => 60 + (index + .5) * 510 / rows.length;
+  const y = value => 172 - value / max * 152;
+  if (lineChart) {
+    for (const [get, cls] of [[first, "dashboard-line-secondary"], [second, "dashboard-line-primary"]]) {
+      node("polyline", { points: rows.map((row, i) => `${x(i)},${y(get(row))}`).join(" "), class: cls });
+      rows.forEach((row, i) => { const dot = node("circle", { cx: x(i), cy: y(get(row)), r: 4, class: cls }); const title = document.createElementNS(ns, "title"); title.textContent = `${row.label}: ${get(row)}`; dot.append(title); });
+    }
+  } else rows.forEach((row, i) => {
+    [[first(row), "dashboard-bar-secondary", -22], [second(row), "dashboard-bar-primary", 1]].forEach(([value, cls, offset]) => { const bar = node("rect", { x: x(i) + offset, y: y(value), width: 21, height: 172 - y(value), rx: 3, class: cls }); const title = document.createElementNS(ns, "title"); title.textContent = `${row.title}: ${value}`; bar.append(title); });
+  });
+  rows.forEach((row, i) => { const label = lineChart ? row.label : row.title; node("text", { x: x(i), y: 194, "text-anchor": "middle" }, label.length > 13 ? `${label.slice(0, 12)}…` : label); });
+  target.append(svg);
+  const legend = document.createElement("p"); legend.className = "dashboard-legenda"; legend.textContent = lineChart ? "Cinza: inscritos · Verde: presentes" : "Cinza: capacidade · Verde: inscrições"; target.append(legend);
 }

@@ -547,21 +547,21 @@ body:has(.modulo-eventos) {
   font-size: var(--texto-xs);
 }
 
-.estado-inscricoes {
+.progresso-inscricoes-evento {
   height: 0.25rem;
   overflow: hidden;
   border-radius: 999px;
   background: var(--borda-barra-lateral);
 }
 
-.estado-inscricoes span {
+.progresso-inscricoes-evento span {
   display: block;
   width: 100%;
   height: 100%;
   background: var(--ativo-borda);
 }
 
-.estado-inscricoes[data-status="FULL"] span {
+.progresso-inscricoes-evento[data-status="FULL"] span {
   background: light-dark(#dc2626, #f87171);
 }
 
@@ -1477,3 +1477,63 @@ dialog.dialog-detalhes-evento[open]::backdrop {
     transition: none;
   }
 }
+
+.estatisticas-evento { padding: 0; margin: 0; list-style: none; align-items: center; }
+.estatisticas-evento li { display: flex; align-items: center; min-width: 0; }
+.erro-acao-evento:not(:empty) { padding: .75rem; border: 1px solid #dc2626; border-radius: .5rem; color: #b91c1c; background: #fef2f2; }
+
+/* Cartões de eventos: organização visual da lista pública. */
+.cartao-evento-publico { border-radius: 9px; box-shadow: none; }
+.capa-evento { height: 9rem; min-height: 9rem; padding: .75rem; }
+.capa-evento::before, .capa-evento::after { display: none; }
+.capa-evento-cancelado::after { display: grid; position: absolute; inset: 0; z-index: 1; width: auto; aspect-ratio: auto; place-items: center; border: 0; border-radius: 0; background: rgb(0 0 0 / .58); color: white; content: "CANCELADO"; font-size: 1.1rem; font-weight: 700; letter-spacing: .12em; }
+.categoria-evento { padding: .22rem .55rem; font-size: .67rem; line-height: 1.1; }
+.conteudo-cartao-evento { gap: .65rem; padding: 1rem 1.2rem .9rem; }
+.conteudo-cartao-evento h4 { min-height: 0; margin: 0; font-size: .92rem; line-height: 1.35; }
+.metadados-evento, .estatisticas-evento { margin: 0; padding: 0; list-style: none; }
+.metadados-evento { gap: .3rem; }
+.metadados-evento li { align-items: center; gap: .35rem; }
+.estatisticas-evento { gap: .4rem .8rem; }
+.estatisticas-evento li { gap: .25rem; }
+.icone-estatistica-evento { color: var(--texto-suave); font-size: .8rem; line-height: 1; }
+.progresso-inscricoes-evento { flex: 0 0 4px; height: 4px; }
+.progresso-inscricoes-evento[data-occupancy="high"] span { background: #d9820b; }
+.rodape-cartao-evento { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.rodape-cartao-evento .status-evento { font-size: .72rem; padding: .25rem .5rem; }
+.status-evento[data-status="CANCELLED"] { background: light-dark(#fef2f2, rgb(127 29 29 / .3)); color: light-dark(#b91c1c, #fca5a5); }
+.rodape-cartao-evento .botao-detalhes-evento { width: auto; height: auto; min-height: 2rem; padding: .25rem 0 .25rem .5rem; border: 0; background: transparent; color: var(--ativo-texto); white-space: nowrap; }
+.rodape-cartao-evento .botao-detalhes-evento::after { content: "›"; margin-left: .45rem; font-size: 1.15rem; }
+.rodape-cartao-evento .botao-detalhes-evento:hover { background: transparent; color: var(--ativo-texto); text-decoration: underline; transform: none; }
+
+/* Lista de eventos: proporções e hierarquia da referência. */
+.modulo-eventos.module-wrapper { width: min(100%, 77rem); max-width: 77rem; margin-inline: auto; padding: 0 0 1.5rem; border: 0; border-radius: 0; background: transparent; box-shadow: none; gap: 1.4rem; }
+.cabecalho-eventos { align-items: flex-start; }
+.cabecalho-eventos h2 { font-size: 1.5rem; line-height: 1.25; letter-spacing: 0; }
+.cabecalho-eventos p { font-size: .875rem; margin-top: .5rem; }
+.cabecalho-eventos .botao-evento { min-height: 2.4rem; height: auto; padding: .55rem 1rem; font-size: .875rem; box-shadow: none; }
+.secao-lista-eventos { gap: 1rem; }
+.filtros-eventos { padding: .9rem 1.15rem; gap: .65rem; border-radius: 9px; grid-template-columns: minmax(10rem,1fr) auto auto auto auto auto; }
+.filtros-eventos .campo-evento-busca input, .campo-filtro-evento select { height: 2.2rem; min-height: 2.2rem; font-size: .8rem; }
+.filtros-eventos > #limpar-filtros-eventos { width: auto; min-height: 2.2rem; height: 2.2rem; padding: .35rem .75rem; font-size: .8rem; }
+.rotulo-filtros-eventos, .filtros-data-eventos > summary { font-size: .8rem; }
+.resumo-lista-eventos { justify-content: flex-start; }
+.resumo-lista-eventos h3 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.resumo-lista-eventos p { font-size: .8rem; }
+.grade-eventos-publicos { gap: 1rem; }
+.cartao-evento-publico { border-radius: 9px; }
+.capa-evento { height: 9rem; min-height: 9rem; padding: .8rem; }
+.conteudo-cartao-evento { padding: 1rem 1.2rem .8rem; gap: .6rem; }
+.conteudo-cartao-evento h4 { font-size: .9rem; line-height: 1.35; }
+.metadados-evento { gap: .3rem; font-size: .8rem; }
+.estatisticas-evento { font-size: .75rem; }
+.rodape-cartao-evento .botao-detalhes-evento { font-size: .8rem; }
+@media (max-width: 1050px) { .filtros-eventos { grid-template-columns: minmax(0,1fr) auto auto; } .campo-evento-busca { grid-column: 1 / -1; } }
+@media (max-width: 620px) { .modulo-eventos.module-wrapper { width: 100%; } .filtros-eventos { grid-template-columns: repeat(2,minmax(0,1fr)); } .filtros-eventos .campo-evento-busca { grid-column: 1 / -1; } .rotulo-filtros-eventos { display: none; } .campo-filtro-evento select { min-width: 0; } .grade-eventos-publicos { grid-template-columns: minmax(0,1fr); } }
+
+/* O mesmo botão cobre o cartão inteiro e mantém um único foco por teclado. */
+.cartao-evento-publico { position: relative; cursor: pointer; }
+.cartao-evento-publico:focus-within { outline: 3px solid var(--anel-foco); outline-offset: 2px; }
+.rodape-cartao-evento .botao-detalhes-evento::before { content: ""; position: absolute; inset: 0; z-index: 3; cursor: pointer; }
+.metadado-icone-evento, .icone-estatistica-evento { display: inline-flex; align-items: center; justify-content: center; width: .85rem; flex: 0 0 .85rem; }
+.metadado-icone-evento svg, .icone-estatistica-evento svg { display: block; width: .78rem; height: .78rem; }
+.metadados-evento li, .estatisticas-evento li { line-height: 1.35; }

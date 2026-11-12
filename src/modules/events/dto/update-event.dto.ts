@@ -1,5 +1,8 @@
 import {
   IsDateString,
+  ValidateIf,
+  IsInt,
+  Min,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -34,4 +37,14 @@ export class UpdateEventDto {
   @IsString()
   @MaxLength(255)
   location?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsString() @IsNotEmpty() @MaxLength(100)
+  category?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsInt() @Min(1)
+  workloadMinutes?: number;
+  @ValidateIf((_object, value) => value !== undefined) @IsDateString()
+  registrationStartDate?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsDateString()
+  registrationEndDate?: string;
+  @ValidateIf((_object, value) => value !== undefined) @IsInt() @Min(1)
+  totalCapacity?: number;
 }

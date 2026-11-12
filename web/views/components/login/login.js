@@ -72,14 +72,13 @@ function saveSession(data) {
 }
 
 function getDestination(user) {
-  return ["ADMIN", "ORGANIZADOR"].includes(String(user.role).toUpperCase())
+  return ["ADMIN", "ORGANIZADOR", "PROFESSOR"].includes(String(user.role).toUpperCase())
     ? "Dashboard"
     : "events";
 }
 
 async function navigateAfterAuth(user) {
   const destination = getDestination(user);
-  history.pushState({ module: destination }, "", `/#/${destination}`);
   if (window.navegarParaModulo) {
     await window.navegarParaModulo(destination);
   } else {
@@ -155,11 +154,13 @@ document.addEventListener("submit", async (event) => {
   showMessage(message, "Criando sua conta...");
 
   try {
+    let selected = "aluno";
+    try { selected = sessionStorage.getItem("funcao_cadastro") || selected; } catch {}
+    const role = selected === "gestor" ? "ADMIN" : selected === "professor" ? "PROFESSOR" : "ALUNO";
+    const managerCode = document.getElementById("codigo-gestor")?.value || "";
     const data = await requestJson(AUTH_ROUTES.register, {
-      name,
-      email,
-      password,
-      passwordConfirmation: password,
+      name, email, password, passwordConfirmation: password, role,
+      ...(role === "ADMIN" ? { managerCode } : {}),
     });
     const user = saveSession(data);
     try {

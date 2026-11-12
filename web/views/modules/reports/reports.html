@@ -5,12 +5,8 @@
 >
   <header class="cabecalho-relatorios">
     <div>
-      <p class="sobretitulo-relatorios">ANÁLISE E ENCERRAMENTO</p>
-      <h2 id="titulo-relatorios">Relatórios e métricas</h2>
-      <p>
-        Acompanhe inscrições e frequência, consolide horas e exporte os dados do
-        evento.
-      </p>
+      <h2 id="titulo-relatorios">Relatórios</h2>
+      <p>Gere e exporte relatórios da plataforma</p>
     </div>
     <button
       id="atualizar-relatorios"
@@ -28,6 +24,55 @@
     aria-live="polite"
   ></p>
 
+  <div class="catalogo-relatorios" aria-label="Tipos de relatório">
+    <article><span class="catalogo-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg></span><h3>Relatório de Inscrições</h3><p>Gera relatórios de inscrições por evento ou por período.</p><button type="button" data-catalog-report="registrations">Gerar relatório</button></article>
+    <article><span class="catalogo-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-2a5.5 5.5 0 0 1 11 0v2M16 5a3 3 0 0 1 0 6M17 14a4.5 4.5 0 0 1 3.5 4.5V20"/></svg></span><h3>Relatório de Participação</h3><p>Gera relatórios de presença dos participantes.</p><button type="button" data-catalog-report="attendance">Gerar relatório</button></article>
+    <article><span class="catalogo-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="m9 12-1 9 4-2 4 2-1-9"/></svg></span><h3>Relatório de Certificados</h3><p>Gera relatórios de certificados emitidos.</p><button type="button" data-catalog-report="certificates">Gerar relatório</button></article>
+    <article><span class="catalogo-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h3M14 14h3M7 17h3"/></svg></span><h3>Relatório de Eventos</h3><p>Gera relatórios dos eventos cadastrados.</p><button type="button" data-catalog-report="events">Gerar relatório</button></article>
+    <article><span class="catalogo-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 6H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H6"/></svg></span><h3>Relatório Financeiro</h3><p>Relatórios financeiros não estão disponíveis neste sistema.</p><button type="button" disabled>Indisponível</button></article>
+    <article><span class="catalogo-icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M7 16v-5M12 16V4M17 16V8"/></svg></span><h3>Relatório Geral</h3><p>Consolida ações, inscrições, presenças e certificados por evento.</p><button type="button" data-catalog-report="general">Gerar relatório</button></article>
+  </div>
+  <section class="historico-relatorios" aria-labelledby="titulo-historico-relatorios">
+    <h3 id="titulo-historico-relatorios">Relatórios gerados recentemente</h3>
+    <div class="tabela-relatorios-wrapper"><table class="tabela-relatorios"><thead><tr><th>Nome do relatório</th><th>Gerado em</th><th>Tamanho</th><th>Formato</th><th>Ações</th></tr></thead><tbody id="historico-relatorios"></tbody></table><p id="estado-historico-relatorios" class="estado-relatorios">Nenhum relatório gerado nesta sessão.</p></div>
+  </section>
+  <section class="secao-relatorio digitalizacao-relatorios" aria-labelledby="titulo-digitalizar">
+    <div class="titulo-secao-relatorio"><div><h3 id="titulo-digitalizar">Digitalizar relatório manuscrito</h3><p>Leia a imagem, revise o texto e, se desejar, crie um evento em rascunho ou baixe um relatório. Vincular a um evento existente é opcional.</p></div></div>
+    <form id="form-digitalizar-relatorio" class="form-filtros-relatorios">
+      <label class="campo-relatorio">Buscar evento<input id="busca-evento-digitalizacao" type="search" placeholder="Digite o nome do evento" autocomplete="off"></label>
+      <label class="campo-relatorio">Evento (opcional)<select id="evento-digitalizacao"><option value="">Sem evento</option></select></label>
+      <label class="campo-relatorio">Foto do relatório<input id="foto-relatorio" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+      <button class="botao-relatorio botao-relatorio-primario" type="submit">Ler imagem</button>
+    </form>
+    <p id="estado-digitalizacao" role="status" aria-live="polite"></p>
+    <label class="campo-relatorio">Texto para revisão<textarea id="texto-digitalizado" rows="10" maxlength="50000" placeholder="O texto reconhecido aparecerá aqui para revisão."></textarea></label>
+    <button id="salvar-digitalizacao" class="botao-relatorio botao-relatorio-primario" type="button" disabled>Salvar relatório revisado</button>
+    <button id="baixar-digitalizacao" class="botao-relatorio botao-relatorio-secundario" type="button" disabled>Baixar texto em PDF</button>
+    <details class="secao-relatorio digitalizacao-criar-evento">
+      <summary>Criar evento a partir do texto</summary>
+      <p>Use os dados identificados como sugestões. Confira e complete os campos: o evento será salvo como rascunho.</p>
+      <button id="sugerir-evento-digitalizacao" class="botao-relatorio botao-relatorio-secundario" type="button">Preencher sugestões do texto</button>
+      <form id="form-evento-digitalizado" class="form-filtros-relatorios">
+        <label class="campo-relatorio">Nome do evento<input id="scan-evento-nome" minlength="3" maxlength="200" required></label>
+        <label class="campo-relatorio">Descrição<textarea id="scan-evento-descricao" minlength="10" maxlength="5000" required></textarea></label>
+        <label class="campo-relatorio">Data de início<input id="scan-evento-data-inicio" type="date" required></label>
+        <label class="campo-relatorio">Horário de início<input id="scan-evento-hora-inicio" type="time" required></label>
+        <label class="campo-relatorio">Data de término<input id="scan-evento-data-fim" type="date" required></label>
+        <label class="campo-relatorio">Horário de término<input id="scan-evento-hora-fim" type="time" required></label>
+        <label class="campo-relatorio">Local<input id="scan-evento-local" maxlength="255"></label>
+        <label class="campo-relatorio">Categoria<input id="scan-evento-categoria" maxlength="100"></label>
+        <label class="campo-relatorio">Vagas totais<input id="scan-evento-vagas" type="number" min="1" step="1"></label>
+        <button id="criar-evento-digitalizado" class="botao-relatorio botao-relatorio-primario" type="submit">Criar rascunho</button>
+      </form>
+    </details>
+    <div class="secao-relatorio digitalizacao-exportacao">
+      <h4>Baixar relatório do evento selecionado</h4>
+      <p>Os relatórios são gerados com os dados cadastrados no sistema, não com números presumidos da foto.</p>
+      <label class="campo-relatorio">Tipo de relatório<select id="tipo-relatorio-digitalizacao"><option value="general">Geral</option><option value="events">Eventos e ações</option><option value="registrations">Inscrições</option><option value="attendance">Frequência</option><option value="certificates">Certificados</option></select></label>
+      <button id="baixar-relatorio-evento-scan" class="botao-relatorio botao-relatorio-secundario" type="button">Baixar relatório do evento em PDF</button>
+    </div>
+    <div class="documentos-digitalizados"><h4>Documentos salvos</h4><div id="lista-digitalizacoes"></div></div>
+  </section>
   <section
     class="cartao-filtros-relatorios"
     aria-labelledby="titulo-filtros-relatorios"
@@ -52,6 +97,7 @@
         >
           <option value="">Carregando eventos...</option>
         </select>
+      </label>
         <label
           id="campo-id-evento-relatorio"
           class="campo-relatorio campo-evento-relatorio-id"
@@ -66,7 +112,6 @@
             placeholder="Cole o identificador do evento"
           />
         </label>
-      </label>
       <label class="campo-relatorio">
         <span>Ação</span>
         <select
@@ -95,15 +140,6 @@
           data-testid="report-end-date"
           type="date"
         />
-      </label>
-      <label class="campo-relatorio">
-        <span>Status de participação</span>
-        <select id="status-relatorio" name="status" data-testid="report-status">
-          <option value="">Todos</option>
-          <option value="PRESENT">Presente</option>
-          <option value="ABSENT">Ausente</option>
-          <option value="REGISTERED">Inscrito</option>
-        </select>
       </label>
       <button
         id="consultar-metricas-relatorio"

@@ -17,6 +17,7 @@ enum UserRole {
 enum EventStatus {
   RASCUNHO
   PUBLICADO
+  EM_ANDAMENTO
   ENCERRADO
   CANCELADO
 }
@@ -33,10 +34,17 @@ model User {
   email    String   @unique
   password String
   role     UserRole @default(ALUNO)
+  sessionVersion Int @default(0)
+  isActive Boolean @default(true)
+  lastAccessAt DateTime?
+  enrollmentNumber String?
+  course String?
+  campus String?
 
   events        Event[]
   registrations Registration[]
   certificates  Certificate[]
+  notificationReads NotificationRead[]
 }
 
 model Event {
@@ -46,6 +54,11 @@ model Event {
   startDate            DateTime
   endDate              DateTime
   location             String?
+  category             String?
+  workloadMinutes      Int?
+  registrationStartDate DateTime?
+  registrationEndDate   DateTime?
+  totalCapacity        Int?
   status               EventStatus @default(RASCUNHO)
   minAttendancePercent Int         @default(75)
   publishedAt          DateTime?
@@ -55,6 +68,8 @@ model Event {
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
 
+  scans        ScannedReport[]
+  cover        EventCover?
   organizer    User          @relation(fields: [organizerId], references: [id])
   actions      Action[]
   certificates Certificate[]
@@ -64,6 +79,13 @@ model Event {
   @@index([startDate])
   @@index([endDate])
   @@index([title])
+}
+
+model EventCover {
+  eventId String @id
+  mimeType String
+  data Bytes
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model Action {
@@ -130,6 +152,7 @@ model Presence {
 }
 
 model Certificate {
+  scope             String   @default("ACTION")
   id                String   @id @default(cuid())
   userId            String
   eventId           String
@@ -151,4 +174,24 @@ model Certificate {
   @@index([eventId])
   @@index([userId])
   @@index([actionId])
+  @@index([scope, eventId])
+}
+
+// Marcação de leitura para avisos derivados do histórico do próprio usuário.
+model NotificationRead {
+  userId String
+  key String
+  readAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, key])
+}
+
+model ScannedReport {
+  id String @id @default(cuid())
+  eventId String?
+  authorId String
+  text String
+  createdAt DateTime @default(now())
+  event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  @@index([eventId])
 }

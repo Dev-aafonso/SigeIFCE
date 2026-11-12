@@ -1,40 +1,6 @@
 <div class="module-wrapper fade-in gerenciamento-usuarios">
-  <header class="cabecalho-usuarios">
-    <div>
-      <h2>Gerenciar usuários</h2>
-      <p>Consulte as contas e atualize seus perfis de acesso.</p>
-    </div>
-    <button
-      class="botao-atualizar-usuarios"
-      id="atualizar-usuarios"
-      type="button"
-    >
-      Atualizar lista
-    </button>
-  </header>
-
-  <p
-    id="mensagem-usuarios"
-    class="mensagem-usuarios"
-    role="status"
-    aria-live="polite"
-  ></p>
-
-  <div class="tabela-usuarios-conteiner">
-    <table class="tabela-usuarios">
-      <thead>
-        <tr>
-          <th scope="col">E-mail</th>
-          <th scope="col">Identificador</th>
-          <th scope="col">Perfil</th>
-          <th scope="col">Ações</th>
-        </tr>
-      </thead>
-      <tbody id="lista-usuarios">
-        <tr>
-          <td colspan="4">Carregando usuários...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <header class="cabecalho-usuarios"><div><h2>Usuários</h2><p>Gerencie os usuários e permissões da plataforma</p></div><button class="botao-atualizar-usuarios" id="atualizar-usuarios" type="button">Atualizar lista</button></header>
+  <p id="mensagem-usuarios" class="mensagem-usuarios" role="status" aria-live="polite"></p>
+  <div class="filtros-usuarios"><label><span class="rotulo-somente-leitor">Pesquisar usuário</span><input id="busca-usuarios" type="search" placeholder="Pesquisar usuário..."></label><label><span class="rotulo-somente-leitor">Perfil</span><select id="filtro-perfil-usuarios"><option value="">Perfil: Todos</option><option value="ADMIN">Administrador</option><option value="ORGANIZADOR">Organizador</option><option value="PROFESSOR">Professor</option><option value="ALUNO">Aluno</option></select></label><label><span class="rotulo-somente-leitor">Status</span><select id="filtro-status-usuarios"><option value="">Status: Todos</option><option value="true">Ativo</option><option value="false">Inativo</option></select></label></div>
+  <div class="tabela-usuarios-conteiner"><table class="tabela-usuarios"><thead><tr><th scope="col">Usuário</th><th scope="col">Perfil</th><th scope="col">Status</th><th scope="col">Último acesso</th><th scope="col">Ações</th></tr></thead><tbody id="lista-usuarios"><tr><td colspan="5">Carregando usuários...</td></tr></tbody></table><footer id="contagem-usuarios" class="rodape-usuarios"></footer></div>
 </div>

@@ -11,6 +11,16 @@
     </p>
   </header>
 
+  <section id="dashboard-visao-geral" class="dashboard-visao-geral" aria-label="Visão geral" hidden>
+    <p id="dashboard-visao-estado" role="status" aria-live="polite">Carregando visão geral...</p>
+    <div class="dashboard-grade-geral">
+      <article class="dashboard-painel"><header><div><h3>Próximos eventos</h3><p>Ordenados por data</p></div><button type="button" id="dashboard-ver-eventos">Ver todos ↗</button></header><div id="dashboard-proximos"></div></article>
+      <article class="dashboard-painel"><header><div><h3>Inscrições por evento</h3><p>Inscrições ativas nas ações vs capacidade</p></div></header><div id="dashboard-eventos-grafico" class="dashboard-visual"></div></article>
+      <article class="dashboard-painel"><header><div><h3>Participação</h3><p>Participantes únicos por mês nos últimos 6 meses</p></div></header><div id="dashboard-tendencia" class="dashboard-visual"></div></article>
+      <article class="dashboard-painel"><header><div><h3>Atividade recente</h3><p>Inscrições e presenças</p></div></header><div id="dashboard-atividade"></div></article>
+    </div>
+  </section>
+
   <section
     id="painel-metricas-administrativas"
     class="painel-metricas-administrativas"
@@ -49,7 +59,8 @@
         </button>
       </div>
     </header>
-    <p
+    <p id="dashboard-resumo-certificados" role="status" aria-live="polite"></p>
+      <p
       id="estado-dashboard-administrativo"
       class="estado-dashboard-administrativo"
       role="status"
@@ -119,7 +130,7 @@
         <h4>Inscritos por ação</h4>
         <div
           id="dashboard-grafico-inscritos"
-          role="img"
+          role="region"
           aria-label="Gráfico de inscrições por ação"
         ></div>
       </article>
@@ -127,7 +138,7 @@
         <h4>Frequência por ação</h4>
         <div
           id="dashboard-grafico-frequencia"
-          role="img"
+          role="region"
           aria-label="Gráfico de presentes por ação"
         ></div>
       </article>

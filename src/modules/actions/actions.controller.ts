@@ -48,7 +48,7 @@ export class ActionsController {
     return this.service.findPublicById(id);
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post('events/:eventId/actions')
   create(
     @Param('eventId') eventId: string,
@@ -62,7 +62,7 @@ export class ActionsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Patch('actions/:id')
   update(
     @Param('id') id: string,
@@ -76,7 +76,7 @@ export class ActionsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post('actions/:id/cancel')
   cancel(
     @Param('id') id: string,
@@ -88,7 +88,7 @@ export class ActionsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post('actions/:id/close')
   close(
     @Param('id') id: string,

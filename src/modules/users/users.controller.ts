@@ -14,6 +14,7 @@ import { UserRole } from '../../generated/prisma/client';
 import { SelectRoleDto } from '../auth/dto/select-role.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateStatusDto } from './dto/update-status.dto';
 import { UsersService } from './users.service';
 
 type AuthenticatedRequest = Request & {
@@ -99,6 +100,11 @@ export class UsersController {
   @Patch(':id/role')
   updateRole(@Param('id') id: string, @Body() dto: SelectRoleDto) {
     return this.usersService.updateRole(id, dto.role);
+  }
+
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto, @Req() request: AuthenticatedRequest) {
+    return this.usersService.updateStatus(id, dto.isActive, getAuthenticatedUserId(request));
   }
 
   @Delete(':id')

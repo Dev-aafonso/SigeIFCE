@@ -30,7 +30,23 @@ export function buildEventPayload(fields) {
   if (location.length > 255)
     throw new Error("O local pode ter no máximo 255 caracteres.");
 
+  const rn = {};
+  if (fields.category) rn.category = requiredText(fields.category, "A categoria", 1, 100);
+  for (const key of ["workloadMinutes", "totalCapacity"]) {
+    if (fields[key] !== undefined && fields[key] !== "") {
+      const value = Number(fields[key]);
+      if (!Number.isInteger(value) || value <= 0) throw new Error("Carga horária e vagas devem ser inteiros positivos.");
+      rn[key] = value;
+    }
+  }
+  if (fields.registrationStartDate || fields.registrationEndDate) {
+    rn.registrationStartDate = toIsoDate(fields.registrationStartDate, "a abertura das inscrições");
+    rn.registrationEndDate = toIsoDate(fields.registrationEndDate, "o encerramento das inscrições");
+    if (rn.registrationStartDate >= rn.registrationEndDate || rn.registrationEndDate > endDate)
+      throw new Error("A janela de inscrições deve ter início antes do fim e terminar até o fim do evento.");
+  }
   return {
+    ...rn,
     title,
     description,
     startDate,

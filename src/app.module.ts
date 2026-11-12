@@ -15,6 +15,7 @@ import { ActionsModule } from './modules/actions/actions.module';
 import { RegistrationsModule } from './modules/registrations/registrations.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     CertificatesModule,
     DashboardModule,
     ReportsModule,
+    NotificationsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

@@ -21,6 +21,8 @@ describe('RegistrationsService.cancelForAction', () => {
   let updatedArgs: unknown;
 
   const prismaMock = {
+    $queryRaw: async (_sql: unknown) => registration ? [{ id: registration.id }] : [],
+    $transaction: async (callback: (tx: unknown) => Promise<unknown>) => callback(prismaMock),
     registration: {
       findUnique: async (_args: unknown) => registration,
       update: async (args: unknown) => {
@@ -51,7 +53,7 @@ describe('RegistrationsService.cancelForAction', () => {
       action: {
         id: 'action-test-1',
         status: ActionStatus.ATIVA,
-        startDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        startDate: new Date(Date.now() + 48 * 60 * 60 * 1000),
       },
       presence: null,
       certificate: null,
@@ -103,6 +105,13 @@ describe('RegistrationsService.cancelForAction', () => {
   it('rejeita cancelamento quando a acao ja comecou', async () => {
     registration!.action.startDate = new Date(Date.now() - 60_000);
     await expect(service.cancelForAction('user-test-1', 'action-test-1')).rejects.toThrow('Nao e possivel cancelar a inscricao apos o inicio da acao.');
+    expect(updateCalls).toBe(0);
+  });
+
+  it('bloqueia o cancelamento com menos de 24 horas para a acao', async () => {
+    registration!.action.startDate = new Date(Date.now() + 23 * 60 * 60 * 1000);
+    await expect(service.cancelForAction('user-test-1', 'action-test-1'))
+      .rejects.toThrow('antecedencia minima de 24 horas');
     expect(updateCalls).toBe(0);
   });
 

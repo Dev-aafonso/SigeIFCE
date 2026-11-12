@@ -7,6 +7,7 @@ import {
 
 import {
   ActionStatus,
+  EventStatus,
   RegistrationStatus,
 } from '../../generated/prisma/client';
 
@@ -16,6 +17,9 @@ type FakeAction = {
   id: string;
   capacity: number;
   status: ActionStatus;
+  startDate: Date;
+  endDate: Date;
+  event: { status: EventStatus; endDate: Date };
 };
 
 type FakeRegistration = {
@@ -79,6 +83,9 @@ describe('RegistrationsService', () => {
       id: 'action-1',
       capacity: 2,
       status: ActionStatus.ATIVA,
+      startDate: new Date('2099-10-20T09:00:00Z'),
+      endDate: new Date('2099-10-20T10:00:00Z'),
+      event: { status: EventStatus.PUBLICADO, endDate: new Date('2099-10-20T18:00:00Z') },
     };
 
     existingRegistration = null;
@@ -179,7 +186,7 @@ describe('RegistrationsService', () => {
     });
 
     expect(transactionCalls).toBe(1);
-    expect(queryRawCalls).toBe(1);
+    expect(queryRawCalls).toBe(2);
     expect(countCalls).toBe(1);
     expect(createCalls).toBe(1);
   });
@@ -228,6 +235,31 @@ describe('RegistrationsService', () => {
       'A a\u00e7\u00e3o n\u00e3o est\u00e1 dispon\u00edvel para inscri\u00e7\u00f5es.',
     );
 
+    expect(createCalls).toBe(0);
+  });
+
+  it('impede inscricao em evento rascunho, cancelado ou encerrado', async () => {
+    for (const status of [
+      EventStatus.RASCUNHO, EventStatus.CANCELADO, EventStatus.ENCERRADO,
+    ]) {
+      action.event.status = status;
+      await expect(service.createForAction('user-1', 'action-1'))
+        .rejects.toThrow('O evento nao esta publicado para inscricoes.');
+      expect(createCalls).toBe(0);
+    }
+  });
+
+  it('impede inscricao quando a acao ja comecou', async () => {
+    action.startDate = new Date('2020-01-01T09:00:00Z');
+    await expect(service.createForAction('user-1', 'action-1'))
+      .rejects.toThrow('O prazo de inscricao desta acao ja terminou.');
+    expect(createCalls).toBe(0);
+  });
+
+  it('impede inscricao se evento ja terminou mesmo publicado', async () => {
+    action.event.endDate = new Date('2020-01-01T18:00:00Z');
+    await expect(service.createForAction('user-1', 'action-1'))
+      .rejects.toThrow('O prazo de inscricao desta acao ja terminou.');
     expect(createCalls).toBe(0);
   });
 
@@ -349,7 +381,7 @@ describe('RegistrationsService', () => {
     );
 
     expect(transactionCalls).toBe(1);
-    expect(queryRawCalls).toBe(1);
+    expect(queryRawCalls).toBe(2);
     expect(countCalls).toBe(1);
     expect(createCalls).toBe(1);
   });

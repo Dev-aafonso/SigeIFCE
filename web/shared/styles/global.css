@@ -469,3 +469,69 @@ a {
   color: #ef4444;
   font-weight: bold;
 }
+
+/* UI modernization — SIGE IFCE Figma Make: tokens semanticamente consistentes. */
+:root {
+  --fundo-corpo: #f7f8fa;
+  --fundo-barra-lateral: #fff;
+  --fundo-cabecalho: #fff;
+  --fundo-modulo: #fff;
+  --fundo-controle: #fff;
+  --borda-barra-lateral: #d9dee5;
+  --borda-controle: #d9dee5;
+  --cor-divisor: #d9dee5;
+  --texto-principal: #344054;
+  --texto-claro: #1f2937;
+  --texto-suave: #667085;
+  --botao-hover: #f2f8f4;
+  --ativo-borda: #00843d;
+  --ativo-fundo: #eaf5ee;
+  --ativo-texto: #006b32;
+  --cor-sucesso: #137d42;
+  --cor-erro: #b42318;
+  --cor-aviso: #92400e;
+  --cor-informacao: #1d4ed8;
+  --cor-sombra-rgb: 16 24 40;
+  --largura-barra-lateral: 240px;
+  --altura-cabecalho: 64px;
+  --raio-borda-padrao: 10px;
+  --raio-borda-lg: 12px;
+  --fonte-familia: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+:root[theme="dark"] {
+  color-scheme: dark;
+  --fundo-corpo: #10171a;
+  --fundo-barra-lateral: #182227;
+  --fundo-cabecalho: #182227;
+  --fundo-modulo: #1d292f;
+  --fundo-controle: #233239;
+  --borda-barra-lateral: #33444b;
+  --borda-controle: #465960;
+  --cor-divisor: #33444b;
+  --texto-principal: #d6e0e1;
+  --texto-claro: #f5f8f8;
+  --texto-suave: #adbdc1;
+  --botao-hover: #293a3f;
+  --ativo-borda: #43ba78;
+  --ativo-fundo: #203f32;
+  --ativo-texto: #a2efbf;
+  --cor-sucesso: #8de6ac;
+  --cor-erro: #ff9e98;
+  --cor-aviso: #f4c475;
+  --cor-informacao: #9bbdff;
+  --cor-sombra-rgb: 0 0 0;
+}
+:where(button,input,select,textarea,a):focus-visible {
+  outline: 3px solid var(--anel-foco);
+  outline-offset: 2px;
+}
+::selection { background: var(--ativo-fundo); color: var(--texto-claro); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* Consistent focus treatment throughout the application. */
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea):focus {
+  border-color: var(--ativo-borda);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, .2);
+}

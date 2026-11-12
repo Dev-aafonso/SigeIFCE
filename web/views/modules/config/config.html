@@ -1,5 +1,57 @@
-<div class="module-wrapper fade-in">
-  <h2>Configurações do Sistema</h2>
-  <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc" />
-  <p>Ajuste as preferências gerais do sistema e comportamento da interface.</p>
-</div>
+<section class="module-wrapper fade-in sige-config" aria-labelledby="config-titulo">
+  <header class="sige-config__header">
+    <div>
+      <p class="sige-config__eyebrow">PREFERÊNCIAS</p>
+      <h2 id="config-titulo">Configurações</h2>
+      <p>Gerencie suas preferências e informações da plataforma.</p>
+    </div>
+  </header>
+  <div class="sige-config__layout">
+    <div class="sige-config__nav" role="tablist" aria-label="Seções de configurações">
+      <button type="button" class="sige-config__nav-item" role="tab" id="aba-config-geral" aria-controls="config-geral" aria-selected="true" tabindex="0">Geral</button>
+      <button type="button" class="sige-config__nav-item" role="tab" id="aba-config-instituicao" aria-controls="config-instituicao" aria-selected="false" tabindex="-1">Instituição</button>
+      <button type="button" class="sige-config__nav-item" role="tab" id="aba-config-seguranca" aria-controls="config-seguranca" aria-selected="false" tabindex="-1">Segurança</button>
+      <button type="button" class="sige-config__nav-item" role="tab" id="aba-config-notificacoes" aria-controls="config-notificacoes" aria-selected="false" tabindex="-1">Notificações</button>
+      <button type="button" class="sige-config__nav-item" role="tab" id="aba-config-aparencia" aria-controls="preferencia-tema-sige" aria-selected="false" tabindex="-1">Aparência</button>
+      <button type="button" class="sige-config__nav-item" role="tab" id="aba-config-sobre" aria-controls="config-sobre" aria-selected="false" tabindex="-1">Sobre</button>
+    </div>
+    <div class="sige-config__content">
+      <section id="config-geral" class="sige-config__card" role="tabpanel" aria-labelledby="aba-config-geral" tabindex="0">
+        <div class="sige-config__section-head"><h3>Geral</h3><p>Preferências gerais deste navegador.</p></div>
+        <form class="sige-config__form" data-settings-form="geral"><label>Idioma<select name="idioma"><option value="pt-BR">Português (Brasil)</option></select></label><label>Fuso horário<select name="fuso"><option value="America/Fortaleza">Fortaleza (UTC−03:00)</option><option value="America/Sao_Paulo">São Paulo (UTC−03:00)</option><option value="America/Manaus">Manaus (UTC−04:00)</option></select></label><button type="submit">Salvar preferências</button><p role="status"></p></form>
+      </section>
+      <section id="config-instituicao" class="sige-config__card" role="tabpanel" aria-labelledby="aba-config-instituicao" tabindex="0" hidden>
+        <div class="sige-config__section-head"><h3>Instituição</h3><p>Informações institucionais salvas neste navegador.</p></div>
+        <form class="sige-config__form" data-settings-form="instituicao"><label>Instituição<input name="nome" value="Instituto Federal do Ceará" maxlength="150"></label><label>Campus<input name="campus" placeholder="Informe seu campus" maxlength="100"></label><button type="submit">Salvar preferências</button><p role="status"></p></form>
+      </section>
+      <section id="config-seguranca" class="sige-config__card" role="tabpanel" aria-labelledby="aba-config-seguranca" tabindex="0" hidden>
+        <div class="sige-config__section-head"><h3>Segurança</h3><p>Gerencie a segurança da sua sessão.</p></div>
+        <p>Você pode encerrar sua sessão em todos os dispositivos.</p><button type="button" id="config-encerrar-sessoes">Encerrar sessões</button><p id="config-seguranca-feedback" role="status"></p>
+      </section>
+      <section id="config-notificacoes" class="sige-config__card" role="tabpanel" aria-labelledby="aba-config-notificacoes" tabindex="0" hidden>
+        <div class="sige-config__section-head"><h3>Notificações</h3><p>Acompanhe suas inscrições, cancelamentos e certificados no sino no topo da página.</p></div>
+        <p>Os avisos são vinculados à sua conta e o estado de leitura é mantido entre acessos. Não há envio por e-mail.</p>
+      </section>
+      <section id="preferencia-tema-sige" class="sige-config__card" role="tabpanel" aria-labelledby="aba-config-aparencia" tabindex="0" hidden>
+        <div class="sige-config__section-head">
+          <h3 id="config-aparencia-titulo">Aparência</h3>
+          <p>Escolha o tema da interface. A preferência é aplicada imediatamente e permanece após recarregar a página.</p>
+        </div>
+        <fieldset class="sige-config__options">
+          <legend>Tema da interface</legend>
+          <label class="sige-config__option"><input type="radio" name="sige-config-theme" value="light"><span><strong>Claro</strong><small>Interface clara e institucional</small></span></label>
+          <label class="sige-config__option"><input type="radio" name="sige-config-theme" value="dark"><span><strong>Escuro</strong><small>Menor luminosidade para ambientes escuros</small></span></label>
+          <label class="sige-config__option"><input type="radio" name="sige-config-theme" value="auto"><span><strong>Automático</strong><small>Acompanha a preferência do sistema operacional</small></span></label>
+        </fieldset>
+        <p id="sige-config-feedback" class="sige-config__feedback" role="status" aria-live="polite"></p>
+      </section>
+      <section id="config-sobre" class="sige-config__card" role="tabpanel" aria-labelledby="aba-config-sobre" tabindex="0" hidden>
+        <div class="sige-config__section-head">
+          <h3 id="config-sobre-titulo">Sobre o SIGE IFCE</h3>
+          <p>Sistema de Gerenciamento de Eventos Científicos do Instituto Federal do Ceará.</p>
+        </div>
+        <p>As preferências de aparência são locais do navegador. Dados de usuários, eventos e permissões são gerenciados pelo servidor.</p>
+      </section>
+    </div>
+  </div>
+</section>

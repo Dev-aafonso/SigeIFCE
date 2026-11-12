@@ -13,6 +13,8 @@ describe('PresenceService — autorização e integridade', () => {
     action: { findUnique: jest.fn() },
     registration: { findUnique: jest.fn(), findMany: jest.fn() },
     presence: { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn() },
+    $queryRaw: jest.fn(async () => [{ id: 'registration-1' }]),
+    $transaction: async (callback: (tx: unknown) => Promise<unknown>) => callback(prisma),
   };
 
   let service: PresenceService;
@@ -30,7 +32,7 @@ describe('PresenceService — autorização e integridade', () => {
     id: 'registration-1',
     actionId: 'action-1',
     status: 'ACTIVE',
-    action: { event: { organizerId: 'organizer-1' } },
+    action: { startDate: new Date('2020-01-01T00:00:00Z'), event: { organizerId: 'organizer-1' } },
     presence: null,
     ...overrides,
   });
@@ -87,10 +89,20 @@ describe('PresenceService — autorização e integridade', () => {
     expect(prisma.registration.findMany).toHaveBeenCalledWith({
       where: { actionId: 'action-1', status: 'ACTIVE' },
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, enrollmentNumber: true, course: true, campus: true, role: true, isActive: true } },
         presence: true,
       },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
     });
+  });
+
+  it('permite professor na própria ação e impede acesso à ação de outro responsável', async () => {
+    const professor: PresencePrincipal = { id: 'professor-1', role: UserRole.PROFESSOR };
+    prisma.action.findUnique.mockResolvedValue(action('professor-1'));
+    prisma.registration.findMany.mockResolvedValue([]);
+    await expect(service.findParticipantsByAction('action-1', professor)).resolves.toEqual([]);
+    prisma.action.findUnique.mockResolvedValue(action('outro'));
+    await expect(service.findParticipantsByAction('action-1', professor)).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('permite ADMIN consultar ação de qualquer organizador', async () => {
@@ -115,6 +127,7 @@ describe('PresenceService — autorização e integridade', () => {
   });
 
   it('nega registro para inscrição inexistente', async () => {
+    prisma.$queryRaw.mockResolvedValueOnce([]);
     prisma.registration.findUnique.mockResolvedValue(null);
 
     await expect(
@@ -162,5 +175,36 @@ describe('PresenceService — autorização e integridade', () => {
         },
       }),
     );
+  });
+
+  it.each([admin, organizer])('rejeita presenca antecipada para $role', async (requester) => {
+    prisma.registration.findUnique.mockResolvedValue(registration({
+      action: { startDate: new Date(Date.now() + 48 * 3600000), event: { organizerId: organizer.id } },
+    }));
+    await expect(service.create({ registrationId: 'registration-1' }, requester))
+      .rejects.toThrow('a partir do inicio da acao');
+    expect(prisma.presence.create).not.toHaveBeenCalled();
+  });
+
+  it('aceita exatamente no inicio e preserva lancamento retroativo', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-10-27T12:00:00Z'));
+    try {
+      for (const startDate of [new Date(), new Date('2020-01-01T00:00:00Z')]) {
+        prisma.registration.findUnique.mockResolvedValue(registration({
+          action: { startDate, event: { organizerId: organizer.id } },
+        }));
+        await service.create({ registrationId: 'registration-1' }, admin);
+      }
+      expect(prisma.presence.create).toHaveBeenCalledTimes(2);
+    } finally { jest.useRealTimers(); }
+  });
+
+  it('rele o cancelamento vencedor depois do lock e nao grava presenca', async () => {
+    prisma.registration.findUnique.mockResolvedValue(registration({ status: 'CANCELLED' }));
+    await expect(service.create({ registrationId: 'registration-1' }, admin))
+      .rejects.toThrow('A inscricao nao esta ativa.');
+    expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+    expect(prisma.registration.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.presence.create).not.toHaveBeenCalled();
   });
 });

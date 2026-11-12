@@ -121,6 +121,9 @@ async function bootstrap() {
   };
   expressApp.get('/', sendIndex);
   expressApp.get('/index.html', sendIndex);
+  expressApp.get('/manifest.json', (_request: Request, response: Response) => {
+    response.sendFile(join(process.cwd(), 'manifest.json'));
+  });
   expressApp.get('/registrations', sendIndex);
 
   await app.listen(port);
