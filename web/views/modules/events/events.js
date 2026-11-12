@@ -10,6 +10,7 @@ import {
   const EVENT_STATUSES = {
     RASCUNHO: "Rascunho",
     PUBLICADO: "Publicado",
+    EM_ANDAMENTO: "Em andamento",
     ENCERRADO: "Encerrado",
     CANCELADO: "Cancelado",
   };
@@ -44,6 +45,7 @@ import {
   let draftActionSequence = 0;
   let lastEventDetailsTrigger = null;
   const registeredActionIds = new Set();
+  let registeredActionOwner = null;
   const coverPreviewUrls = new WeakMap();
 
   const byId = (id) => document.getElementById(id);
@@ -66,7 +68,7 @@ import {
   }
 
   function canManage() {
-    return ["ADMIN", "ORGANIZADOR"].includes(currentRole);
+    return ["ADMIN", "ORGANIZADOR", "PROFESSOR"].includes(currentRole);
   }
 
   function managerStorageKey() {
@@ -156,16 +158,34 @@ import {
     if (!value) return "Data não informada";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "Data inválida";
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-      .format(date)
-      .replace(".", "")
-      .replace(",", " ·");
+    const parts = new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false,
+    }).formatToParts(date);
+    const part = (type) => parts.find((item) => item.type === type)?.value || "";
+    return `${part("day")} ${part("month").replace(".", "").toUpperCase()} ${part("year")} • ${part("hour")}:${part("minute")}`;
+  }
+
+  function cardIcon(name) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "1.6");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    const paths = {
+      clock: ["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z", "M12 6v6l4 2"],
+      location: ["M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z", "M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"],
+      actions: ["M3 5.5c3-1 6-1 9 1v13c-3-2-6-2-9-1z", "M21 5.5c-3-1-6-1-9 1v13c3-2 6-2 9-1z"],
+      people: ["M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2", "M10 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z", "M20 21v-2a4 4 0 0 0-3-3.87", "M16 4.13a4 4 0 0 1 0 7.75"],
+    };
+    for (const d of paths[name] || []) {
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      svg.append(path);
+    }
+    return svg;
   }
 
   function eventCategory(event) {
@@ -187,15 +207,22 @@ import {
 
   function registrationStatus(event) {
     const actions = Array.isArray(event.actions) ? event.actions : [];
-    const activeActions = actions.filter((action) => action.status === "ATIVA");
-    if (event.status !== "PUBLICADO" || activeActions.length === 0) {
+    const now = Date.now();
+    const activeActions = actions.filter((action) => action.status === "ATIVA" && (!action.startDate || new Date(action.startDate).getTime() > now));
+    if (!["PUBLICADO", "EM_ANDAMENTO"].includes(event.status) || activeActions.length === 0) {
       return {
         key: "UNAVAILABLE",
-        label: "Indisponível",
+        label: event.status === "CANCELADO" ? "Cancelado" : event.status === "RASCUNHO" ? "Rascunho" : "Indisponível",
         activeActions,
         capacity: 0,
         remaining: null,
       };
+    }
+
+    const registrationStart = event.registrationStartDate && new Date(event.registrationStartDate).getTime();
+    const registrationEnd = event.registrationEndDate && new Date(event.registrationEndDate).getTime();
+    if ((registrationStart && now < registrationStart) || (registrationEnd && now >= registrationEnd)) {
+      return { key: "UNAVAILABLE", label: registrationStart && now < registrationStart ? "Inscrições em breve" : "Inscrições encerradas", activeActions, capacity: 0, remaining: null };
     }
 
     const availability = activeActions.map(actionAvailability);
@@ -253,7 +280,7 @@ import {
     const token = localStorage.getItem("sige_access_token");
     const headers = {
       Accept: "application/json",
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.body && !(options.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: "Bearer " + token } : {}),
       ...options.headers,
     };
@@ -294,6 +321,15 @@ import {
       throw error;
     }
     return data;
+  }
+
+  async function uploadEventCover(eventId, file) {
+    if (!file) return;
+    const validation = validateCoverImage(file);
+    if (validation) throw new Error(validation);
+    const data = new FormData();
+    data.append("cover", file);
+    await api(`${EVENTS_API}/${encodeURIComponent(eventId)}/cover`, { method: "POST", body: data });
   }
 
   function makeButton(label, className, action, value = "") {
@@ -427,7 +463,7 @@ import {
         ),
       );
       card.append(controls);
-    } else if (allowRegistration && action.status === "ATIVA") {
+    } else if (allowRegistration && action.status === "ATIVA" && (!action.startDate || new Date(action.startDate).getTime() > Date.now())) {
       const controls = document.createElement("div");
       controls.className = "acoes-acao-evento";
       const actionId = String(action.id);
@@ -629,7 +665,7 @@ import {
     const notice = document.createElement("p");
     notice.className = "aviso-configuracoes-evento";
     notice.textContent =
-      "A API atual não salva o tipo, as preferências ou o arquivo de capa. A imagem serve apenas como prévia neste formulário.";
+      "A imagem selecionada será salva com o evento. As preferências adicionais não são aplicadas automaticamente.";
     summary.append(notice);
 
     const actionsHeading = document.createElement("h5");
@@ -910,7 +946,7 @@ import {
           renderActionSummary(
             action,
             false,
-            Boolean(localStorage.getItem("sige_access_token")),
+            Boolean(currentUser().role) && registration.key === "OPEN",
           ),
         );
       });
@@ -938,6 +974,7 @@ import {
     const cover = document.createElement("figure");
     cover.className = `capa-evento capa-evento--${(index % 6) + 1}`;
     cover.setAttribute("aria-hidden", "true");
+    if (event.status === "CANCELADO") cover.classList.add("capa-evento-cancelado");
     const coverUrl = eventImageUrl(event);
     if (coverUrl) {
       const coverImage = document.createElement("img");
@@ -968,7 +1005,7 @@ import {
     const dateIcon = document.createElement("span");
     dateIcon.className = "metadado-icone-evento";
     dateIcon.setAttribute("aria-hidden", "true");
-    dateIcon.textContent = "◷";
+    dateIcon.append(cardIcon("clock"));
     const date = document.createElement("time");
     date.dateTime = event.startDate || "";
     date.textContent = formatCardDate(event.startDate);
@@ -977,7 +1014,7 @@ import {
     const locationIcon = document.createElement("span");
     locationIcon.className = "metadado-icone-evento";
     locationIcon.setAttribute("aria-hidden", "true");
-    locationIcon.textContent = "⌖";
+    locationIcon.append(cardIcon("location"));
     const location = document.createElement("address");
     location.textContent = event.location || "Local a confirmar";
     locationItem.append(locationIcon, location);
@@ -988,22 +1025,32 @@ import {
     stats.setAttribute("aria-label", "Resumo da programação");
     const actionStat = document.createElement("li");
     const actionCount = Array.isArray(event.actions) ? event.actions.length : 0;
-    actionStat.textContent = `${actionCount} ${actionCount === 1 ? "ação" : "ações"}`;
+    const actionIcon = document.createElement("span");
+    actionIcon.className = "icone-estatistica-evento";
+    actionIcon.setAttribute("aria-hidden", "true");
+    actionIcon.append(cardIcon("actions"));
+    actionStat.append(actionIcon, document.createTextNode(`${actionCount} ${actionCount === 1 ? "ação" : "ações"}`));
     stats.append(actionStat);
     if (registration.capacity > 0) {
       const capacityStat = document.createElement("li");
-      capacityStat.textContent =
-        registration.remaining === null
-          ? `Capacidade: ${registration.capacity} vagas`
-          : `${registration.remaining} ${registration.remaining === 1 ? "vaga disponível" : "vagas disponíveis"}`;
+      const capacityIcon = document.createElement("span");
+      capacityIcon.className = "icone-estatistica-evento";
+      capacityIcon.setAttribute("aria-hidden", "true");
+      capacityIcon.append(cardIcon("people"));
+      const capacityText = registration.remaining === null
+        ? `Capacidade: ${registration.capacity} vagas`
+        : `${registration.remaining} ${registration.remaining === 1 ? "vaga disponível" : "vagas disponíveis"}`;
+      capacityStat.append(capacityIcon, document.createTextNode(capacityText));
       stats.append(capacityStat);
     }
 
     content.append(accessibleCategory, heading, metadata, stats);
     if (registration.remaining !== null && registration.capacity > 0) {
       const progress = document.createElement("div");
-      progress.className = "estado-inscricoes";
+      progress.className = "progresso-inscricoes-evento";
       progress.dataset.status = registration.key;
+      const occupancy = (registration.capacity - registration.remaining) / registration.capacity;
+      if (occupancy >= 0.75 && registration.key !== "FULL") progress.dataset.occupancy = "high";
       progress.setAttribute("role", "progressbar");
       progress.setAttribute("aria-label", "Ocupação total das ações");
       progress.setAttribute("aria-valuemin", "0");
@@ -1022,13 +1069,14 @@ import {
     footer.className = "rodape-cartao-evento";
     const status = document.createElement("span");
     status.className = "status-evento";
-    status.dataset.status = registration.key;
+    status.dataset.status = event.status === "CANCELADO" ? "CANCELLED" : registration.key;
     status.textContent = registration.label;
     const detailsButton = document.createElement("button");
     detailsButton.type = "button";
     detailsButton.className = "botao-detalhes-evento";
     detailsButton.dataset.eventAction = "open-event-details";
     detailsButton.dataset.value = String(event.id);
+    detailsButton.setAttribute("aria-label", `Ver detalhes de ${event.title || "evento"}`);
     detailsButton.setAttribute("aria-haspopup", "dialog");
     detailsButton.setAttribute("aria-controls", "dialog-detalhes-evento");
     detailsButton.textContent = "Ver evento";
@@ -1166,6 +1214,11 @@ import {
     form.dataset.formType = "edit-event";
     form.innerHTML = `
             <h5>Dados do evento</h5>
+<label class="campo-evento"><span>Categoria (obrigatória para publicar)</span><input name="category" maxlength="100" value="${escapeHtml(event.category || '')}"></label>
+<label class="campo-evento"><span>Carga horária em minutos</span><input name="workloadMinutes" type="number" min="1" step="1" value="${event.workloadMinutes ?? ''}"></label>
+<label class="campo-evento"><span>Vagas de participantes únicos</span><input name="totalCapacity" type="number" min="1" step="1" value="${event.totalCapacity ?? ''}"></label>
+<label class="campo-evento"><span>Abertura das inscrições</span><input name="registrationStartDate" type="datetime-local" value="${event.registrationStartDate ? toLocalDateTime(event.registrationStartDate) : ''}"></label>
+<label class="campo-evento"><span>Fim das inscrições</span><input name="registrationEndDate" type="datetime-local" value="${event.registrationEndDate ? toLocalDateTime(event.registrationEndDate) : ''}"></label>
             <label class="campo-evento"><span>Título *</span><input name="title" required minlength="3" maxlength="200" value="${escapeHtml(event.title)}"></label>
             <label class="campo-evento"><span>Descrição *</span><textarea name="description" required minlength="10" maxlength="5000" rows="4">${escapeHtml(event.description)}</textarea></label>
             <div class="campos-data-evento">
@@ -1176,7 +1229,7 @@ import {
             <label class="campo-evento campo-imagem-evento">
                 <span>Substituir imagem de capa</span>
                 <input name="coverImage" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="ajuda-imagem-capa-edicao">
-                <span id="ajuda-imagem-capa-edicao" class="ajuda-imagem-capa">JPG, PNG ou WebP de até 5 MB. A API atual ainda não oferece upload; a seleção serve apenas como prévia.</span>
+                <span id="ajuda-imagem-capa-edicao" class="ajuda-imagem-capa">JPG, PNG ou WebP de até 5 MB. A imagem será salva ao atualizar o evento.</span>
                 <span class="preview-capa-evento" hidden><img alt="Prévia da imagem de capa do evento"></span>
                 <span class="erro-imagem-capa" role="status" aria-live="polite"></span>
             </label>
@@ -1211,6 +1264,7 @@ import {
                 <label class="campo-evento"><span>Capacidade *</span><input name="capacity" type="number" min="1" step="1" required value="${escapeHtml(action?.capacity ?? 1)}"></label>
                 <label class="campo-evento"><span>Local</span><input name="location" maxlength="255" value="${escapeHtml(action?.location || "")}"></label>
             </div>
+            <p class="erro-acao-evento" role="alert" aria-live="assertive"></p>
             <p class="detalhes-evento">A duração será calculada entre início e término; o backend valida que a ação ocorra dentro do evento.</p>
             <div class="acoes-formulario-evento">
                 <button class="botao-evento botao-evento-primario" type="submit">${action ? "Salvar ação" : "Adicionar ação"}</button>
@@ -1241,7 +1295,7 @@ import {
 
     const controls = document.createElement("div");
     controls.className = "acoes-gerenciamento-evento";
-    if (["RASCUNHO", "PUBLICADO"].includes(event.status)) {
+    if (["RASCUNHO", "PUBLICADO", "EM_ANDAMENTO"].includes(event.status)) {
       controls.append(
         makeButton("Editar evento", "botao-evento-secundario", "edit-event"),
       );
@@ -1263,19 +1317,19 @@ import {
         publish.title = "Não é possível publicar um evento que já terminou.";
       controls.append(publish);
     }
-    if (event.status === "PUBLICADO") {
+    if (["PUBLICADO", "EM_ANDAMENTO"].includes(event.status)) {
       controls.append(
         makeButton("Encerrar evento", "botao-evento-secundario", "close-event"),
       );
     }
-    if (["RASCUNHO", "PUBLICADO"].includes(event.status)) {
+    if (["RASCUNHO", "PUBLICADO", "EM_ANDAMENTO"].includes(event.status)) {
       controls.append(
         makeButton("Cancelar evento", "botao-evento-perigo", "cancel-event"),
       );
     }
     heading.append(summary, controls);
     card.append(heading);
-    if (["RASCUNHO", "PUBLICADO"].includes(event.status)) {
+    if (["RASCUNHO", "PUBLICADO", "EM_ANDAMENTO"].includes(event.status)) {
       card.append(renderEventEditForm(event));
     }
 
@@ -1291,7 +1345,7 @@ import {
         actionsSection.append(
           renderActionSummary(
             action,
-            ["RASCUNHO", "PUBLICADO"].includes(event.status),
+            ["RASCUNHO", "PUBLICADO", "EM_ANDAMENTO"].includes(event.status),
           ),
         ),
       );
@@ -1305,7 +1359,7 @@ import {
       actionsSection.append(empty);
     }
 
-    if (canManage() && ["RASCUNHO", "PUBLICADO"].includes(event.status)) {
+    if (canManage() && ["RASCUNHO", "PUBLICADO", "EM_ANDAMENTO"].includes(event.status)) {
       actionsSection.append(renderActionForm(event));
     }
     card.append(actionsSection);
@@ -1348,6 +1402,11 @@ import {
       startDate: data.get("startDate"),
       endDate: data.get("endDate"),
       location: data.get("location"),
+      category: data.get("category") ?? data.get("eventType"),
+      workloadMinutes: data.get("workloadMinutes") ?? "",
+      totalCapacity: data.get("totalCapacity") ?? "",
+      registrationStartDate: data.get("registrationStartDate"),
+      registrationEndDate: data.get("registrationEndDate"),
     });
   }
 
@@ -1373,6 +1432,9 @@ import {
     try {
       const payload = readEventForm(form);
       const actions = readDraftActions(payload);
+      const selectedCover = form.elements.namedItem("coverImage").files?.[0];
+      const coverValidation = validateCoverImage(selectedCover);
+      if (coverValidation) throw new Error(coverValidation);
       const event = await api(EVENTS_API, {
         method: "POST",
         body: JSON.stringify(payload),
@@ -1386,13 +1448,17 @@ import {
         );
         return;
       }
+      let coverError = "";
+      try { await uploadEventCover(event.id, selectedCover); }
+      catch (error) { coverError = ` A capa não foi salva: ${error.message}. Você pode reenviá-la na edição do evento.`; }
       saveManagedEvent(event);
+      void loadDraftCards();
       byId("dialog-criar-evento").close();
       const opened = await openManagedEvent(event.id);
       if (!opened) {
         resetCreateWizard();
         showMessage(
-          `Evento criado com ID ${event.id}, mas a API não permitiu abrir seu gerenciamento.`,
+          `Evento criado com ID ${event.id}, mas a API não permitiu abrir seu gerenciamento.${coverError}`,
           "erro",
         );
         return;
@@ -1417,7 +1483,7 @@ import {
           refreshFailure = ` Não foi possível atualizar o painel: ${refreshError.message}`;
         }
         showMessage(
-          `O rascunho ${event.id} foi criado, mas uma ação não foi salva: ${actionError.message} Confira as ações existentes antes de tentar novamente para evitar duplicatas.${refreshFailure}`,
+          `O rascunho ${event.id} foi criado, mas uma ação não foi salva: ${actionError.message} Confira as ações existentes antes de tentar novamente para evitar duplicatas.${coverError}${refreshFailure}`,
           "erro",
         );
         return;
@@ -1429,19 +1495,21 @@ import {
           `${EVENTS_API}/${encodeURIComponent(event.id)}/manage`,
         );
         renderManagedEvent(updated);
+        void loadDraftCards();
         showMessage(
-          "Evento e programação criados como rascunho. Tipo, preferências e imagem não foram salvos porque a API ainda não os aceita.",
-          "sucesso",
+          `Evento, categoria e programação salvos como rascunho. Confira os dados antes de publicar.${coverError}`,
+          coverError ? "erro" : "sucesso",
         );
       } catch (refreshError) {
         showMessage(
-          `Evento e programação foram salvos no rascunho ${event.id}, mas não foi possível atualizar o painel: ${refreshError.message}`,
+          `Evento e programação foram salvos no rascunho ${event.id}, mas não foi possível atualizar o painel: ${refreshError.message}.${coverError}`,
           "erro",
         );
       }
     } catch (creationError) {
       if (byId("dialog-criar-evento").open) {
-        wizardError.textContent = creationError.message;
+        wizardError.textContent = creationError.message || "Não foi possível criar o evento. Tente novamente.";
+        wizardError.scrollIntoView({ block: "nearest" });
       } else {
         showMessage(creationError.message, "erro");
       }
@@ -1453,28 +1521,25 @@ import {
   async function saveEventChanges(form) {
     if (!currentManagerEvent) return;
     const button = form.querySelector('[type="submit"]');
+    const selectedCover = form.elements.namedItem("coverImage").files?.[0];
+    const coverValidation = validateCoverImage(selectedCover);
+    if (coverValidation) { showMessage(coverValidation, "erro"); return; }
     button.disabled = true;
+    let eventSaved = false;
     try {
-      const event = await api(
-        `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}`,
-        {
-          method: "PATCH",
-          body: JSON.stringify(readEventForm(form)),
-        },
-      );
-      renderManagedEvent(event);
-      const selectedCover = form.elements.namedItem("coverImage").files?.[0];
-      showMessage(
-        selectedCover
-          ? "Alterações do evento salvas; a imagem selecionada não foi enviada porque a API não oferece upload."
-          : "Alterações do evento salvas.",
-        "sucesso",
-      );
+      const eventId = currentManagerEvent.id;
+      const event = await api(`${EVENTS_API}/${encodeURIComponent(eventId)}`, {
+        method: "PATCH", body: JSON.stringify(readEventForm(form)),
+      });
+      eventSaved = true;
+      await uploadEventCover(eventId, selectedCover);
+      const updated = await api(`${EVENTS_API}/${encodeURIComponent(eventId)}/manage`);
+      renderManagedEvent(updated);
+      void loadDraftCards();
+      showMessage(selectedCover ? "Alterações e capa salvas." : "Alterações do evento salvas.", "sucesso");
     } catch (error) {
-      showMessage(error.message, "erro");
-    } finally {
-      button.disabled = false;
-    }
+      showMessage(eventSaved ? `Os dados do evento foram salvos, mas não foi possível concluir o envio ou atualizar a capa: ${error.message}` : error.message, "erro");
+    } finally { button.disabled = false; }
   }
 
   async function saveAction(form) {
@@ -1500,7 +1565,12 @@ import {
         "sucesso",
       );
     } catch (error) {
-      showMessage(error.message, "erro");
+      const alert = form.querySelector(".erro-acao-evento");
+      if (alert) {
+        alert.textContent = error.message || "Não foi possível salvar a ação. Tente novamente.";
+        alert.scrollIntoView({ block: "nearest" });
+      }
+      showMessage(error.message || "Não foi possível salvar a ação.", "erro");
     } finally {
       button.disabled = false;
     }
@@ -1514,6 +1584,8 @@ import {
         `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}/manage`,
       );
       renderManagedEvent(updated);
+      void loadDraftCards();
+      void loadPublicEvents(currentPage);
       showMessage(label, "sucesso");
     } catch (error) {
       showMessage(error.message, "erro");
@@ -1530,7 +1602,7 @@ import {
       if (
         action?.id !== actionId ||
         action.status !== "ATIVA" ||
-        action.event?.status !== "PUBLICADO"
+        !["PUBLICADO", "EM_ANDAMENTO"].includes(action.event?.status)
       ) {
         throw new Error("Esta ação não está mais disponível para inscrição.");
       }
@@ -1572,11 +1644,41 @@ import {
     }
   }
 
+  async function loadDraftCards() {
+    const section = byId("secao-rascunhos-eventos");
+    const list = byId("lista-rascunhos-eventos");
+    const state = byId("estado-rascunhos-eventos");
+    if (!section || !list || !state || !canManage()) return;
+    section.hidden = false;
+    state.textContent = "Carregando rascunhos...";
+    list.replaceChildren();
+    try {
+      const filters = await api("/dashboard/filters");
+      const drafts = (Array.isArray(filters.events) ? filters.events : []).filter(item => item.status === "RASCUNHO");
+      const results = await Promise.allSettled(drafts.map(item => api(`${EVENTS_API}/${encodeURIComponent(item.id)}/manage`)));
+      if (!section.isConnected) return;
+      let failed = 0;
+      results.forEach((result, index) => {
+        if (result.status !== "fulfilled") { failed++; return; }
+        const card = renderPublicEvent(result.value, index);
+        const button = card.querySelector("[data-event-action='open-event-details']");
+        if (button) { button.dataset.eventAction = "open-draft-management"; button.textContent = "Gerenciar evento"; button.removeAttribute("aria-controls"); button.removeAttribute("aria-haspopup"); button.setAttribute("aria-label", `Gerenciar ${result.value.title || "evento"}`); }
+        list.append(card);
+      });
+      state.textContent = failed ? `${failed} rascunho(s) não puderam ser carregados. Atualize para tentar novamente.` : drafts.length ? `${drafts.length} rascunho(s). Os eventos publicados aparecem abaixo.` : "Nenhum evento em rascunho.";
+      if (filters.events?.length >= (filters.limits?.events || 250)) state.textContent += " A lista pode estar limitada aos eventos mais recentes.";
+    } catch (error) { if (section.isConnected) state.textContent = `Não foi possível carregar os rascunhos: ${error.message}`; }
+  }
+
   function onEventsClick(event) {
     const button = event.target.closest("[data-event-action]");
     if (!button) return;
     const action = button.dataset.eventAction;
     const value = button.dataset.value;
+    if (action === "open-draft-management") {
+      openManagedEvent(value).then(opened => { if (opened) byId("secao-gerenciamento-eventos")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      return;
+    }
     if (action === "open-event-details") {
       openEventDetails(value, button);
       return;
@@ -1666,12 +1768,23 @@ import {
   }
 
   function initializeEvents() {
-    currentRole = String(currentUser().role || "")
+    const user = currentUser();
+    const identity = String(user.email || user.id || "").toLowerCase();
+    if (registeredActionOwner !== identity) {
+      registeredActionIds.clear();
+      registeredActionOwner = identity;
+    }
+    currentRole = String(user.role || "")
       .trim()
       .toUpperCase();
     byId("novo-evento").hidden = !canManage();
     byId("secao-gerenciamento-eventos").hidden = !canManage();
     renderSavedEvents();
+    if (canManage()) {
+      loadDraftCards();
+      byId("lista-rascunhos-eventos")?.addEventListener("click", onEventsClick);
+      byId("atualizar-rascunhos-eventos")?.addEventListener("click", loadDraftCards);
+    }
 
     byId("eventos-recentes")?.addEventListener("change", (event) => {
       if (event.target.value)

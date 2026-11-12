@@ -46,3 +46,6 @@
   background-color: var(--ativo-fundo);
   color: var(--ativo-texto);
 }
+
+#grupo-codigo-gestor[hidden] { display: none !important; }
+#codigo-gestor { width: 100%; min-height: 44px; padding: .65rem .8rem; border: 1px solid var(--borda-controle); border-radius: var(--raio-borda-sm); background: var(--fundo-controle); color: var(--texto-principal); font: inherit; }

@@ -1,0 +1,1 @@
+ALTER TABLE "ScannedReport" ALTER COLUMN "eventId" DROP NOT NULL;

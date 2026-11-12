@@ -28,6 +28,7 @@ describe('EventsService', () => {
     action: {
       count: jest.fn(),
     },
+    $queryRaw: jest.fn(async () => []),
     $transaction: jest.fn(),
   };
 
@@ -43,6 +44,7 @@ describe('EventsService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    prisma.$transaction.mockImplementation(async (callback) => callback(prisma));
   });
 
   it('cria evento como organizador', async () => {
@@ -77,7 +79,7 @@ describe('EventsService', () => {
     ).toHaveBeenCalled();
   });
 
-  it('bloqueia professor no gerenciamento', async () => {
+  it('bloqueia aluno no gerenciamento', async () => {
     const service =
       new EventsService(prisma);
 
@@ -94,7 +96,7 @@ describe('EventsService', () => {
         },
         {
           sub: 'u2',
-          role: UserRole.PROFESSOR,
+          role: UserRole.ALUNO,
         },
       ),
     ).rejects.toBeInstanceOf(

@@ -53,10 +53,13 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Event: 'Event',
+  EventCover: 'EventCover',
   Action: 'Action',
   Registration: 'Registration',
   Presence: 'Presence',
-  Certificate: 'Certificate'
+  Certificate: 'Certificate',
+  NotificationRead: 'NotificationRead',
+  ScannedReport: 'ScannedReport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -80,7 +83,13 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
-  role: 'role'
+  role: 'role',
+  sessionVersion: 'sessionVersion',
+  isActive: 'isActive',
+  lastAccessAt: 'lastAccessAt',
+  enrollmentNumber: 'enrollmentNumber',
+  course: 'course',
+  campus: 'campus'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -93,6 +102,11 @@ export const EventScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   location: 'location',
+  category: 'category',
+  workloadMinutes: 'workloadMinutes',
+  registrationStartDate: 'registrationStartDate',
+  registrationEndDate: 'registrationEndDate',
+  totalCapacity: 'totalCapacity',
   status: 'status',
   minAttendancePercent: 'minAttendancePercent',
   publishedAt: 'publishedAt',
@@ -104,6 +118,15 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const EventCoverScalarFieldEnum = {
+  eventId: 'eventId',
+  mimeType: 'mimeType',
+  data: 'data'
+} as const
+
+export type EventCoverScalarFieldEnum = (typeof EventCoverScalarFieldEnum)[keyof typeof EventCoverScalarFieldEnum]
 
 
 export const ActionScalarFieldEnum = {
@@ -152,6 +175,7 @@ export type PresenceScalarFieldEnum = (typeof PresenceScalarFieldEnum)[keyof typ
 
 
 export const CertificateScalarFieldEnum = {
+  scope: 'scope',
   id: 'id',
   userId: 'userId',
   eventId: 'eventId',
@@ -166,6 +190,26 @@ export const CertificateScalarFieldEnum = {
 } as const
 
 export type CertificateScalarFieldEnum = (typeof CertificateScalarFieldEnum)[keyof typeof CertificateScalarFieldEnum]
+
+
+export const NotificationReadScalarFieldEnum = {
+  userId: 'userId',
+  key: 'key',
+  readAt: 'readAt'
+} as const
+
+export type NotificationReadScalarFieldEnum = (typeof NotificationReadScalarFieldEnum)[keyof typeof NotificationReadScalarFieldEnum]
+
+
+export const ScannedReportScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  authorId: 'authorId',
+  text: 'text',
+  createdAt: 'createdAt'
+} as const
+
+export type ScannedReportScalarFieldEnum = (typeof ScannedReportScalarFieldEnum)[keyof typeof ScannedReportScalarFieldEnum]
 
 
 export const SortOrder = {

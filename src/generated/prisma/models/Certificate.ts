@@ -37,6 +37,7 @@ export type CertificateSumAggregateOutputType = {
 }
 
 export type CertificateMinAggregateOutputType = {
+  scope: string | null
   id: string | null
   userId: string | null
   eventId: string | null
@@ -51,6 +52,7 @@ export type CertificateMinAggregateOutputType = {
 }
 
 export type CertificateMaxAggregateOutputType = {
+  scope: string | null
   id: string | null
   userId: string | null
   eventId: string | null
@@ -65,6 +67,7 @@ export type CertificateMaxAggregateOutputType = {
 }
 
 export type CertificateCountAggregateOutputType = {
+  scope: number
   id: number
   userId: number
   eventId: number
@@ -91,6 +94,7 @@ export type CertificateSumAggregateInputType = {
 }
 
 export type CertificateMinAggregateInputType = {
+  scope?: true
   id?: true
   userId?: true
   eventId?: true
@@ -105,6 +109,7 @@ export type CertificateMinAggregateInputType = {
 }
 
 export type CertificateMaxAggregateInputType = {
+  scope?: true
   id?: true
   userId?: true
   eventId?: true
@@ -119,6 +124,7 @@ export type CertificateMaxAggregateInputType = {
 }
 
 export type CertificateCountAggregateInputType = {
+  scope?: true
   id?: true
   userId?: true
   eventId?: true
@@ -220,6 +226,7 @@ export type CertificateGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 }
 
 export type CertificateGroupByOutputType = {
+  scope: string
   id: string
   userId: string
   eventId: string
@@ -257,6 +264,7 @@ export type CertificateWhereInput = {
   AND?: Prisma.CertificateWhereInput | Prisma.CertificateWhereInput[]
   OR?: Prisma.CertificateWhereInput[]
   NOT?: Prisma.CertificateWhereInput | Prisma.CertificateWhereInput[]
+  scope?: Prisma.StringFilter<"Certificate"> | string
   id?: Prisma.StringFilter<"Certificate"> | string
   userId?: Prisma.StringFilter<"Certificate"> | string
   eventId?: Prisma.StringFilter<"Certificate"> | string
@@ -275,6 +283,7 @@ export type CertificateWhereInput = {
 }
 
 export type CertificateOrderByWithRelationInput = {
+  scope?: Prisma.SortOrder
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
@@ -300,6 +309,7 @@ export type CertificateWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.CertificateWhereInput | Prisma.CertificateWhereInput[]
   OR?: Prisma.CertificateWhereInput[]
   NOT?: Prisma.CertificateWhereInput | Prisma.CertificateWhereInput[]
+  scope?: Prisma.StringFilter<"Certificate"> | string
   userId?: Prisma.StringFilter<"Certificate"> | string
   eventId?: Prisma.StringFilter<"Certificate"> | string
   certifiedMinutes?: Prisma.IntFilter<"Certificate"> | number
@@ -315,6 +325,7 @@ export type CertificateWhereUniqueInput = Prisma.AtLeast<{
 }, "id" | "validationCode" | "registrationId" | "userId_actionId">
 
 export type CertificateOrderByWithAggregationInput = {
+  scope?: Prisma.SortOrder
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
@@ -337,6 +348,7 @@ export type CertificateScalarWhereWithAggregatesInput = {
   AND?: Prisma.CertificateScalarWhereWithAggregatesInput | Prisma.CertificateScalarWhereWithAggregatesInput[]
   OR?: Prisma.CertificateScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CertificateScalarWhereWithAggregatesInput | Prisma.CertificateScalarWhereWithAggregatesInput[]
+  scope?: Prisma.StringWithAggregatesFilter<"Certificate"> | string
   id?: Prisma.StringWithAggregatesFilter<"Certificate"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Certificate"> | string
   eventId?: Prisma.StringWithAggregatesFilter<"Certificate"> | string
@@ -351,6 +363,7 @@ export type CertificateScalarWhereWithAggregatesInput = {
 }
 
 export type CertificateCreateInput = {
+  scope?: string
   id?: string
   validationCode: string
   certifiedMinutes: number
@@ -365,6 +378,7 @@ export type CertificateCreateInput = {
 }
 
 export type CertificateUncheckedCreateInput = {
+  scope?: string
   id?: string
   userId: string
   eventId: string
@@ -379,6 +393,7 @@ export type CertificateUncheckedCreateInput = {
 }
 
 export type CertificateUpdateInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
   certifiedMinutes?: Prisma.IntFieldUpdateOperationsInput | number
@@ -393,6 +408,7 @@ export type CertificateUpdateInput = {
 }
 
 export type CertificateUncheckedUpdateInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -407,6 +423,7 @@ export type CertificateUncheckedUpdateInput = {
 }
 
 export type CertificateCreateManyInput = {
+  scope?: string
   id?: string
   userId: string
   eventId: string
@@ -421,6 +438,7 @@ export type CertificateCreateManyInput = {
 }
 
 export type CertificateUpdateManyMutationInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
   certifiedMinutes?: Prisma.IntFieldUpdateOperationsInput | number
@@ -431,6 +449,7 @@ export type CertificateUpdateManyMutationInput = {
 }
 
 export type CertificateUncheckedUpdateManyInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -465,6 +484,7 @@ export type CertificateUserIdActionIdCompoundUniqueInput = {
 }
 
 export type CertificateCountOrderByAggregateInput = {
+  scope?: Prisma.SortOrder
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
@@ -484,6 +504,7 @@ export type CertificateAvgOrderByAggregateInput = {
 }
 
 export type CertificateMaxOrderByAggregateInput = {
+  scope?: Prisma.SortOrder
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
@@ -498,6 +519,7 @@ export type CertificateMaxOrderByAggregateInput = {
 }
 
 export type CertificateMinOrderByAggregateInput = {
+  scope?: Prisma.SortOrder
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
@@ -683,6 +705,7 @@ export type FloatFieldUpdateOperationsInput = {
 }
 
 export type CertificateCreateWithoutUserInput = {
+  scope?: string
   id?: string
   validationCode: string
   certifiedMinutes: number
@@ -696,6 +719,7 @@ export type CertificateCreateWithoutUserInput = {
 }
 
 export type CertificateUncheckedCreateWithoutUserInput = {
+  scope?: string
   id?: string
   eventId: string
   validationCode: string
@@ -738,6 +762,7 @@ export type CertificateScalarWhereInput = {
   AND?: Prisma.CertificateScalarWhereInput | Prisma.CertificateScalarWhereInput[]
   OR?: Prisma.CertificateScalarWhereInput[]
   NOT?: Prisma.CertificateScalarWhereInput | Prisma.CertificateScalarWhereInput[]
+  scope?: Prisma.StringFilter<"Certificate"> | string
   id?: Prisma.StringFilter<"Certificate"> | string
   userId?: Prisma.StringFilter<"Certificate"> | string
   eventId?: Prisma.StringFilter<"Certificate"> | string
@@ -752,6 +777,7 @@ export type CertificateScalarWhereInput = {
 }
 
 export type CertificateCreateWithoutEventInput = {
+  scope?: string
   id?: string
   validationCode: string
   certifiedMinutes: number
@@ -765,6 +791,7 @@ export type CertificateCreateWithoutEventInput = {
 }
 
 export type CertificateUncheckedCreateWithoutEventInput = {
+  scope?: string
   id?: string
   userId: string
   validationCode: string
@@ -804,6 +831,7 @@ export type CertificateUpdateManyWithWhereWithoutEventInput = {
 }
 
 export type CertificateCreateWithoutActionInput = {
+  scope?: string
   id?: string
   validationCode: string
   certifiedMinutes: number
@@ -817,6 +845,7 @@ export type CertificateCreateWithoutActionInput = {
 }
 
 export type CertificateUncheckedCreateWithoutActionInput = {
+  scope?: string
   id?: string
   userId: string
   eventId: string
@@ -856,6 +885,7 @@ export type CertificateUpdateManyWithWhereWithoutActionInput = {
 }
 
 export type CertificateCreateWithoutRegistrationInput = {
+  scope?: string
   id?: string
   validationCode: string
   certifiedMinutes: number
@@ -869,6 +899,7 @@ export type CertificateCreateWithoutRegistrationInput = {
 }
 
 export type CertificateUncheckedCreateWithoutRegistrationInput = {
+  scope?: string
   id?: string
   userId: string
   eventId: string
@@ -898,6 +929,7 @@ export type CertificateUpdateToOneWithWhereWithoutRegistrationInput = {
 }
 
 export type CertificateUpdateWithoutRegistrationInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
   certifiedMinutes?: Prisma.IntFieldUpdateOperationsInput | number
@@ -911,6 +943,7 @@ export type CertificateUpdateWithoutRegistrationInput = {
 }
 
 export type CertificateUncheckedUpdateWithoutRegistrationInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -924,6 +957,7 @@ export type CertificateUncheckedUpdateWithoutRegistrationInput = {
 }
 
 export type CertificateCreateManyUserInput = {
+  scope?: string
   id?: string
   eventId: string
   validationCode: string
@@ -937,6 +971,7 @@ export type CertificateCreateManyUserInput = {
 }
 
 export type CertificateUpdateWithoutUserInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
   certifiedMinutes?: Prisma.IntFieldUpdateOperationsInput | number
@@ -950,6 +985,7 @@ export type CertificateUpdateWithoutUserInput = {
 }
 
 export type CertificateUncheckedUpdateWithoutUserInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -963,6 +999,7 @@ export type CertificateUncheckedUpdateWithoutUserInput = {
 }
 
 export type CertificateUncheckedUpdateManyWithoutUserInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -976,6 +1013,7 @@ export type CertificateUncheckedUpdateManyWithoutUserInput = {
 }
 
 export type CertificateCreateManyEventInput = {
+  scope?: string
   id?: string
   userId: string
   validationCode: string
@@ -989,6 +1027,7 @@ export type CertificateCreateManyEventInput = {
 }
 
 export type CertificateUpdateWithoutEventInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
   certifiedMinutes?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1002,6 +1041,7 @@ export type CertificateUpdateWithoutEventInput = {
 }
 
 export type CertificateUncheckedUpdateWithoutEventInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1015,6 +1055,7 @@ export type CertificateUncheckedUpdateWithoutEventInput = {
 }
 
 export type CertificateUncheckedUpdateManyWithoutEventInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1028,6 +1069,7 @@ export type CertificateUncheckedUpdateManyWithoutEventInput = {
 }
 
 export type CertificateCreateManyActionInput = {
+  scope?: string
   id?: string
   userId: string
   eventId: string
@@ -1041,6 +1083,7 @@ export type CertificateCreateManyActionInput = {
 }
 
 export type CertificateUpdateWithoutActionInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   validationCode?: Prisma.StringFieldUpdateOperationsInput | string
   certifiedMinutes?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1054,6 +1097,7 @@ export type CertificateUpdateWithoutActionInput = {
 }
 
 export type CertificateUncheckedUpdateWithoutActionInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1067,6 +1111,7 @@ export type CertificateUncheckedUpdateWithoutActionInput = {
 }
 
 export type CertificateUncheckedUpdateManyWithoutActionInput = {
+  scope?: Prisma.StringFieldUpdateOperationsInput | string
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1082,6 +1127,7 @@ export type CertificateUncheckedUpdateManyWithoutActionInput = {
 
 
 export type CertificateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  scope?: boolean
   id?: boolean
   userId?: boolean
   eventId?: boolean
@@ -1100,6 +1146,7 @@ export type CertificateSelect<ExtArgs extends runtime.Types.Extensions.InternalA
 }, ExtArgs["result"]["certificate"]>
 
 export type CertificateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  scope?: boolean
   id?: boolean
   userId?: boolean
   eventId?: boolean
@@ -1118,6 +1165,7 @@ export type CertificateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
 }, ExtArgs["result"]["certificate"]>
 
 export type CertificateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  scope?: boolean
   id?: boolean
   userId?: boolean
   eventId?: boolean
@@ -1136,6 +1184,7 @@ export type CertificateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 }, ExtArgs["result"]["certificate"]>
 
 export type CertificateSelectScalar = {
+  scope?: boolean
   id?: boolean
   userId?: boolean
   eventId?: boolean
@@ -1149,7 +1198,7 @@ export type CertificateSelectScalar = {
   revokedAt?: boolean
 }
 
-export type CertificateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "eventId" | "validationCode" | "certifiedMinutes" | "attendancePercent" | "issuedAt" | "filePath" | "actionId" | "registrationId" | "revokedAt", ExtArgs["result"]["certificate"]>
+export type CertificateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"scope" | "id" | "userId" | "eventId" | "validationCode" | "certifiedMinutes" | "attendancePercent" | "issuedAt" | "filePath" | "actionId" | "registrationId" | "revokedAt", ExtArgs["result"]["certificate"]>
 export type CertificateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
@@ -1178,6 +1227,7 @@ export type $CertificatePayload<ExtArgs extends runtime.Types.Extensions.Interna
     registration: Prisma.$RegistrationPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
+    scope: string
     id: string
     userId: string
     eventId: string
@@ -1272,8 +1322,8 @@ export interface CertificateDelegate<ExtArgs extends runtime.Types.Extensions.In
    * // Get first 10 Certificates
    * const certificates = await prisma.certificate.findMany({ take: 10 })
    * 
-   * // Only select the `id`
-   * const certificateWithIdOnly = await prisma.certificate.findMany({ select: { id: true } })
+   * // Only select the `scope`
+   * const certificateWithScopeOnly = await prisma.certificate.findMany({ select: { scope: true } })
    * 
    */
   findMany<T extends CertificateFindManyArgs>(args?: Prisma.SelectSubset<T, CertificateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CertificatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -1317,9 +1367,9 @@ export interface CertificateDelegate<ExtArgs extends runtime.Types.Extensions.In
    *   ]
    * })
    * 
-   * // Create many Certificates and only return the `id`
-   * const certificateWithIdOnly = await prisma.certificate.createManyAndReturn({
-   *   select: { id: true },
+   * // Create many Certificates and only return the `scope`
+   * const certificateWithScopeOnly = await prisma.certificate.createManyAndReturn({
+   *   select: { scope: true },
    *   data: [
    *     // ... provide data here
    *   ]
@@ -1408,9 +1458,9 @@ export interface CertificateDelegate<ExtArgs extends runtime.Types.Extensions.In
    *   ]
    * })
    * 
-   * // Update zero or more Certificates and only return the `id`
-   * const certificateWithIdOnly = await prisma.certificate.updateManyAndReturn({
-   *   select: { id: true },
+   * // Update zero or more Certificates and only return the `scope`
+   * const certificateWithScopeOnly = await prisma.certificate.updateManyAndReturn({
+   *   select: { scope: true },
    *   where: {
    *     // ... provide filter here
    *   },
@@ -1616,6 +1666,7 @@ export interface Prisma__CertificateClient<T, Null = never, ExtArgs extends runt
  * Fields of the Certificate model
  */
 export interface CertificateFieldRefs {
+  readonly scope: Prisma.FieldRef<"Certificate", 'String'>
   readonly id: Prisma.FieldRef<"Certificate", 'String'>
   readonly userId: Prisma.FieldRef<"Certificate", 'String'>
   readonly eventId: Prisma.FieldRef<"Certificate", 'String'>

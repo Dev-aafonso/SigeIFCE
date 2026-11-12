@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   ConflictException,
   Injectable,
@@ -17,7 +17,7 @@ export class UsersService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: { id: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true, isActive: true, lastAccessAt: true, enrollmentNumber: true, course: true, campus: true },
       orderBy: { email: 'asc' },
     });
   }
@@ -38,7 +38,7 @@ export class UsersService {
   async findMyProfile(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true, isActive: true, lastAccessAt: true, enrollmentNumber: true, course: true, campus: true },
     });
 
     if (!user) {
@@ -68,8 +68,8 @@ export class UsersService {
     try {
       return await this.prisma.user.update({
         where: { id },
-        data: { name, email },
-        select: { id: true, name: true, email: true, role: true },
+        data: { name, email, ...(dto.enrollmentNumber !== undefined ? { enrollmentNumber: dto.enrollmentNumber.trim() || null } : {}), ...(dto.course !== undefined ? { course: dto.course.trim() || null } : {}), ...(dto.campus !== undefined ? { campus: dto.campus.trim() || null } : {}) },
+        select: { id: true, name: true, email: true, role: true, isActive: true, lastAccessAt: true, enrollmentNumber: true, course: true, campus: true },
       });
     } catch (error: unknown) {
       if (
@@ -129,7 +129,7 @@ export class UsersService {
 
     await this.prisma.user.update({
       where: { id },
-      data: { password: passwordHash },
+      data: { password: passwordHash, sessionVersion: { increment: 1 } },
     });
 
     return { message: 'Senha alterada com sucesso.' };
@@ -140,9 +140,15 @@ export class UsersService {
 
     return this.prisma.user.update({
       where: { id },
-      data: { role },
+      data: { role, sessionVersion: { increment: 1 } },
       select: { id: true, email: true, role: true },
     });
+  }
+
+  async updateStatus(id: string, isActive: boolean, requesterId: string) {
+    if (id === requesterId) throw new BadRequestException("Você não pode alterar o status da própria conta.");
+    await this.findById(id);
+    return this.prisma.user.update({ where: { id }, data: { isActive, sessionVersion: { increment: 1 } }, select: { id: true, isActive: true } });
   }
 
   async remove(id: string) {

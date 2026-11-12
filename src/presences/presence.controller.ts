@@ -8,7 +8,7 @@ import { CreatePresenceDto } from './dto/create-presence.dto';
 type AuthenticatedRequest = Request & { user?: { sub?: string; id?: string; role?: UserRole } };
 
 @Controller('presences')
-@Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+@Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
 export class PresenceController {
   constructor(private readonly presenceService: PresenceService) {}
 

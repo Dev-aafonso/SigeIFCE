@@ -26,7 +26,7 @@ export class DashboardService {
     if (!principal.id) {
       throw new ForbiddenException('Usuário autenticado sem identificador.');
     }
-    if (principal.role !== UserRole.ADMIN && principal.role !== UserRole.ORGANIZADOR) {
+    if (principal.role !== UserRole.ADMIN && principal.role !== UserRole.ORGANIZADOR && principal.role !== UserRole.PROFESSOR) {
       throw new ForbiddenException('Perfil sem permissão para consultar o painel administrativo.');
     }
   }
@@ -61,7 +61,7 @@ export class DashboardService {
     const { from, to } = this.bounds(query);
     const where: Prisma.EventWhereInput = {};
 
-    if (principal.role === UserRole.ORGANIZADOR) {
+    if (principal.role !== UserRole.ADMIN) {
       where.organizerId = principal.id;
     }
     if (includeSelectedEvent && query.eventId) {
@@ -103,6 +103,52 @@ export class DashboardService {
     };
   }
 
+  async getSummary(principal: DashboardPrincipal) {
+    const eventWhere = this.eventWhere(principal, {});
+    const registrationScope = { action: { is: { event: { is: eventWhere } } } };
+    const monthStart = new Date();
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
+    monthStart.setUTCMonth(monthStart.getUTCMonth() - 5);
+    const [upcoming, events, registrations, presences, recentRegistrations, recentPresences] = await Promise.all([
+      this.prisma.event.findMany({
+        where: { ...eventWhere, startDate: { gte: new Date() }, status: { in: ['PUBLICADO', 'EM_ANDAMENTO'] } },
+        orderBy: { startDate: 'asc' }, take: 5,
+        select: { id: true, title: true, startDate: true, location: true, status: true },
+      }),
+      this.prisma.event.findMany({
+        where: eventWhere, orderBy: { startDate: 'desc' }, take: 100,
+        select: { id: true, title: true, totalCapacity: true, actions: { select: {
+          capacity: true, _count: { select: { registrations: { where: { status: RegistrationStatus.ACTIVE } } } },
+        } } },
+      }),
+      this.prisma.registration.findMany({ where: { ...registrationScope, status: RegistrationStatus.ACTIVE, createdAt: { gte: monthStart } }, select: { createdAt: true, userId: true } }),
+      this.prisma.presence.findMany({ where: { registeredAt: { gte: monthStart }, registration: { is: { ...registrationScope, status: RegistrationStatus.ACTIVE } } }, select: { registeredAt: true, registration: { select: { userId: true } } } }),
+      this.prisma.registration.findMany({ where: registrationScope, orderBy: { updatedAt: 'desc' }, take: 5,
+        select: { status: true, createdAt: true, cancelledAt: true, user: { select: { name: true } }, action: { select: { event: { select: { title: true } } } } } }),
+      this.prisma.presence.findMany({ where: { registration: { is: registrationScope } }, orderBy: { registeredAt: 'desc' }, take: 5,
+        select: { registeredAt: true, registration: { select: { user: { select: { name: true } }, action: { select: { event: { select: { title: true } } } } } } } }),
+    ]);
+    const monthKey = (date: Date) => `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+    const trend = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(monthStart); date.setUTCMonth(monthStart.getUTCMonth() + index);
+      const month = monthKey(date);
+      return { month, label: new Intl.DateTimeFormat('pt-BR', { month: 'short', timeZone: 'UTC' }).format(date),
+        registrations: new Set(registrations.filter(row => monthKey(row.createdAt) === month).map(row => row.userId)).size,
+        presences: new Set(presences.filter(row => monthKey(row.registeredAt) === month).map(row => row.registration.userId)).size };
+    });
+    const activity = [
+      ...recentRegistrations.map(row => ({ name: row.user.name, event: row.action.event.title,
+        kind: row.status === RegistrationStatus.CANCELLED ? 'cancelou a inscrição em' : 'inscreveu-se em',
+        date: row.status === RegistrationStatus.CANCELLED && row.cancelledAt ? row.cancelledAt : row.createdAt })),
+      ...recentPresences.map(row => ({ name: row.registration.user.name, event: row.registration.action.event.title,
+        kind: 'confirmou presença em', date: row.registeredAt })),
+    ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
+    return { upcoming, events: events.map(event => ({ id: event.id, title: event.title,
+      capacity: event.totalCapacity ?? event.actions.reduce((sum, action) => sum + action.capacity, 0),
+      registrations: event.actions.reduce((sum, action) => sum + action._count.registrations, 0) })), trend, activity };
+  }
+
   async getFilters(principal: DashboardPrincipal, query: DashboardQueryDto) {
     this.assertPrincipal(principal);
     const eventWhere = this.eventWhere(principal, query);
@@ -137,7 +183,7 @@ export class DashboardService {
     const registrationWhere = this.registrationWhere(principal, query);
     const certificateWhere: Prisma.CertificateWhereInput = {
       event: { is: eventWhere },
-      ...(query.actionId ? { actionId: query.actionId } : {}),
+      ...(query.actionId ? { actionId: query.actionId, scope: 'ACTION' } : {}),
     };
 
     const [
@@ -150,6 +196,8 @@ export class DashboardService {
       participants,
       certificatesIssued,
       certificatesValid,
+      certificatesConsolidated,
+      certificatesLegacy,
     ] = await Promise.all([
       this.prisma.event.count({ where: eventWhere }),
       this.prisma.event.groupBy({
@@ -172,6 +220,8 @@ export class DashboardService {
       this.prisma.certificate.count({
         where: { ...certificateWhere, revokedAt: null },
       }),
+      this.prisma.certificate.count({ where: { ...certificateWhere, scope: 'EVENT', revokedAt: null } }),
+      this.prisma.certificate.count({ where: { ...certificateWhere, scope: 'ACTION', revokedAt: null } }),
     ]);
 
     const sixMonthStart = new Date();
@@ -229,6 +279,8 @@ export class DashboardService {
         attendanceRate,
         certificatesIssued,
         certificatesValid,
+        certificatesConsolidated,
+        certificatesLegacy,
       },
       eventStatuses: eventStatusGroups.map((item) => ({
         status: item.status,

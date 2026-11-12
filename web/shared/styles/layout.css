@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -576,4 +576,27 @@ dialog.modal-perfil[open]::backdrop {
   .module-wrapper {
     padding: clamp(1rem, 4vw, 1.5rem);
   }
+}
+
+/* Sidebar Figma Make: item ativo com indicador institucional. */
+.botao-menu {position:relative; border-radius:8px; min-height:40px; padding:9px 12px;}
+.botao-menu.ativo::before {content:""; position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:0 2px 2px 0;background:var(--ativo-borda);}
+.logotipo h1 {font-size:1.25rem;}
+.icone-logotipo .vermelho {background-color:#c62828;}
+
+#popover-notificacoes { width: min(26rem, calc(100vw - 2rem)); max-height: min(70dvh, 38rem); overflow: auto; }
+.notificacoes-lista { list-style: none; padding: 0; margin: 0; }
+.notificacoes-lista li { display: grid; gap: .35rem; padding: .75rem 0; border-top: 1px solid var(--cor-divisor); }
+.notificacoes-lista p { margin: 0; overflow-wrap: anywhere; }
+.notificacoes-lista time, #notificacoes-status { font-size: .8rem; color: var(--texto-suave); }
+.notificacoes-lista button { justify-self: start; background: transparent; border: 0; color: var(--ativo-texto); cursor: pointer; padding: .35rem 0; }
+
+/* Keep the centered brand and controls clear of each other on small screens. */
+@media (max-width: 768px) {
+  .titulo-pagina-cabecalho { display: none; }
+  .cabecalho-esquerda { min-width: 0; }
+  .module-wrapper { min-width: 0; padding: clamp(.75rem, 3vw, 1.5rem); }
+}
+@media (max-width: 360px) {
+  .logotipo-cabecalho h1 { font-size: 1rem; }
 }

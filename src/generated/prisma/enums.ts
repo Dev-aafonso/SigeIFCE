@@ -22,6 +22,7 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 export const EventStatus = {
   RASCUNHO: 'RASCUNHO',
   PUBLICADO: 'PUBLICADO',
+  EM_ANDAMENTO: 'EM_ANDAMENTO',
   ENCERRADO: 'ENCERRADO',
   CANCELADO: 'CANCELADO'
 } as const

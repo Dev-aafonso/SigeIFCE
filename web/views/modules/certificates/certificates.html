@@ -10,7 +10,12 @@
         Consulte seus certificados emitidos e acompanhe sua carga horária.
       </p>
     </div>
-    <button id="abrir-validacao-certificado" type="button" class="botao-certificado botao-certificado-secundario">Validar certificado</button>
+    <a
+      class="botao-certificado botao-certificado-secundario"
+      href="/web/certificate-validation.html"
+    >
+      Validar certificado
+    </a>
   </header>
 
   <p
@@ -74,6 +79,22 @@
     ></div>
   </section>
 
+  <section class="secao-certificados" aria-labelledby="titulo-elegibilidade-certificados">
+    <header class="cabecalho-secao-certificados">
+      <div><h3 id="titulo-elegibilidade-certificados">Certificado consolidado por evento</h3>
+      <p>Consulte sua frequência e solicite a emissão após o encerramento do evento.</p></div>
+    </header>
+    <form id="form-elegibilidade-pessoal" class="form-evento-certificados">
+      <label class="campo-certificado"><span>Nome do evento</span>
+        <input id="id-evento-elegibilidade" list="eventos-elegibilidade" autocomplete="off" placeholder="Digite ou selecione o nome do evento" required />
+        <datalist id="eventos-elegibilidade"></datalist>
+      </label>
+      <button type="submit" class="botao-certificado botao-certificado-secundario">Verificar elegibilidade</button>
+    </form>
+    <p id="estado-elegibilidade-pessoal" role="status" aria-live="polite"></p>
+    <button id="emitir-certificado-pessoal" class="botao-certificado botao-certificado-primario" type="button" disabled>Emitir meu certificado</button>
+  </section>
+
   <section
     id="painel-gestao-certificados"
     class="secao-certificados secao-gestao-certificados"
@@ -94,15 +115,17 @@
     </header>
     <form id="form-evento-certificados" class="form-evento-certificados">
       <label class="campo-certificado">
-        <span>Identificador do evento</span>
+        <span>Nome do evento</span>
         <input
           id="id-evento-certificados"
-          name="eventId"
+          list="eventos-gestao-certificados"
+          name="eventName"
           data-testid="certificate-event-id"
           autocomplete="off"
           required
-          placeholder="ID do evento"
+          placeholder="Digite ou selecione o nome do evento"
         />
+        <datalist id="eventos-gestao-certificados"></datalist>
       </label>
       <button
         id="carregar-evento-certificados"
@@ -165,20 +188,6 @@
       </button>
     </article>
   </section>
-
-  <dialog id="dialog-validar-certificado" class="dialog-certificado" aria-labelledby="titulo-validar-certificado">
-    <form id="form-validar-certificado" class="conteudo-dialog-certificado">
-      <h3 id="titulo-validar-certificado">Consultar autenticidade</h3>
-      <label class="campo-certificado">Código do certificado
-        <input id="codigo-validacao-certificado" autocomplete="off" required placeholder="SIGE-..." />
-      </label>
-      <p id="resultado-validacao-certificado" role="status" aria-live="polite"></p>
-      <div class="acoes-emissao-certificados">
-        <button type="button" id="fechar-validacao-certificado" class="botao-certificado botao-certificado-secundario">Fechar</button>
-        <button type="submit" class="botao-certificado botao-certificado-primario">Validar</button>
-      </div>
-    </form>
-  </dialog>
 
   <dialog
     id="dialog-preview-certificado"

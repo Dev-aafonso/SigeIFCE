@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="./web/shared/styles/layout.css">
     <link rel="stylesheet" href="./web/shared/styles/modules.css">
     <link rel="stylesheet" href="./web/shared/account/account.css">
+    <link rel="stylesheet" href="./web/shared/styles/ui-refresh.css">
 
     <script src="./web/vendor/htmx.min.js" defer></script>
     <script src="./web/shared/core/router.js" type="module" defer></script>
@@ -54,7 +55,7 @@
                 <h2 id="titulo-pagina-cabecalho" class="titulo-pagina-cabecalho">Painel do Evento</h2>
             </div>
 
-            <button id="botao-notificacoes" class="botao-icone" commandfor="popover-notificacoes" command="toggle-popover" aria-label="Notificações">
+            <button id="botao-notificacoes" class="botao-icone" aria-controls="popover-notificacoes" aria-expanded="false" aria-label="Notificações">
                 <img src="./web/shared/assets/icons/main-icons/sino.png" width="24" height="24" alt="Sino de notificações">
             </button>
         </header>
@@ -150,9 +151,8 @@
             <h4>NOTIFICAÇÕES</h4>
         </header>
         <div class="corpo-popover">
-            <button class="botao-opcao-modal">Lista de notificações</button>
-            <button class="botao-opcao-modal">Preferências</button>
-            <button class="botao-opcao-modal">Marcar todas como lidas</button>
+            <p id="notificacoes-status" role="status" aria-live="polite">Carregando avisos...</p>
+            <ul id="notificacoes-lista" class="notificacoes-lista"></ul>
         </div>
     </div>
     <script src="/js/sprint8.js" defer></script>

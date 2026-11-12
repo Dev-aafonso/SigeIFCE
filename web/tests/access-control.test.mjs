@@ -37,12 +37,13 @@ test('limits user management to administrators', () => {
 
 test('limits management and administration areas to their intended profiles', () => {
     assert.equal(canAccessModule('ORGANIZADOR', 'participants'), true);
-    assert.equal(canAccessModule('PROFESSOR', 'participants'), false);
+    assert.equal(canAccessModule('PROFESSOR', 'participants'), true);
     assert.equal(canAccessModule('ALUNO', 'participants'), false);
     assert.equal(canAccessModule('ORGANIZADOR', 'reports'), true);
     assert.equal(canAccessModule('ALUNO', 'reports'), false);
-    assert.equal(canAccessModule('ORGANIZADOR', 'settings'), true);
-    assert.equal(canAccessModule('PROFESSOR', 'settings'), false);
+    assert.equal(canAccessModule('ORGANIZADOR', 'config'), true);
+    assert.equal(canAccessModule('PROFESSOR', 'config'), true);
+    assert.equal(isKnownModule('settings'), false);
 });
 
 test('denies unknown modules and unknown profiles by default', () => {

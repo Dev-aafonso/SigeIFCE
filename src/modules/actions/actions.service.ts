@@ -10,6 +10,7 @@ import {
   EventStatus,
   UserRole,
 } from '../../generated/prisma/enums';
+import { Prisma, RegistrationStatus } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateActionDto } from './dto/create-action.dto';
 import { UpdateActionDto } from './dto/update-action.dto';
@@ -35,7 +36,8 @@ export class ActionsService {
   private manager(user: AuthUser) {
     if (
       user.role !== UserRole.ADMIN &&
-      user.role !== UserRole.ORGANIZADOR
+      user.role !== UserRole.ORGANIZADOR &&
+      user.role !== UserRole.PROFESSOR
     ) {
       throw new ForbiddenException(
         'Apenas ADMIN ou ORGANIZADOR podem gerenciar aÃ§Ãµes.',
@@ -232,7 +234,7 @@ export class ActionsService {
       await this.getEvent(eventId);
 
     if (
-      event.status !== EventStatus.PUBLICADO
+      ![EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO].includes(event.status as never)
     ) {
       throw new NotFoundException(
         'As aÃ§Ãµes ficam pÃºblicas somente apÃ³s a publicaÃ§Ã£o do evento.',
@@ -261,7 +263,7 @@ export class ActionsService {
             not: ActionStatus.CANCELADA,
           },
           event: {
-            status: EventStatus.PUBLICADO,
+            status: { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO] },
           },
         },
         include: {
@@ -357,9 +359,7 @@ export class ActionsService {
       );
     }
 
-    return this.prisma.action.update({
-      where: { id },
-      data: {
+    const updateData = {
         ...(dto.title !== undefined
           ? {
               title: dto.title.trim(),
@@ -397,17 +397,82 @@ export class ActionsService {
                 dto.location.trim() || null,
             }
           : {}),
-      },
+    };
+    const query = {
+      where: { id },
+      data: updateData,
       include: {
         event: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-          },
+          select: { id: true, title: true, status: true },
         },
       },
-    });
+    } as const;
+
+    if (dto.capacity === undefined) {
+      return this.prisma.action.update(query);
+    }
+
+    // A inscricao ja usa FOR UPDATE na linha de Action. O mesmo lock
+    // torna atomico conferir a ocupacao e alterar a capacidade.
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await this.prisma.$transaction(async (tx) => {
+          const locked = await tx.$queryRaw<Array<{ id: string }>>`
+            SELECT "id" FROM "Action" WHERE "id" = ${id} FOR UPDATE
+          `;
+          if (locked.length === 0) {
+            throw new NotFoundException('Acao nao encontrada.');
+          }
+          const latest = await tx.action.findUnique({
+            where: { id },
+            select: {
+              status: true,
+              event: { select: { status: true, organizerId: true, startDate: true, endDate: true } },
+            },
+          });
+          if (!latest) {
+            throw new NotFoundException('Acao nao encontrada.');
+          }
+          this.scope(latest.event.organizerId, user);
+          if (
+            latest.status !== ActionStatus.ATIVA ||
+            latest.event.status === EventStatus.CANCELADO ||
+            latest.event.status === EventStatus.ENCERRADO
+          ) {
+            throw new ConflictException('Acao ou evento indisponivel para edicao.');
+          }
+          this.validateInsideEvent(
+            start,
+            end,
+            latest.event.startDate,
+            latest.event.endDate,
+          );
+          const active = await tx.registration.count({
+            where: { actionId: id, status: RegistrationStatus.ACTIVE },
+          });
+          if (capacity < active) {
+            throw new ConflictException(
+              'Capacidade menor que a quantidade de inscricoes ativas.',
+            );
+          }
+          return tx.action.update(query);
+        }, {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+          maxWait: 5000,
+          timeout: 10000,
+        });
+      } catch (error) {
+        if (
+          typeof error === 'object' && error !== null &&
+          'code' in error && error.code === 'P2034' && attempt < 2
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 50 * (2 ** attempt)));
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw new ConflictException('Nao foi possivel atualizar a capacidade.');
   }
 
   async cancel(
@@ -463,6 +528,12 @@ export class ActionsService {
     ) {
       throw new ConflictException(
         'Somente aÃ§Ãµes ATIVAS podem ser encerradas.',
+      );
+    }
+
+    if (current.endDate > new Date()) {
+      throw new ConflictException(
+        'Nao e possivel encerrar uma acao antes de sua data final.',
       );
     }
 

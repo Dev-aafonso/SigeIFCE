@@ -399,10 +399,13 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   Event: 'Event',
+  EventCover: 'EventCover',
   Action: 'Action',
   Registration: 'Registration',
   Presence: 'Presence',
-  Certificate: 'Certificate'
+  Certificate: 'Certificate',
+  NotificationRead: 'NotificationRead',
+  ScannedReport: 'ScannedReport'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -418,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "event" | "action" | "registration" | "presence" | "certificate"
+    modelProps: "user" | "event" | "eventCover" | "action" | "registration" | "presence" | "certificate" | "notificationRead" | "scannedReport"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -567,6 +570,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EventCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EventCountAggregateOutputType> | number
+        }
+      }
+    }
+    EventCover: {
+      payload: Prisma.$EventCoverPayload<ExtArgs>
+      fields: Prisma.EventCoverFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventCoverFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventCoverFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>
+        }
+        findFirst: {
+          args: Prisma.EventCoverFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventCoverFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>
+        }
+        findMany: {
+          args: Prisma.EventCoverFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>[]
+        }
+        create: {
+          args: Prisma.EventCoverCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>
+        }
+        createMany: {
+          args: Prisma.EventCoverCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventCoverCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>[]
+        }
+        delete: {
+          args: Prisma.EventCoverDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>
+        }
+        update: {
+          args: Prisma.EventCoverUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventCoverDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventCoverUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventCoverUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventCoverUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventCoverPayload>
+        }
+        aggregate: {
+          args: Prisma.EventCoverAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventCover>
+        }
+        groupBy: {
+          args: Prisma.EventCoverGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventCoverGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventCoverCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventCoverCountAggregateOutputType> | number
         }
       }
     }
@@ -866,6 +943,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    NotificationRead: {
+      payload: Prisma.$NotificationReadPayload<ExtArgs>
+      fields: Prisma.NotificationReadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotificationReadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotificationReadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>
+        }
+        findFirst: {
+          args: Prisma.NotificationReadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotificationReadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>
+        }
+        findMany: {
+          args: Prisma.NotificationReadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>[]
+        }
+        create: {
+          args: Prisma.NotificationReadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>
+        }
+        createMany: {
+          args: Prisma.NotificationReadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotificationReadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>[]
+        }
+        delete: {
+          args: Prisma.NotificationReadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>
+        }
+        update: {
+          args: Prisma.NotificationReadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>
+        }
+        deleteMany: {
+          args: Prisma.NotificationReadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotificationReadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotificationReadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>[]
+        }
+        upsert: {
+          args: Prisma.NotificationReadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationReadPayload>
+        }
+        aggregate: {
+          args: Prisma.NotificationReadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotificationRead>
+        }
+        groupBy: {
+          args: Prisma.NotificationReadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationReadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotificationReadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationReadCountAggregateOutputType> | number
+        }
+      }
+    }
+    ScannedReport: {
+      payload: Prisma.$ScannedReportPayload<ExtArgs>
+      fields: Prisma.ScannedReportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ScannedReportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ScannedReportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>
+        }
+        findFirst: {
+          args: Prisma.ScannedReportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ScannedReportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>
+        }
+        findMany: {
+          args: Prisma.ScannedReportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>[]
+        }
+        create: {
+          args: Prisma.ScannedReportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>
+        }
+        createMany: {
+          args: Prisma.ScannedReportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ScannedReportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>[]
+        }
+        delete: {
+          args: Prisma.ScannedReportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>
+        }
+        update: {
+          args: Prisma.ScannedReportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>
+        }
+        deleteMany: {
+          args: Prisma.ScannedReportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ScannedReportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ScannedReportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>[]
+        }
+        upsert: {
+          args: Prisma.ScannedReportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ScannedReportPayload>
+        }
+        aggregate: {
+          args: Prisma.ScannedReportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateScannedReport>
+        }
+        groupBy: {
+          args: Prisma.ScannedReportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScannedReportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ScannedReportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ScannedReportCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -910,7 +1135,13 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
-  role: 'role'
+  role: 'role',
+  sessionVersion: 'sessionVersion',
+  isActive: 'isActive',
+  lastAccessAt: 'lastAccessAt',
+  enrollmentNumber: 'enrollmentNumber',
+  course: 'course',
+  campus: 'campus'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -923,6 +1154,11 @@ export const EventScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   location: 'location',
+  category: 'category',
+  workloadMinutes: 'workloadMinutes',
+  registrationStartDate: 'registrationStartDate',
+  registrationEndDate: 'registrationEndDate',
+  totalCapacity: 'totalCapacity',
   status: 'status',
   minAttendancePercent: 'minAttendancePercent',
   publishedAt: 'publishedAt',
@@ -934,6 +1170,15 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const EventCoverScalarFieldEnum = {
+  eventId: 'eventId',
+  mimeType: 'mimeType',
+  data: 'data'
+} as const
+
+export type EventCoverScalarFieldEnum = (typeof EventCoverScalarFieldEnum)[keyof typeof EventCoverScalarFieldEnum]
 
 
 export const ActionScalarFieldEnum = {
@@ -982,6 +1227,7 @@ export type PresenceScalarFieldEnum = (typeof PresenceScalarFieldEnum)[keyof typ
 
 
 export const CertificateScalarFieldEnum = {
+  scope: 'scope',
   id: 'id',
   userId: 'userId',
   eventId: 'eventId',
@@ -996,6 +1242,26 @@ export const CertificateScalarFieldEnum = {
 } as const
 
 export type CertificateScalarFieldEnum = (typeof CertificateScalarFieldEnum)[keyof typeof CertificateScalarFieldEnum]
+
+
+export const NotificationReadScalarFieldEnum = {
+  userId: 'userId',
+  key: 'key',
+  readAt: 'readAt'
+} as const
+
+export type NotificationReadScalarFieldEnum = (typeof NotificationReadScalarFieldEnum)[keyof typeof NotificationReadScalarFieldEnum]
+
+
+export const ScannedReportScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  authorId: 'authorId',
+  text: 'text',
+  createdAt: 'createdAt'
+} as const
+
+export type ScannedReportScalarFieldEnum = (typeof ScannedReportScalarFieldEnum)[keyof typeof ScannedReportScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1057,6 +1323,27 @@ export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -1085,16 +1372,16 @@ export type ListEnumEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
- * Reference to a field of type 'Int'
+ * Reference to a field of type 'Bytes'
  */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
     
 
 
 /**
- * Reference to a field of type 'Int[]'
+ * Reference to a field of type 'Bytes[]'
  */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
     
 
 
@@ -1292,10 +1579,13 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   event?: Prisma.EventOmit
+  eventCover?: Prisma.EventCoverOmit
   action?: Prisma.ActionOmit
   registration?: Prisma.RegistrationOmit
   presence?: Prisma.PresenceOmit
   certificate?: Prisma.CertificateOmit
+  notificationRead?: Prisma.NotificationReadOmit
+  scannedReport?: Prisma.ScannedReportOmit
 }
 
 /* Types for Logging */

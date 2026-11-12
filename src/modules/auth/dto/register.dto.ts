@@ -1,5 +1,7 @@
 ﻿import {
   IsEmail,
+  IsIn,
+  IsOptional,
   IsNotEmpty,
   IsString,
   MaxLength,
@@ -9,6 +11,8 @@
 import { Match } from './match.decorator';
 
 export class RegisterDto {
+  @IsOptional() @IsIn(["ADMIN", "PROFESSOR", "ALUNO"]) role?: "ADMIN" | "PROFESSOR" | "ALUNO";
+  @IsOptional() @IsString() @MaxLength(128) managerCode?: string;
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

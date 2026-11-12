@@ -1,4 +1,5 @@
 import { router } from "./router.js";
+import { inicializarTema, definirPreferenciaTema, obterTemaEfetivo } from "./theme.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const menuNavegacao = document.querySelector(".menu-navegacao");
@@ -7,33 +8,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const barraLateral = document.getElementById("barra-lateral");
   const botaoTema = document.getElementById("botao-tema");
 
-  let temaAtual = "light";
-  try {
-    const temaSalvo = localStorage.getItem("sige_theme");
-    if (temaSalvo === "light" || temaSalvo === "dark") temaAtual = temaSalvo;
-  } catch {}
-
-  function aplicarTema(tema, salvar = false) {
-    temaAtual = tema;
-    document.documentElement.style.colorScheme = tema;
-    document.documentElement.setAttribute("theme", tema);
-    if (botaoTema) {
-      botaoTema.setAttribute("aria-pressed", String(tema === "dark"));
-      botaoTema.setAttribute(
-        "aria-label",
-        tema === "dark" ? "Ativar tema claro" : "Ativar tema escuro",
-      );
-    }
-    if (salvar) {
-      try {
-        localStorage.setItem("sige_theme", tema);
-      } catch {}
-    }
+  // Uma única origem de verdade para o tema, inclusive para a tela Configurações.
+  inicializarTema();
+  if (botaoTema) {
+    const escuro = obterTemaEfetivo() === "dark";
+    botaoTema.setAttribute("aria-pressed", String(escuro));
+    botaoTema.setAttribute("aria-label", escuro ? "Ativar tema claro" : "Ativar tema escuro");
   }
-
-  aplicarTema(temaAtual);
   botaoTema?.addEventListener("click", () => {
-    aplicarTema(temaAtual === "dark" ? "light" : "dark", true);
+    const proximo = obterTemaEfetivo() === "dark" ? "light" : "dark";
+    definirPreferenciaTema(proximo);
+  });
+
+  document.addEventListener("sige:theme-changed", (evento) => {
+    if (!botaoTema) return;
+    const escuro = evento.detail.theme === "dark";
+    botaoTema.setAttribute("aria-pressed", String(escuro));
+    botaoTema.setAttribute("aria-label", escuro ? "Ativar tema claro" : "Ativar tema escuro");
+    botaoTema.setAttribute("title", escuro ? "Ativar tema claro" : "Ativar tema escuro");
   });
 
   function fecharBarraLateral() {
@@ -60,9 +52,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const modulo = botao.getAttribute("data-module");
     if (!modulo) return;
 
-    history.pushState({ module: modulo }, "", `/#/${modulo}`);
     window.navegarParaModulo?.(modulo);
     fecharBarraLateral();
+  });
+
+  const botaoNotificacoes = document.getElementById("botao-notificacoes");
+  const popoverNotificacoes = document.getElementById("popover-notificacoes");
+  const listaNotificacoes = document.getElementById("notificacoes-lista");
+  const statusNotificacoes = document.getElementById("notificacoes-status");
+  async function carregarNotificacoes() {
+    statusNotificacoes.textContent = "Carregando avisos...";
+    try {
+      const resposta = await fetch("/notifications", { credentials: "same-origin" });
+      if (!resposta.ok) throw new Error();
+      const avisos = await resposta.json();
+      listaNotificacoes.replaceChildren();
+      statusNotificacoes.textContent = avisos.length ? `${avisos.filter(item => !item.read).length} não lida(s)` : "Nenhuma notificação por enquanto.";
+      for (const aviso of avisos) {
+        const item = document.createElement("li");
+        const texto = document.createElement("p"); texto.textContent = aviso.message;
+        const data = document.createElement("time"); data.dateTime = aviso.date;
+        data.textContent = new Date(aviso.date).toLocaleString("pt-BR");
+        item.append(texto, data);
+        if (!aviso.read) {
+          const botao = document.createElement("button"); botao.type = "button"; botao.textContent = "Marcar como lida";
+          botao.addEventListener("click", async () => {
+            botao.disabled = true;
+            try {
+              const resposta = await fetch(`/notifications/${encodeURIComponent(aviso.key)}/read`, { method: "PATCH", credentials: "same-origin" });
+              if (!resposta.ok) throw new Error();
+              await carregarNotificacoes();
+            } catch { statusNotificacoes.textContent = "Não foi possível marcar o aviso como lido."; botao.disabled = false; }
+          });
+          item.append(botao);
+        }
+        listaNotificacoes.append(item);
+      }
+    } catch { listaNotificacoes.replaceChildren(); statusNotificacoes.textContent = "Não foi possível carregar as notificações."; }
+  }
+  botaoNotificacoes?.addEventListener("click", () => {
+    if (!popoverNotificacoes) return;
+    popoverNotificacoes.togglePopover();
+  });
+  popoverNotificacoes?.addEventListener("toggle", event => {
+    const aberto = event.newState === "open";
+    botaoNotificacoes?.setAttribute("aria-expanded", String(aberto));
+    if (aberto) carregarNotificacoes();
   });
 
   router.init();

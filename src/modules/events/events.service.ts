@@ -15,12 +15,46 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
+import { effectiveEventStatus, validateEventRules } from './event-rules';
+import { isTransactionConflict } from '../../common/transaction-conflict';
 
 type AuthUser = { id?: string; sub?: string; role: UserRole };
 
 @Injectable()
 export class EventsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  private lifecycleTimer?: ReturnType<typeof setInterval>;
+  onModuleInit() {
+    if (process.env.MOCK_MODE === 'true') return;
+    // Reconciliacao idempotente, inclusive apos reinicio; nunca ressuscita estados finais.
+    this.lifecycleTimer = setInterval(() => {
+      void this.synchronizeLifecycle().catch(() => console.error('Falha na reconciliacao do ciclo de eventos.'));
+    }, 60000);
+    this.lifecycleTimer.unref();
+    void this.synchronizeLifecycle().catch(() => console.error('Falha inicial no ciclo de eventos.'));
+  }
+  onModuleDestroy() { if (this.lifecycleTimer) clearInterval(this.lifecycleTimer); }
+  async synchronizeLifecycle(now = new Date()) {
+    await this.prisma.event.updateMany({
+      where: { status: { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO] }, endDate: { lte: now } },
+      data: { status: EventStatus.ENCERRADO, closedAt: now },
+    });
+    await this.prisma.event.updateMany({
+      where: { status: EventStatus.PUBLICADO, startDate: { lte: now }, endDate: { gt: now } },
+      data: { status: EventStatus.EM_ANDAMENTO },
+    });
+  }
+
+  private rnFields(dto: CreateEventDto | UpdateEventDto) {
+    return {
+      ...(dto.category !== undefined ? { category: dto.category.trim() } : {}),
+      ...(dto.workloadMinutes !== undefined ? { workloadMinutes: dto.workloadMinutes } : {}),
+      ...(dto.totalCapacity !== undefined ? { totalCapacity: dto.totalCapacity } : {}),
+      ...(dto.registrationStartDate !== undefined ? { registrationStartDate: new Date(dto.registrationStartDate) } : {}),
+      ...(dto.registrationEndDate !== undefined ? { registrationEndDate: new Date(dto.registrationEndDate) } : {}),
+    };
+  }
 
   private userId(user: AuthUser): string {
     const id = user.sub ?? user.id;
@@ -35,10 +69,11 @@ export class EventsService {
   private manager(user: AuthUser) {
     if (
       user.role !== UserRole.ADMIN &&
-      user.role !== UserRole.ORGANIZADOR
+      user.role !== UserRole.ORGANIZADOR &&
+      user.role !== UserRole.PROFESSOR
     ) {
       throw new ForbiddenException(
-        'Apenas ADMIN ou ORGANIZADOR podem gerenciar eventos.',
+        'Apenas administradores, organizadores ou professores podem gerenciar eventos.',
       );
     }
   }
@@ -73,10 +108,11 @@ export class EventsService {
     return date;
   }
 
-  private async get(id: string) {
-    const event = await this.prisma.event.findUnique({
+  private async get(id: string, db: Prisma.TransactionClient | PrismaService = this.prisma) {
+    const event = await db.event.findUnique({
       where: { id },
       include: {
+        cover: { select: { eventId: true } },
         organizer: {
           select: {
             id: true,
@@ -96,7 +132,8 @@ export class EventsService {
       throw new NotFoundException('Evento nÃ£o encontrado.');
     }
 
-    return event;
+    const { cover, ...rest } = event;
+    return { ...rest, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/manage/cover` : null, status: effectiveEventStatus(event.status, event.startDate, event.endDate) };
   }
 
   private scope(
@@ -112,6 +149,18 @@ export class EventsService {
     }
   }
 
+  async searchManageable(title: string, user: AuthUser) {
+    this.manager(user);
+    const term = typeof title === 'string' ? title.trim().slice(0, 100) : '';
+    if (!term) return [];
+    return this.prisma.event.findMany({
+      where: { title: { contains: term, mode: 'insensitive' }, ...(user.role === UserRole.ADMIN ? {} : { organizerId: this.userId(user) }) },
+      select: { id: true, title: true, startDate: true },
+      orderBy: { startDate: 'desc' },
+      take: 100,
+    });
+  }
+
   async create(
     dto: CreateEventDto,
     user: AuthUser,
@@ -123,6 +172,10 @@ export class EventsService {
 
     this.validateDates(start, end);
 
+    validateEventRules({ ...dto, ...this.rnFields(dto), startDate: start, endDate: end,
+      registrationStartDate: dto.registrationStartDate ? new Date(dto.registrationStartDate) : null,
+      registrationEndDate: dto.registrationEndDate ? new Date(dto.registrationEndDate) : null });
+
     return this.prisma.event.create({
       data: {
         title: dto.title.trim(),
@@ -130,6 +183,7 @@ export class EventsService {
         startDate: start,
         endDate: end,
         location: dto.location?.trim() || null,
+        ...this.rnFields(dto),
         organizerId: this.userId(user),
       },
       include: {
@@ -139,6 +193,7 @@ export class EventsService {
   }
 
   async findPublic(query: EventQueryDto) {
+    await this.synchronizeLifecycle();
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 20;
 
@@ -148,7 +203,7 @@ export class EventsService {
 
     if (
       query.status &&
-      query.status !== EventStatus.PUBLICADO
+      ![EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO].includes(query.status as never)
     ) {
       throw new BadRequestException(
         'A consulta pÃºblica aceita somente o status PUBLICADO.',
@@ -172,7 +227,7 @@ export class EventsService {
     }
 
     const where: Prisma.EventWhereInput = {
-      status: EventStatus.PUBLICADO,
+      status: query.status ?? { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO] },
     };
 
     if (query.title?.trim()) {
@@ -203,6 +258,7 @@ export class EventsService {
         skip: (page - 1) * limit,
         take: limit,
         include: {
+          cover: { select: { eventId: true } },
           organizer: {
             select: {
               id: true,
@@ -227,7 +283,7 @@ export class EventsService {
     ]);
 
     return {
-      data,
+      data: data.map(({ cover, ...event }) => ({ ...event, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null })),
       meta: {
         page,
         limit,
@@ -238,12 +294,14 @@ export class EventsService {
   }
 
   async findPublicById(id: string) {
+    await this.synchronizeLifecycle();
     const event = await this.prisma.event.findFirst({
       where: {
         id,
-        status: EventStatus.PUBLICADO,
+        status: { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO] },
       },
       include: {
+        cover: { select: { eventId: true } },
         organizer: {
           select: {
             id: true,
@@ -269,7 +327,43 @@ export class EventsService {
       );
     }
 
-    return event;
+    const { cover, ...rest } = event;
+    return { ...rest, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null };
+  }
+
+  async setCover(id: string, user: AuthUser, file?: { buffer: Buffer; mimetype: string }) {
+    this.manager(user);
+    const event = await this.get(id);
+    this.scope(event, user);
+    if ([EventStatus.CANCELADO, EventStatus.ENCERRADO].includes(event.status as never)) {
+      throw new ConflictException('Eventos cancelados ou encerrados não podem ser editados.');
+    }
+    if (!file || !Buffer.isBuffer(file.buffer) || file.buffer.length === 0 || file.buffer.length > 5 * 1024 * 1024) {
+      throw new BadRequestException('Selecione uma imagem de até 5 MB.');
+    }
+    const data = file.buffer;
+    const type = data.length >= 8 && data.subarray(0, 8).equals(Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a])) ? 'image/png'
+      : data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff ? 'image/jpeg'
+      : data.length >= 12 && data.toString('ascii', 0, 4) === 'RIFF' && data.toString('ascii', 8, 12) === 'WEBP' ? 'image/webp' : null;
+    if (!type || type !== file.mimetype) throw new BadRequestException('Use uma imagem JPEG, PNG ou WebP válida.');
+    const bytes = Uint8Array.from(data);
+    await this.prisma.eventCover.upsert({ where: { eventId: id }, create: { eventId: id, mimeType: type, data: bytes }, update: { mimeType: type, data: bytes } });
+    return { coverImageUrl: `/events/${encodeURIComponent(id)}/cover` };
+  }
+
+  async getManagedCover(id: string, user: AuthUser) {
+    this.manager(user);
+    const event = await this.get(id);
+    this.scope(event, user);
+    const cover = await this.prisma.eventCover.findUnique({ where: { eventId: id } });
+    if (!cover) throw new NotFoundException('Capa não encontrada.');
+    return cover;
+  }
+
+  async getPublicCover(id: string) {
+    const cover = await this.prisma.eventCover.findFirst({ where: { eventId: id, event: { status: { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO] } } } });
+    if (!cover) throw new NotFoundException('Capa não encontrada.');
+    return cover;
   }
 
   async findManageable(
@@ -291,7 +385,9 @@ export class EventsService {
   ) {
     this.manager(user);
 
-    const current = await this.get(id);
+    return this.prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "Event" WHERE "id" = ${id} FOR UPDATE`;
+    const current = await this.get(id, tx);
     this.scope(current, user);
 
     if (
@@ -313,9 +409,34 @@ export class EventsService {
 
     this.validateDates(start, end);
 
-    return this.prisma.event.update({
+    const merged = { ...current, ...dto, ...this.rnFields(dto), startDate: start, endDate: end,
+      registrationStartDate: dto.registrationStartDate ? new Date(dto.registrationStartDate) : current.registrationStartDate,
+      registrationEndDate: dto.registrationEndDate ? new Date(dto.registrationEndDate) : current.registrationEndDate };
+    validateEventRules(merged);
+    if (dto.totalCapacity !== undefined) {
+      const participants = await tx.registration.findMany({
+        where: { action: { eventId: id }, status: 'ACTIVE' }, select: { userId: true }, distinct: ['userId'],
+      });
+      if (participants.length > dto.totalCapacity) throw new ConflictException('Vagas inferiores ao total de participantes ativos.');
+    }
+
+    // Manter todas as acoes existentes dentro das novas datas do evento.
+    // Mesmo uma acao cancelada faz parte do historico do evento.
+    if (
+      (dto.startDate !== undefined || dto.endDate !== undefined) &&
+      current.actions.some((action) =>
+        action.startDate < start || action.endDate > end
+      )
+    ) {
+      throw new ConflictException(
+        'As novas datas do evento deixariam acoes fora do periodo.',
+      );
+    }
+
+    return tx.event.update({
       where: { id },
       data: {
+        ...this.rnFields(dto),
         ...(dto.title !== undefined
           ? { title: dto.title.trim() }
           : {}),
@@ -335,6 +456,10 @@ export class EventsService {
       include: {
         actions: true,
       },
+    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }).catch((error: unknown) => {
+      if (isTransactionConflict(error)) throw new ConflictException('Evento alterado simultaneamente. Tente novamente.');
+      throw error;
     });
   }
 
@@ -366,6 +491,8 @@ export class EventsService {
 
     const now = new Date();
 
+    validateEventRules(current, true);
+
     if (current.endDate <= now) {
       throw new BadRequestException(
         'NÃ£o Ã© possÃ­vel publicar um evento que jÃ¡ terminou.',
@@ -375,7 +502,7 @@ export class EventsService {
     return this.prisma.event.update({
       where: { id },
       data: {
-        status: EventStatus.PUBLICADO,
+        status: effectiveEventStatus(EventStatus.PUBLICADO, current.startDate, current.endDate, now),
         publishedAt: new Date(),
       },
       include: {
@@ -423,9 +550,15 @@ export class EventsService {
     const current = await this.get(id);
     this.scope(current, user);
 
-    if (current.status !== EventStatus.PUBLICADO) {
+    if (![EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO].includes(current.status as never)) {
       throw new ConflictException(
         'Somente eventos PUBLICADOS podem ser encerrados.',
+      );
+    }
+
+    if (current.endDate > new Date()) {
+      throw new ConflictException(
+        'Nao e possivel encerrar um evento antes de sua data final.',
       );
     }
 

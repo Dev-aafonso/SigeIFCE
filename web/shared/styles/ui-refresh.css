@@ -1,0 +1,259 @@
+/* SIGE IFCE: componentes e ritmo visual compartilhados. */
+:root {
+  --sige-surface-raised: light-dark(#fff, #1a2631);
+  --sige-surface-soft: light-dark(#f5f8f6, #17232b);
+  --sige-border-soft: light-dark(#dce5e0, #344650);
+  --sige-shadow-card: 0 2px 8px rgb(15 36 24 / .045), 0 12px 30px rgb(15 36 24 / .025);
+}
+.conteudo-principal {
+  padding: clamp(1rem, 2.4vw, 2.25rem);
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--borda-controle) transparent;
+}
+.conteudo-principal :is(.modulo-eventos,.painel-perfil,.gerenciamento-usuarios,.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios,.sige-config).module-wrapper {
+  width: min(100%, 86rem);
+  max-width: 86rem;
+  min-width: 0;
+  margin-inline: auto;
+  padding: 0 0 2rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios,.cabecalho-painel-perfil,.sige-config__header) h2 {
+  color: var(--texto-claro);
+  font-size: clamp(1.7rem, 2.4vw, 2.05rem);
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+.conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios,.cabecalho-painel-perfil,.sige-config__header) p {
+  color: var(--texto-suave);
+  line-height: 1.5;
+}
+.cabecalho-topo { box-shadow: 0 1px 5px rgb(0 0 0 / .025); }
+.menu-navegacao { gap: .25rem; }
+.barra-lateral .botao-menu { min-height: 44px; margin-bottom: .2rem; border-radius: 9px; }
+.barra-lateral .botao-menu.ativo { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ativo-borda) 12%, transparent); }
+.barra-lateral .botao-menu svg { stroke-width: 1.8; }
+.conteudo-principal :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea) {
+  min-width: 0;
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.conteudo-principal :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus-visible {
+  border-color: var(--ativo-borda);
+  outline: 2px solid var(--anel-foco);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ativo-borda) 12%, transparent);
+}
+.conteudo-principal :is(button,a,summary):focus-visible { outline: 3px solid var(--anel-foco); outline-offset: 3px; }
+.conteudo-principal :is(.secao-inscricoes,.secao-certificados,.secao-relatorio,.cartao-filtros-relatorios,.cartao-gestao-certificados,.dashboard-painel,.cartao-metrica-administrativa,.tabela-usuarios-conteiner,.sige-config__card,.sige-config__nav,.catalogo-relatorios article) {
+  border-color: var(--sige-border-soft);
+  background-color: var(--sige-surface-raised);
+  box-shadow: var(--sige-shadow-card);
+}
+.conteudo-principal :is(.secao-inscricoes,.secao-certificados,.secao-relatorio,.cartao-filtros-relatorios,.cartao-gestao-certificados,.dashboard-painel,.sige-config__card,.sige-config__nav,.catalogo-relatorios article) { border-radius: 14px; }
+.conteudo-principal :is(.botao-inscricao,.botao-certificado,.botao-relatorio,.botao-evento,.botao-atualizar-usuarios,.botao-atualizar-dashboard,.catalogo-relatorios button) {
+  min-height: 42px;
+  border-radius: 9px;
+  font-weight: 650;
+}
+.conteudo-principal :is(.mensagem-inscricoes,.mensagem-certificados,.mensagem-relatorios,.mensagem-eventos,.mensagem-usuarios):empty { display: none; }
+.conteudo-principal :is(.mensagem-inscricoes,.mensagem-certificados,.mensagem-relatorios,.mensagem-eventos,.mensagem-usuarios)[data-tipo="erro"]:not(:empty) {
+  border: 1px solid color-mix(in srgb, var(--cor-erro) 35%, transparent);
+  border-radius: 9px;
+  padding: .75rem 1rem;
+  background: color-mix(in srgb, var(--cor-erro) 8%, var(--fundo-modulo));
+}
+.conteudo-principal :is(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios,.tabela-usuarios) th {
+  background: var(--sige-surface-soft);
+  color: var(--texto-suave);
+  font-size: .75rem;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+.conteudo-principal :is(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios,.tabela-usuarios) tbody tr { transition: background-color .16s ease; }
+@media (hover:hover) {
+  .conteudo-principal :is(.tabela-inscricoes,.tabela-participantes,.tabela-relatorios,.tabela-usuarios) tbody tr:hover { background: color-mix(in srgb, var(--ativo-fundo) 55%, transparent); }
+  .conteudo-principal :is(.catalogo-relatorios article,.dashboard-painel,.atalho-perfil,.cartao-evento-publico) { transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+  .conteudo-principal :is(.catalogo-relatorios article,.atalho-perfil,.cartao-evento-publico):hover { border-color: color-mix(in srgb, var(--ativo-borda) 45%, var(--sige-border-soft)); box-shadow: 0 8px 22px rgb(15 36 24 / .08); transform: translateY(-2px); }
+}
+.modulo-relatorios .catalogo-relatorios { gap: 1rem; }
+.modulo-relatorios .catalogo-relatorios article { padding: 1.25rem; min-width: 0; }
+.modulo-relatorios .catalogo-relatorios article p { line-height: 1.5; }
+.modulo-relatorios .catalogo-icone { width: 42px; height: 42px; }
+.modulo-relatorios .catalogo-icone svg { display: block; width: 21px; height: 21px; }
+.modulo-relatorios .catalogo-relatorios article:nth-child(2) .catalogo-icone { color: light-dark(#1d4ed8,#93c5fd); background: light-dark(#edf5ff,#203850); }
+.modulo-relatorios .catalogo-relatorios article:nth-child(3) .catalogo-icone { color: light-dark(#7c3aed,#c4b5fd); background: light-dark(#f5f1ff,#392d52); }
+.modulo-relatorios .catalogo-relatorios article:nth-child(4) .catalogo-icone { color: light-dark(#b65d00,#fcd34d); background: light-dark(#fff8e8,#453c22); }
+.modulo-relatorios .catalogo-relatorios article:nth-child(5) .catalogo-icone { color: var(--texto-suave); background: var(--botao-hover); }
+.modulo-relatorios .catalogo-relatorios article:nth-child(6) .catalogo-icone { color: light-dark(#0f766e,#5eead4); background: light-dark(#eafaf7,#183e3b); }
+.modulo-relatorios .historico-relatorios { min-width: 0; }
+.modulo-relatorios .digitalizacao-relatorios { display: grid; gap: 1rem; }
+.digitalizacao-relatorios .titulo-secao-relatorio { padding-bottom: 1rem; border-bottom: 1px solid var(--cor-divisor); }
+.digitalizacao-relatorios .titulo-secao-relatorio p { margin-top: .35rem; max-width: 72ch; }
+.digitalizacao-relatorios .form-filtros-relatorios { margin: 0; }
+.digitalizacao-relatorios :is(.digitalizacao-criar-evento,.digitalizacao-exportacao) { display: grid; gap: .8rem; padding: 1rem; background: var(--sige-surface-soft); box-shadow: none; }
+.digitalizacao-relatorios .digitalizacao-criar-evento:not([open]) { display: block; }
+.digitalizacao-relatorios summary { color: var(--texto-claro); font-weight: 700; cursor: pointer; }
+.digitalizacao-relatorios summary::marker { color: var(--ativo-borda); }
+.digitalizacao-relatorios details[open] > summary { margin-bottom: .85rem; }
+.digitalizacao-relatorios .digitalizacao-exportacao .campo-relatorio { max-width: 28rem; }
+.digitalizacao-relatorios .digitalizacao-exportacao button { justify-self: start; }
+.digitalizacao-relatorios > :is(#salvar-digitalizacao,#baixar-digitalizacao) { justify-self: start; }
+.digitalizacao-relatorios #estado-digitalizacao:empty { display: none; }
+.digitalizacao-relatorios .documentos-digitalizados { display: grid; gap: .65rem; padding-top: 1rem; border-top: 1px solid var(--cor-divisor); }
+.digitalizacao-relatorios #lista-digitalizacoes { display: grid; gap: .75rem; color: var(--texto-suave); }
+.digitalizacao-relatorios #lista-digitalizacoes article { display: grid; gap: .6rem; border: 1px solid var(--cor-divisor); border-radius: 10px; padding: 1rem; background: var(--fundo-modulo); overflow-wrap: anywhere; }
+.digitalizacao-relatorios #lista-digitalizacoes article button { justify-self: start; }
+@media (max-width: 700px) {
+  .conteudo-principal { padding: 1rem; }
+  .conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) { align-items: flex-start; flex-wrap: wrap; }
+  .conteudo-principal :is(.dashboard-grade-geral,.grade-graficos-relatorios,.catalogo-relatorios) { grid-template-columns: minmax(0, 1fr); }
+  .conteudo-principal :is(.tabela-inscricoes-wrapper,.tabela-relatorios-wrapper,.tabela-participantes-wrapper,.tabela-usuarios-conteiner) { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+  .digitalizacao-relatorios > :is(#salvar-digitalizacao,#baixar-digitalizacao), .digitalizacao-relatorios .digitalizacao-exportacao button { width: 100%; }
+  .gerenciamento-usuarios .tabela-usuarios-conteiner { overflow: visible; background: transparent; border: 0; box-shadow: none; }
+  .gerenciamento-usuarios .tabela-usuarios { display: block; min-width: 0; }
+  .gerenciamento-usuarios .tabela-usuarios thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .gerenciamento-usuarios .tabela-usuarios tbody { display: grid; gap: .75rem; }
+  .gerenciamento-usuarios .tabela-usuarios tbody tr { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; padding: 1rem; border: 1px solid var(--sige-border-soft); border-radius: 12px; background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+  .gerenciamento-usuarios .tabela-usuarios td { display: grid; align-content: start; gap: .3rem; padding: 0; border: 0; min-width: 0; }
+  .gerenciamento-usuarios .tabela-usuarios td:first-child, .gerenciamento-usuarios .tabela-usuarios td[colspan] { grid-column: 1 / -1; }
+  .gerenciamento-usuarios .tabela-usuarios td:not(:first-child)::before { color: var(--texto-suave); font-size: .72rem; font-weight: 700; letter-spacing: .025em; text-transform: uppercase; }
+  .gerenciamento-usuarios .tabela-usuarios td:nth-child(2)::before { content: 'Perfil'; }
+  .gerenciamento-usuarios .tabela-usuarios td:nth-child(3)::before { content: 'Status'; }
+  .gerenciamento-usuarios .tabela-usuarios td:nth-child(4)::before { content: 'Último acesso'; }
+  .gerenciamento-usuarios .tabela-usuarios td:nth-child(5)::before { content: 'Ações'; }
+  .gerenciamento-usuarios .botao-icone-usuario { width: 40px; height: 40px; }
+  .gerenciamento-usuarios .rodape-usuarios { margin-top: .75rem; padding: .8rem; border: 1px solid var(--sige-border-soft); border-radius: 10px; background: var(--sige-surface-raised); }
+}
+@media (max-width: 420px) {
+  .conteudo-principal { padding: .85rem; }
+  .conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) > button { width: 100%; }
+  .digitalizacao-relatorios .form-filtros-relatorios > * { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .conteudo-principal :is(button,a,input,select,textarea,article) { transition: none !important; }
+  .conteudo-principal :is(.catalogo-relatorios article,.atalho-perfil,.cartao-evento-publico):hover { transform: none; }
+}
+
+/* Identidade visual aplicada aos fluxos do sistema inteiro. */
+.cabecalho-topo { background: var(--sige-surface-raised); }
+.cabecalho-topo .botao-icone { border-radius: 10px; }
+.barra-lateral .titulo-grupo-menu { padding: .8rem .8rem .45rem; font-size: .68rem; letter-spacing: .09em; }
+.barra-lateral .botao-menu { gap: .8rem; padding-inline: .85rem; font-size: .875rem; }
+.barra-lateral .botao-menu:hover { background: color-mix(in srgb, var(--ativo-fundo) 70%, var(--fundo-barra-lateral)); }
+.barra-lateral .botao-menu.ativo { font-weight: 700; }
+.barra-lateral .rodape-barra-lateral { border-top-color: var(--sige-border-soft); }
+.conteudo-principal :is(.modulo-eventos,.painel-perfil,.gerenciamento-usuarios,.modulo-inscricoes,.modulo-participantes,.modulo-certificados,.modulo-relatorios,.sige-config) { color: var(--texto-principal); }
+.conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) { margin-bottom: .15rem; }
+.conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) > div { min-width: 0; }
+.conteudo-principal :is(.cabecalho-eventos,.cabecalho-usuarios,.cabecalho-inscricoes,.cabecalho-participantes,.cabecalho-certificados,.cabecalho-relatorios) > div > p:last-child { margin-top: .4rem; max-width: 70ch; }
+.conteudo-principal :is(.sobretitulo-inscricoes,.sobretitulo-certificados,.sobretitulo-painel,.sige-config__eyebrow) { font-size: .7rem; font-weight: 750; letter-spacing: .1em; color: var(--ativo-texto); }
+
+/* Dashboard: cabeçalho, indicadores, listas e acessos. */
+.conteudo-principal .painel-perfil { gap: clamp(1.25rem, 2.4vw, 2rem); }
+.painel-perfil .cabecalho-painel-perfil {
+  position: relative; overflow: hidden; padding: clamp(1.3rem, 2.7vw, 2.1rem);
+  border: 1px solid var(--sige-border-soft); border-radius: 16px;
+  background: linear-gradient(115deg, var(--sige-surface-raised) 52%, color-mix(in srgb, var(--ativo-fundo) 72%, var(--sige-surface-raised)));
+  box-shadow: var(--sige-shadow-card);
+}
+.painel-perfil .cabecalho-painel-perfil::after { content: ''; position: absolute; right: -2rem; top: -3.5rem; width: 12rem; aspect-ratio: 1; border-radius: 50%; border: 1.25rem solid color-mix(in srgb, var(--ativo-borda) 6%, transparent); pointer-events: none; }
+.painel-perfil .cabecalho-painel-perfil > * { position: relative; z-index: 1; }
+.painel-perfil .dashboard-grade-geral { gap: 1rem; align-items: stretch; }
+.painel-perfil .dashboard-painel > header { padding: 1.15rem 1.25rem; }
+.painel-perfil .dashboard-painel h3 { font-size: 1rem; font-weight: 700; }
+.painel-perfil .dashboard-painel header p { margin-top: .2rem; font-size: .78rem; }
+.painel-perfil .dashboard-painel header button { min-height: 40px; padding: .35rem .55rem; border-radius: 8px; font-weight: 650; }
+.painel-perfil .dashboard-painel header button:hover { background: var(--ativo-fundo); }
+.painel-perfil .dashboard-linha { padding: .8rem 1.2rem; }
+.painel-perfil .dashboard-data, .painel-perfil .dashboard-avatar { width: 2.7rem; height: 2.7rem; }
+.painel-perfil .dashboard-linha-info small { margin-top: .2rem; }
+.painel-perfil .dashboard-vazio { margin: 1rem; padding: 1rem; border-radius: 10px; background: var(--sige-surface-soft); line-height: 1.5; }
+.painel-perfil .cabecalho-metricas-administrativas { padding: .3rem 0; }
+.painel-perfil .cartao-metrica-administrativa { min-height: 100px; padding: 1rem; }
+.painel-perfil .cartao-metrica-administrativa strong { letter-spacing: -.035em; }
+.painel-perfil .cartao-grafico-dashboard { border-color: var(--sige-border-soft); border-radius: 14px; background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+.painel-perfil .atalhos-perfil > h3 { margin-bottom: 1rem; color: var(--texto-claro); }
+.painel-perfil .atalho-perfil { min-height: 5.75rem; border-color: var(--sige-border-soft); background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+.painel-perfil .icone-atalho-perfil { border: 1px solid color-mix(in srgb, var(--ativo-borda) 12%, transparent); }
+
+/* Eventos: filtros e cartões continuam seguindo a referência enviada. */
+.modulo-eventos .filtros-eventos { padding: .85rem; border-color: var(--sige-border-soft); background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+.modulo-eventos .filtros-eventos :is(input,select) { min-height: 42px; height: 42px; border-radius: 8px; }
+.modulo-eventos .filtros-eventos > #limpar-filtros-eventos { min-height: 42px; height: 42px; }
+.modulo-eventos .grade-eventos-publicos { align-items: stretch; gap: 1rem; }
+.modulo-eventos .cartao-evento-publico { border: 1px solid var(--sige-border-soft); border-radius: 12px; background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+.modulo-eventos .capa-evento { min-height: 9.25rem; height: 9.25rem; }
+.modulo-eventos .categoria-evento { padding: .3rem .6rem; font-size: .68rem; }
+.modulo-eventos .conteudo-cartao-evento { gap: .7rem; padding: 1.1rem 1.15rem; }
+.modulo-eventos .conteudo-cartao-evento h4 { font-size: .96rem; font-weight: 700; letter-spacing: -.01em; }
+.modulo-eventos .metadados-evento { gap: .4rem; font-size: .8rem; }
+.modulo-eventos .estatisticas-evento { min-height: 1.3rem; gap: .45rem .9rem; font-size: .78rem; }
+.modulo-eventos .progresso-inscricoes-evento { margin-top: auto; }
+.modulo-eventos .rodape-cartao-evento { margin-top: .15rem; }
+.modulo-eventos :is(.estado-eventos,.estado-rascunhos-eventos):not(:empty) { color: var(--texto-suave); line-height: 1.5; }
+
+/* Inscrições, participantes e certificados: hierarquia de dados e ações. */
+:is(.modulo-inscricoes,.modulo-certificados) :is(.cartao-resumo-inscricao,.cartao-resumo-certificado) { border-color: var(--sige-border-soft); border-radius: 14px; background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+:is(.modulo-inscricoes,.modulo-certificados) :is(.cartao-resumo-inscricao,.cartao-resumo-certificado) strong { letter-spacing: -.04em; }
+:is(.modulo-inscricoes,.modulo-participantes,.modulo-certificados) :is(.cabecalho-historico-inscricoes,.cabecalho-secao-certificados) p { margin-top: .3rem; max-width: 72ch; }
+:is(.modulo-inscricoes,.modulo-participantes,.modulo-certificados) :is(.secao-inscricoes,.secao-certificados) { padding: clamp(1.05rem,2vw,1.5rem); }
+:is(.modulo-inscricoes,.modulo-participantes) .abas-inscricoes { gap: .3rem; border-bottom-color: var(--sige-border-soft); }
+:is(.modulo-inscricoes,.modulo-participantes) .aba-inscricao { min-height: 42px; }
+:is(.modulo-inscricoes,.modulo-participantes) .aba-inscricao.ativa { font-weight: 750; }
+:is(.modulo-inscricoes,.modulo-participantes,.modulo-certificados) :is(.estado-inscricoes,.estado-participantes,.estado-certificados):not(:empty) { padding: 1rem; color: var(--texto-suave); line-height: 1.5; }
+.modulo-certificados .cartao-certificado-item { border-color: var(--sige-border-soft); border-radius: 12px; padding: 1.1rem; background: var(--sige-surface-raised); }
+.modulo-certificados .cartao-certificado-item h4 { line-height: 1.4; }
+.modulo-certificados .form-evento-certificados { gap: .75rem; }
+
+/* Usuários e configurações. */
+.gerenciamento-usuarios .filtros-usuarios { padding: .8rem; border: 1px solid var(--sige-border-soft); border-radius: 12px; background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+.gerenciamento-usuarios .tabela-usuarios th { padding-block: .9rem; }
+.gerenciamento-usuarios .tabela-usuarios td { padding-block: 1rem; }
+.gerenciamento-usuarios .identidade-usuario strong { font-weight: 700; }
+.gerenciamento-usuarios :is(.etiqueta-perfil-usuario,.etiqueta-status-usuario) { font-weight: 600; }
+.gerenciamento-usuarios .rodape-usuarios { line-height: 1.4; }
+.sige-config .sige-config__header { margin-bottom: 1.5rem; }
+.sige-config .sige-config__layout { grid-template-columns: minmax(185px,220px) minmax(0,1fr); gap: 1.25rem; }
+.sige-config .sige-config__nav { padding: .6rem; }
+.sige-config .sige-config__nav-item { min-height: 45px; margin-bottom: .2rem; border-radius: 8px; }
+.sige-config .sige-config__card { min-height: 16rem; padding: clamp(1.2rem,2.5vw,2rem); }
+.sige-config .sige-config__section-head h3 { color: var(--texto-claro); font-size: 1.18rem; }
+.sige-config .sige-config__section-head p { margin-top: .35rem; }
+.sige-config .sige-config__form button { min-height: 42px; border-radius: 9px; font-weight: 650; }
+
+/* Entrada, cadastro e escolha de perfil. */
+.grade-autenticacao .cartao-autenticacao { border: 1px solid var(--sige-border-soft); border-radius: 18px; background: var(--sige-surface-raised); box-shadow: 0 16px 45px rgb(15 36 24 / .08); }
+.grade-autenticacao .info-autenticacao h2 { letter-spacing: -.035em; line-height: 1.18; }
+.grade-autenticacao .info-autenticacao p { line-height: 1.6; }
+.grade-autenticacao .container-icone-destaque { border: 1px solid color-mix(in srgb, var(--ativo-borda) 14%, transparent); }
+.grade-autenticacao .formulario-autenticacao input { min-height: 48px; border-radius: 10px; }
+.grade-autenticacao .formulario-autenticacao input:focus-visible { outline: 2px solid var(--anel-foco); outline-offset: 2px; }
+.grade-autenticacao :is(.botao-primario,.botao-trocar-auth) { border-radius: 10px; }
+.envoltorio-selecao-funcao .cartao-funcao { border-color: var(--sige-border-soft); border-radius: 15px; background: var(--sige-surface-raised); box-shadow: var(--sige-shadow-card); }
+.envoltorio-selecao-funcao .cartao-funcao:focus-within { outline: 3px solid var(--anel-foco); outline-offset: 2px; }
+.envoltorio-selecao-funcao .botao-selecionar-funcao { min-height: 44px; border-radius: 9px; }
+
+@media (max-width: 720px) {
+  .painel-perfil .cabecalho-painel-perfil::after { width: 7rem; right: -3rem; top: -3rem; }
+  .modulo-eventos .filtros-eventos { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .modulo-eventos .filtros-eventos .campo-evento-busca { grid-column: 1 / -1; }
+  .modulo-eventos .filtros-eventos > #limpar-filtros-eventos { width: 100%; justify-self: stretch; }
+  .modulo-eventos .filtros-data-eventos > summary { min-height: 42px; display: flex; align-items: center; gap: .35rem; }
+  .modulo-eventos .filtros-data-eventos > summary::before { content: '▸'; color: var(--texto-suave); }
+  .modulo-eventos .filtros-data-eventos[open] > summary::before { content: '▾'; }
+  .modulo-eventos .grade-eventos-publicos { grid-template-columns: repeat(auto-fit,minmax(min(100%,19rem),1fr)); }
+  .sige-config .sige-config__layout { grid-template-columns: minmax(0,1fr); }
+  .sige-config .sige-config__nav { display: flex; overflow-x: auto; gap: .25rem; }
+  .sige-config .sige-config__nav-item { width: auto; flex: 0 0 auto; white-space: nowrap; }
+  :is(.modulo-inscricoes,.modulo-certificados) :is(.resumo-inscricoes,.resumo-certificados) { grid-template-columns: repeat(auto-fit,minmax(min(100%,10rem),1fr)); }
+}
+@media (max-width: 420px) {
+  .modulo-eventos .grade-eventos-publicos { grid-template-columns: minmax(0,1fr); }
+  .modulo-eventos .filtros-eventos { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .grade-autenticacao .cartao-autenticacao { border-radius: 14px; }
+  .gerenciamento-usuarios .filtros-usuarios { padding: .65rem; }
+}

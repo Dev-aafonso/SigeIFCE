@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,13 +11,12 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 
 import {
-  ActionStatus,
   EventStatus,
-  RegistrationStatus,
   UserRole,
 } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CertificatePdfService } from './certificate-pdf.service';
+import { calculateEventAttendance } from './event-attendance';
 
 type Requester = {
   id: string;
@@ -52,6 +52,7 @@ type CertificatePublicRecord = {
   attendancePercent: number;
   issuedAt: Date;
   revokedAt: Date | null;
+  scope?: string;
   user?: CertificateParticipantSummary | null;
   event?: CertificateEventSummary | null;
   action?: CertificateActionSummary | null;
@@ -68,6 +69,41 @@ function getPrismaErrorCode(error: unknown): string | undefined {
   return typeof code === 'string' ? code : undefined;
 }
 
+/** Gera o endereço canônico do QR Code sem depender do Host da requisição. */
+export function buildCertificateVerificationUrl(
+  code: string,
+  configuredAppUrl = process.env.APP_URL,
+  nodeEnv = process.env.NODE_ENV,
+): string {
+  const isProduction = nodeEnv === 'production';
+  const value = configuredAppUrl?.trim();
+  if (!value && isProduction) {
+    throw new InternalServerErrorException(
+      'Configure APP_URL com o endereço público HTTPS antes de emitir certificados.',
+    );
+  }
+
+  let origin: URL;
+  try {
+    origin = new URL(value || 'http://localhost:3000');
+  } catch {
+    throw new InternalServerErrorException('APP_URL inválida para a emissão de certificados.');
+  }
+
+  const localhost = ['localhost', '127.0.0.1', '[::1]'].includes(origin.hostname.toLowerCase());
+  const isHttps = origin.protocol === 'https:';
+  const isLocalHttp = !isProduction && localhost && origin.protocol === 'http:';
+  if ((!isHttps && !isLocalHttp) || (isProduction && localhost) ||
+      origin.username || origin.password || origin.search || origin.hash) {
+    throw new InternalServerErrorException(
+      'A URL de certificação exige HTTPS público (HTTP somente para homologação local).',
+    );
+  }
+
+  const basePath = origin.pathname.replace(/\/+$/, '');
+  return `${origin.origin}${basePath}/certificates/verify/${encodeURIComponent(code)}`;
+}
+
 @Injectable()
 export class CertificatesService {
   constructor(
@@ -75,129 +111,198 @@ export class CertificatesService {
     private readonly pdfService: CertificatePdfService,
   ) {}
 
+  /** Read-only preview of consolidated event eligibility (RN23 / RF17).
+   * This does not issue certificates or modify existing per-action certificates.
+   */
+  async getEventEligibility(eventId: string, requester: Requester, targetUserId?: string) {
+    if (!requester.id) throw new ForbiddenException('Usuário autenticado sem identificador.');
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, title: true, status: true, minAttendancePercent: true, endDate: true, organizerId: true },
+    });
+    if (!event) throw new NotFoundException('Evento não encontrado.');
+    const userId = targetUserId || requester.id;
+    if (userId !== requester.id && requester.role !== UserRole.ADMIN &&
+        !((requester.role === UserRole.ORGANIZADOR || requester.role === UserRole.PROFESSOR) && event.organizerId === requester.id)) {
+      throw new ForbiddenException('Sem acesso à elegibilidade de outro participante.');
+    }
+
+    const registrations = await this.prisma.registration.findMany({
+      where: { userId, action: { eventId } },
+      select: {
+        status: true,
+        presence: { select: { id: true } },
+        action: { select: { id: true, status: true, durationMinutes: true } },
+      },
+    });
+    const attendance = calculateEventAttendance(registrations);
+    const closed = event.status === EventStatus.ENCERRADO;
+    const validThreshold = Number.isInteger(event.minAttendancePercent) &&
+      event.minAttendancePercent >= 0 && event.minAttendancePercent <= 100;
+    const eligible = closed && validThreshold && attendance.enrolledMinutes > 0 &&
+      attendance.attendancePercent >= event.minAttendancePercent;
+
+    return {
+      event: { id: event.id, title: event.title, status: event.status },
+      minAttendancePercent: event.minAttendancePercent,
+      ...attendance,
+      eligible,
+      reason: !closed ? 'EVENT_NOT_CLOSED'
+        : !validThreshold ? 'INVALID_THRESHOLD'
+        : attendance.enrolledMinutes === 0 ? 'NO_ELIGIBLE_REGISTRATIONS'
+        : eligible ? null : 'BELOW_MIN_ATTENDANCE',
+      issuingEnabled: eligible,
+    };
+  }
+
+  /** Backward compatible lookup for legacy action certificates.
+   * New action-level issuance is intentionally disabled by the consolidated model.
+   */
   async issueForRegistration(registrationId: string, requester: Requester) {
     if (!requester.id) throw new ForbiddenException('Usuário autenticado sem identificador.');
-
     const registration = await this.prisma.registration.findUnique({
       where: { id: registrationId },
       include: {
         user: { select: { id: true, name: true, email: true } },
         action: { include: { event: true } },
-        presence: true,
         certificate: true,
       },
     });
-
     if (!registration) throw new NotFoundException('Inscrição não encontrada.');
-
-    const isAdmin = requester.role === UserRole.ADMIN;
-    const isEventOrganizer =
-      requester.role === UserRole.ORGANIZADOR && registration.action.event.organizerId === requester.id;
-    const isOwner = registration.userId === requester.id;
-
-    if (!isAdmin && !isEventOrganizer && !isOwner) {
-      throw new ForbiddenException('Você não tem permissão para emitir este certificado.');
+    const manager = requester.role === UserRole.ADMIN ||
+      ((requester.role === UserRole.ORGANIZADOR || requester.role === UserRole.PROFESSOR) && registration.action.event.organizerId === requester.id);
+    if (!manager && registration.userId !== requester.id) {
+      throw new ForbiddenException('Sem acesso ao certificado desta inscrição.');
     }
-
     if (registration.certificate) {
       return {
         alreadyExisted: true,
         certificate: this.publicCertificate(registration.certificate, registration.user, registration.action, registration.action.event),
       };
     }
+    throw new BadRequestException('Emissão por inscrição foi descontinuada. Utilize POST /certificates/events/:eventId/issue.');
+  }
 
-    if (registration.status !== RegistrationStatus.ACTIVE) {
-      throw new BadRequestException('A inscrição não está ativa e não pode gerar certificado.');
+  /** One consolidated certificate for one participant in an event (RN23/RF17). */
+  async issueForEvent(eventId: string, requester: Requester, targetUserId?: string) {
+    const userId = targetUserId || requester.id;
+    const eligibility = await this.getEventEligibility(eventId, requester, userId);
+    if (!eligibility.eligible) {
+      throw new BadRequestException(`Certificado não elegível: ${eligibility.reason}.`);
     }
 
-    if (registration.action.status === ActionStatus.CANCELADA) {
-      throw new BadRequestException('A ação foi cancelada e não pode gerar certificado.');
+    const existing = await this.prisma.certificate.findFirst({
+      where: { eventId, userId, scope: 'EVENT' },
+      include: { user: { select: { id: true, name: true } }, event: true, action: true },
+    });
+    if (existing) {
+      if (existing.revokedAt) throw new BadRequestException('Certificado consolidado revogado. Procure a administração.');
+      return {
+        alreadyExisted: true,
+        certificate: this.publicCertificate(existing, existing.user, existing.action, existing.event),
+      };
     }
 
-    if (registration.action.status !== ActionStatus.ENCERRADA) {
-      throw new BadRequestException('O certificado só pode ser emitido após o encerramento da ação.');
-    }
-
-    if (registration.action.event.status === EventStatus.CANCELADO) {
-      throw new BadRequestException('O evento foi cancelado e não pode gerar certificados.');
-    }
-
-    // Para certificados por ação, a presença registrada nessa inscrição é o critério de elegibilidade.
-    if (!registration.presence) {
-      throw new BadRequestException('Não há presença registrada para esta inscrição.');
-    }
+    const [user, event] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true } }),
+      this.prisma.event.findUnique({ where: { id: eventId } }),
+    ]);
+    if (!user || !event) throw new NotFoundException('Participante ou evento não encontrado.');
 
     const validationCode = `SIGE-${randomBytes(12).toString('hex').toUpperCase()}`;
-    const verificationUrl = this.getVerificationUrl(validationCode);
     const relativeFilePath = `storage/certificates/${validationCode}.pdf`;
     const absoluteFilePath = resolve(process.cwd(), relativeFilePath);
+    const issuedAt = new Date();
     const pdf = await this.pdfService.generate({
-      participantName: registration.user.name,
-      eventTitle: registration.action.event.title,
-      actionTitle: registration.action.title,
-      actionStartDate: registration.action.startDate,
-      actionEndDate: registration.action.endDate,
-      certifiedMinutes: registration.action.durationMinutes,
+      scope: 'EVENT',
+      participantName: user.name,
+      eventTitle: event.title,
+      eventStartDate: event.startDate,
+      eventEndDate: event.endDate,
+      certifiedMinutes: eligibility.attendedMinutes,
+      enrolledMinutes: eligibility.enrolledMinutes,
+      attendancePercent: eligibility.attendancePercent,
       validationCode,
-      verificationUrl,
-      issuedAt: new Date(),
+      verificationUrl: this.getVerificationUrl(validationCode),
+      issuedAt,
       campusName: process.env.IFCE_CAMPUS_NAME,
     });
-
     await mkdir(resolve(process.cwd(), 'storage', 'certificates'), { recursive: true });
     let fileCreated = false;
-
     try {
       await writeFile(absoluteFilePath, pdf, { flag: 'wx' });
       fileCreated = true;
-
-      const certificate = await this.prisma.certificate.create({
+      const created = await this.prisma.certificate.create({
         data: {
-          userId: registration.userId,
-          eventId: registration.action.eventId,
-          actionId: registration.actionId,
-          registrationId: registration.id,
-          validationCode,
-          certifiedMinutes: registration.action.durationMinutes,
-          attendancePercent: 100,
-          filePath: relativeFilePath,
+          scope: 'EVENT', userId, eventId, actionId: null, registrationId: null,
+          certifiedMinutes: eligibility.attendedMinutes,
+          attendancePercent: eligibility.attendancePercent,
+          validationCode, filePath: relativeFilePath,
         },
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-          event: true,
-          action: true,
-          registration: true,
-        },
+        include: { user: { select: { id: true, name: true } }, event: true, action: true },
       });
-
-      return {
-        alreadyExisted: false,
-        certificate: this.publicCertificate(certificate, certificate.user, certificate.action, certificate.event),
-      };
+      return { alreadyExisted: false, certificate: this.publicCertificate(created, created.user, created.action, created.event) };
     } catch (error) {
       if (fileCreated) await rm(absoluteFilePath, { force: true });
-
-      // Duas requisições simultâneas para a mesma inscrição não devem criar certificados duplicados.
       if (getPrismaErrorCode(error) === 'P2002') {
-        const existing = await this.prisma.certificate.findUnique({
-          where: { registrationId },
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-            event: true,
-            action: true,
-            registration: true,
-          },
+        const concurrent = await this.prisma.certificate.findFirst({
+          where: { eventId, userId, scope: 'EVENT' },
+          include: { user: { select: { id: true, name: true } }, event: true, action: true },
         });
-        if (existing) {
-          return {
-            alreadyExisted: true,
-            certificate: this.publicCertificate(existing, existing.user, existing.action, existing.event),
-          };
+        if (concurrent && !concurrent.revokedAt) {
+          return { alreadyExisted: true, certificate: this.publicCertificate(concurrent, concurrent.user, concurrent.action, concurrent.event) };
         }
       }
-
       throw error;
     }
+  }
+
+  /** Bounded manager preview; individual issuance remains explicit and auditable. */
+  async listEventCandidates(eventId: string, requester: Requester) {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, title: true, status: true, organizerId: true, minAttendancePercent: true },
+    });
+    if (!event) throw new NotFoundException('Evento não encontrado.');
+    const manager = requester.role === UserRole.ADMIN ||
+      ((requester.role === UserRole.ORGANIZADOR || requester.role === UserRole.PROFESSOR) && event.organizerId === requester.id);
+    if (!requester.id || !manager) throw new ForbiddenException('Sem permissão para consultar participantes do evento.');
+
+    const registrations = await this.prisma.registration.findMany({
+      where: { action: { eventId } },
+      orderBy: { createdAt: 'asc' },
+      take: 5001,
+      select: {
+        userId: true,
+        user: { select: { name: true, email: true } },
+        status: true,
+        presence: { select: { id: true } },
+        action: { select: { id: true, status: true, durationMinutes: true } },
+      },
+    });
+    if (registrations.length > 5000) {
+      throw new BadRequestException('O evento excede 5.000 inscrições. Utilize relatórios com filtros; a emissão em lote foi bloqueada para evitar avaliação parcial.');
+    }
+    const byUser = new Map<string, typeof registrations>();
+    for (const row of registrations) {
+      if (!byUser.has(row.userId)) byUser.set(row.userId, []);
+      byUser.get(row.userId)!.push(row);
+    }
+    const users = [];
+    for (const [userId, rows] of byUser) {
+      const attendance = calculateEventAttendance(rows);
+      users.push({
+        userId, name: rows[0].user.name, email: rows[0].user.email,
+        ...attendance,
+        eligible: event.status === EventStatus.ENCERRADO &&
+          Number.isInteger(event.minAttendancePercent) &&
+          event.minAttendancePercent >= 0 && event.minAttendancePercent <= 100 &&
+          attendance.enrolledMinutes > 0 && attendance.attendancePercent >= event.minAttendancePercent,
+      });
+    }
+    return { event: { id: event.id, title: event.title, status: event.status },
+      minAttendancePercent: event.minAttendancePercent,
+      totalParticipants: users.length, candidates: users };
   }
 
   async findMine(userId: string) {
@@ -277,6 +382,7 @@ export class CertificatesService {
         validationCode: certificate.validationCode,
         participantName: certificate.user.name,
         eventTitle: certificate.event.title,
+        scope: certificate.scope ?? 'ACTION',
         actionTitle: certificate.action?.title ?? null,
         location: certificate.event.location,
         actionStartDate: certificate.action?.startDate ?? null,
@@ -296,7 +402,7 @@ export class CertificatesService {
 
     const isAdmin = requester.role === UserRole.ADMIN;
     const isEventOrganizer =
-      requester.role === UserRole.ORGANIZADOR && certificate.event?.organizerId === requester.id;
+      (requester.role === UserRole.ORGANIZADOR || requester.role === UserRole.PROFESSOR) && certificate.event?.organizerId === requester.id;
     const isOwner = certificate.userId === requester.id;
 
     if (!isAdmin && !isEventOrganizer && !isOwner) {
@@ -305,8 +411,7 @@ export class CertificatesService {
   }
 
   private getVerificationUrl(code: string): string {
-    const baseUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
-    return `${baseUrl}/certificates/validate/${encodeURIComponent(code)}`;
+    return buildCertificateVerificationUrl(code);
   }
 
   private publicCertificate(
@@ -321,6 +426,7 @@ export class CertificatesService {
 
     return {
       id: certificate.id,
+      scope: certificate.scope ?? 'ACTION',
       validationCode: certificate.validationCode,
       certifiedMinutes: certificate.certifiedMinutes,
       certifiedHours: Number((certificate.certifiedMinutes / 60).toFixed(2)),

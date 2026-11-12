@@ -28,6 +28,11 @@ export type User = Prisma.UserModel
  */
 export type Event = Prisma.EventModel
 /**
+ * Model EventCover
+ * 
+ */
+export type EventCover = Prisma.EventCoverModel
+/**
  * Model Action
  * 
  */
@@ -47,3 +52,13 @@ export type Presence = Prisma.PresenceModel
  * 
  */
 export type Certificate = Prisma.CertificateModel
+/**
+ * Model NotificationRead
+ * 
+ */
+export type NotificationRead = Prisma.NotificationReadModel
+/**
+ * Model ScannedReport
+ * 
+ */
+export type ScannedReport = Prisma.ScannedReportModel

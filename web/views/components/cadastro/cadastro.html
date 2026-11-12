@@ -116,7 +116,7 @@
     <p class="subtitulo-cartao">Preencha os dados abaixo para se cadastrar.</p>
 
 
-    <p id="aviso-perfil-cadastro" class="aviso-papel-cadastro" role="status">A conta é criada inicialmente com perfil de aluno. Outros perfis dependem de autorização administrativa.</p>
+    <p id="aviso-perfil-cadastro" class="aviso-papel-cadastro" role="status">O gestor precisa do código privado da instituição. Professores gerenciam seus próprios eventos.</p>
     <form class="formulario-autenticacao" data-testid="signup-form">
       <div class="grupo-formulario">
         <label for="nome-cadastro">Nome completo *</label>
@@ -226,6 +226,11 @@
             </svg>
           </button>
         </div>
+      </div>
+
+      <div class="grupo-formulario" id="grupo-codigo-gestor" hidden>
+        <label for="codigo-gestor">Código privado de gestor *</label>
+        <input id="codigo-gestor" type="password" autocomplete="off" maxlength="128" placeholder="Informe o código da instituição">
       </div>
 
       <p

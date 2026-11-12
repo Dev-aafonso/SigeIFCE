@@ -6,7 +6,7 @@
   <header class="cabecalho-eventos">
     <div>
       <h2 id="titulo-modulo-eventos">Eventos</h2>
-      <p>Encontre eventos e acompanhe as inscrições disponíveis.</p>
+      <p>Gerencie todos os eventos da plataforma</p>
     </div>
     <button
       id="novo-evento"
@@ -26,6 +26,12 @@
     role="status"
     aria-live="polite"
   ></p>
+
+  <section id="secao-rascunhos-eventos" class="secao-eventos" aria-labelledby="titulo-rascunhos-eventos" hidden>
+    <div class="titulo-secao-eventos"><div><h3 id="titulo-rascunhos-eventos">Eventos em rascunho</h3><p>Visíveis somente para quem pode gerenciá-los.</p></div><button id="atualizar-rascunhos-eventos" class="botao-evento botao-evento-secundario" type="button">Atualizar</button></div>
+    <p id="estado-rascunhos-eventos" role="status" aria-live="polite"></p>
+    <div id="lista-rascunhos-eventos" class="grade-eventos-publicos" role="list" aria-label="Eventos em rascunho"></div>
+  </section>
 
   <section
     class="secao-eventos secao-lista-eventos"
@@ -247,7 +253,7 @@
             <option value="FEIRA">Feira</option>
           </select>
           <span class="ajuda-campo-evento"
-            >O tipo aparece na revisão, mas a API atual ainda não o salva.</span
+            >A categoria será salva com os dados do evento.</span
           >
         </label>
         <label class="campo-evento">
@@ -294,9 +300,7 @@
             aria-describedby="ajuda-imagem-capa"
           />
           <span id="ajuda-imagem-capa" class="ajuda-imagem-capa"
-            >Escolha uma imagem JPG, PNG ou WebP de até 5 MB. A API atual ainda
-            não oferece upload; a imagem será usada como prévia neste
-            formulário.</span
+            >Escolha uma imagem JPG, PNG ou WebP de até 5 MB. Ela será salva com o evento.</span
           >
           <span class="preview-capa-evento" hidden>
             <img alt="Prévia da imagem de capa do evento" />
@@ -321,6 +325,10 @@
           evento.
         </p>
         <div class="opcoes-configuracao-evento">
+          <label class="campo-evento"><span>Carga horária em minutos</span><input name="workloadMinutes" type="number" min="1" step="1" /></label>
+          <label class="campo-evento"><span>Vagas de participantes únicos</span><input name="totalCapacity" type="number" min="1" step="1" /></label>
+          <label class="campo-evento"><span>Abertura das inscrições</span><input name="registrationStartDate" type="datetime-local" /></label>
+          <label class="campo-evento"><span>Fim das inscrições</span><input name="registrationEndDate" type="datetime-local" /></label>
           <label class="opcao-configuracao-evento">
             <span class="texto-configuracao-evento">
               <strong>Inscrições abertas automaticamente</strong>

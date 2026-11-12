@@ -5,6 +5,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -45,13 +46,22 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) response: Response) {
+  async logout(
+    @Req() request: Request & { user?: { sub?: string } },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const id = request.user?.sub;
+    if (typeof id !== 'string' || !id.trim()) {
+      throw new UnauthorizedException('Usuario nao identificado.');
+    }
+    // Persistente no PostgreSQL: invalida tambem tokens enviados via Bearer.
+    await this.authService.logoutEverywhere(id);
     response.clearCookie(COOKIE_NAME, {
       httpOnly: true,
       sameSite: 'lax',
       secure: this.isSecureCookie(),
+      path: '/',
     });
-
     return { message: 'Logout realizado com sucesso.' };
   }
 

@@ -143,23 +143,12 @@ describe('CertificatesService (modelo por inscrição)', () => {
     tempRoot = '';
   });
 
-  it('emite certificado para inscrição ativa com presença e ação encerrada', async () => {
-    const result = await service.issueForRegistration('registration-1', {
-      id: 'user-1',
-      role: UserRole.ALUNO,
-    });
-
-    expect(result.alreadyExisted).toBe(false);
-    expect(result.certificate.certifiedMinutes).toBe(120);
-    expect(result.certificate.attendancePercent).toBe(100);
-    expect(result.certificate.participant).toEqual({ id: 'user-1', name: 'Participante Teste' });
-    expect(pdfService.generate).toHaveBeenCalledWith(expect.objectContaining({
-      participantName: 'Participante Teste',
-      eventTitle: 'Evento de teste',
-      actionTitle: 'Oficina de teste',
-      certifiedMinutes: 120,
-    }));
-    expect(prisma.certificate.create).toHaveBeenCalledTimes(1);
+  it('orienta nova emissão por evento sem criar certificado legado por inscrição', async () => {
+    await expect(service.issueForRegistration('registration-1', {
+      id: 'user-1', role: UserRole.ALUNO,
+    })).rejects.toThrow(/eventos|events/i);
+    expect(pdfService.generate).not.toHaveBeenCalled();
+    expect(prisma.certificate.create).not.toHaveBeenCalled();
   });
 
   it('impede emissão quando não há presença registrada', async () => {

@@ -13,7 +13,7 @@ export const MODULE_LABELS = Object.freeze({
   certificates: "Certificados",
   reports: "Relatórios",
   users: "Usuários",
-  settings: "Configurações",
+  config: "Configurações",
 });
 
 const ROLE_MODULES = Object.freeze({
@@ -25,13 +25,10 @@ const ROLE_MODULES = Object.freeze({
     "participants",
     "certificates",
     "reports",
-    "settings",
+    "config",
   ]),
   PROFESSOR: Object.freeze([
-    "dashboard",
-    "events",
-    "registrations",
-    "certificates",
+    "dashboard", "events", "registrations", "participants", "certificates", "reports", "config",
   ]),
   ALUNO: Object.freeze([
     "dashboard",

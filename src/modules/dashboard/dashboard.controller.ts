@@ -10,7 +10,7 @@ type AuthenticatedRequest = Request & {
 };
 
 @Controller('dashboard')
-@Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+@Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
@@ -19,6 +19,11 @@ export class DashboardController {
       id: String(request.user?.sub ?? request.user?.id ?? ''),
       role: request.user?.role as UserRole,
     };
+  }
+
+  @Get('summary')
+  getSummary(@Req() request: AuthenticatedRequest) {
+    return this.dashboardService.getSummary(this.principal(request));
   }
 
   @Get('overview')

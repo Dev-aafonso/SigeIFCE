@@ -8,8 +8,12 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '../../generated/prisma/enums';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -41,6 +45,39 @@ export class EventsController {
     return this.service.findPublic(query);
   }
 
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
+  @Get('manageable/search')
+  searchManageable(@Query('title') title: string, @Req() req: AuthenticatedRequest) {
+    return this.service.searchManageable(title, req.user);
+  }
+
+  @Public()
+  @Get(':id/cover')
+  async getCover(@Param('id') id: string, @Res() response: Response) {
+    const cover = await this.service.getPublicCover(id);
+    response.setHeader('Content-Type', cover.mimeType);
+    response.setHeader('Cache-Control', 'no-store');
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.send(Buffer.from(cover.data));
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
+  @Get(':id/manage/cover')
+  async getManagedCover(@Param('id') id: string, @Req() req: AuthenticatedRequest, @Res() response: Response) {
+    const cover = await this.service.getManagedCover(id, req.user);
+    response.setHeader('Content-Type', cover.mimeType);
+    response.setHeader('Cache-Control', 'no-store');
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.send(Buffer.from(cover.data));
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
+  @Post(':id/cover')
+  @UseInterceptors(FileInterceptor('cover', { limits: { fileSize: 5 * 1024 * 1024, files: 1 } }))
+  uploadCover(@Param('id') id: string, @UploadedFile() file: { buffer: Buffer; mimetype: string } | undefined, @Req() req: AuthenticatedRequest) {
+    return this.service.setCover(id, req.user, file);
+  }
+
   @Public()
   @Get(':id')
   findPublicById(
@@ -49,7 +86,7 @@ export class EventsController {
     return this.service.findPublicById(id);
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Get(':id/manage')
   findManageable(
     @Param('id') id: string,
@@ -61,7 +98,7 @@ export class EventsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post()
   create(
     @Body() dto: CreateEventDto,
@@ -73,7 +110,7 @@ export class EventsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -87,7 +124,7 @@ export class EventsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post(':id/publish')
   publish(
     @Param('id') id: string,
@@ -99,7 +136,7 @@ export class EventsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post(':id/cancel')
   cancel(
     @Param('id') id: string,
@@ -111,7 +148,7 @@ export class EventsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Delete(':id')
   cancelByDelete(
     @Param('id') id: string,
@@ -123,7 +160,7 @@ export class EventsController {
     );
   }
 
-  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR)
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Post(':id/close')
   close(
     @Param('id') id: string,
