@@ -45,6 +45,12 @@ export class EventsController {
     return this.service.findPublic(query);
   }
 
+  @Roles(UserRole.ORGANIZADOR, UserRole.PROFESSOR)
+  @Get('organizer/list')
+  findForOrganizer(@Query() query: EventQueryDto, @Req() req: AuthenticatedRequest) {
+    return this.service.findPublic(query, req.user);
+  }
+
   @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Get('manageable/search')
   searchManageable(@Query('title') title: string, @Req() req: AuthenticatedRequest) {

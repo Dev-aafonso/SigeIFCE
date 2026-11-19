@@ -1,4 +1,5 @@
 import { attendanceSummary, filterAttendance, flattenAttendance } from '../../../shared/core/attendance-list.mjs';
+import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../shared/core/event-suggestions.mjs';
 
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -37,18 +38,14 @@ import { attendanceSummary, filterAttendance, flattenAttendance } from '../../..
     const sequence = ++searchSequence;
     if (matchingEvents.some((item) => `${item.title} (${item.id})` === term)) return;
     matchingEvents = [];
-    $('eventos-participantes').replaceChildren();
+    $('eventos-participantes').hidden = true;
     if (!term) return;
     try {
       const events = await api(`/events/manageable/search?title=${encodeURIComponent(term)}`);
       if (sequence !== searchSequence || !root?.isConnected) return;
       matchingEvents = events;
-      for (const item of events) {
-        const option = document.createElement('option');
-        option.value = events.filter((other) => other.title === item.title).length > 1 ? `${item.title} (${item.id})` : item.title;
-        option.label = item.startDate ? new Date(item.startDate).toLocaleDateString('pt-BR') : item.id;
-        $('eventos-participantes').append(option);
-      }
+      const suggestions = events.map((item) => ({ ...item, label: events.filter((other) => other.title.toLocaleLowerCase('pt-BR') === item.title.toLocaleLowerCase('pt-BR')).length > 1 ? `${item.title} (${item.id})` : item.title }));
+      renderEventSuggestions($('eventos-participantes'), suggestions, (item) => { input.value = item.label; input.focus(); });
     } catch (error) { text('mensagem-participantes', `Não foi possível buscar eventos: ${error.message}`); }
   }
 
@@ -222,7 +219,8 @@ import { attendanceSummary, filterAttendance, flattenAttendance } from '../../..
     ++requestSequence;
     pending = null;
     $('form-evento-participantes')?.addEventListener('submit', loadEvent);
-    $('id-evento-participantes')?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(searchEvents, 250); });
+    $('id-evento-participantes')?.addEventListener('input', () => { clearTimeout(searchTimer); ++searchSequence; $('eventos-participantes').hidden = true; searchTimer = setTimeout(searchEvents, 250); });
+    bindEventSuggestionDismissal($('id-evento-participantes'), $('eventos-participantes'));
     $('atualizar-participantes')?.addEventListener('click', () => {
       if (eventData) void loadRows();
       else text('mensagem-participantes', 'Informe o nome do evento.');

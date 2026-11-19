@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { ReportsController } from './reports.controller';
 import { UserRole } from '../../generated/prisma/client';
+import { structureScanText } from './scan-format';
 
 describe('relatórios digitalizados', () => {
   const event = {findFirst: jest.fn()};
@@ -17,7 +18,7 @@ describe('relatórios digitalizados', () => {
   it('salva texto revisado no evento autorizado', async () => {
     event.findFirst.mockResolvedValue({id:'evento'});scannedReport.create.mockResolvedValue({id:'doc'});
     await controller.saveScan({eventId:'evento',text:' relatório '},req);
-    expect(scannedReport.create).toHaveBeenCalledWith(expect.objectContaining({data:{eventId:'evento',authorId:'org',text:'relatório'}}));
+    expect(scannedReport.create).toHaveBeenCalledWith(expect.objectContaining({data:{eventId:'evento',authorId:'org',text:structureScanText('relatório').text}}));
   });
   it('rejeita arquivo que não seja imagem suportada', async () => {
     await expect(controller.readScan({buffer:Buffer.from('texto'),mimetype:'image/jpeg'})).rejects.toThrow();
@@ -25,7 +26,7 @@ describe('relatórios digitalizados', () => {
   it('salva sem evento e lista apenas documentos próprios sem vínculo', async () => {
     scannedReport.create.mockResolvedValue({id:'doc'});
     await controller.saveScan({text:'texto revisado'},req);
-    expect(scannedReport.create).toHaveBeenCalledWith(expect.objectContaining({data:{eventId:null,authorId:'org',text:'texto revisado'}}));
+    expect(scannedReport.create).toHaveBeenCalledWith(expect.objectContaining({data:{eventId:null,authorId:'org',text:structureScanText('texto revisado').text}}));
     scannedReport.findMany.mockResolvedValue([]);
     await controller.listScans('',req);
     expect(scannedReport.findMany).toHaveBeenCalledWith(expect.objectContaining({where:{eventId:null,authorId:'org'}}));
@@ -44,6 +45,18 @@ describe('relatórios digitalizados', () => {
     const response = {set: jest.fn(), end: jest.fn()};
     await expect(controller.exportScanPdf({eventId:'outro',text:'teste'},req,response as never)).rejects.toThrow();
     expect(response.end).not.toHaveBeenCalled();
+  });
+  it('rejeita um relatório que contém apenas os campos vazios', async () => {
+    await expect(controller.saveScan({text: structureScanText('').text}, req)).rejects.toThrow();
+    expect(scannedReport.create).not.toHaveBeenCalled();
+  });
+  it('gera o modelo imprimível sem usar dados de evento', async () => {
+    const response = {set: jest.fn(), end: jest.fn()};
+    await controller.scanTemplate(response as never);
+    expect(response.set).toHaveBeenCalledWith(expect.objectContaining({'Content-Type':'application/pdf'}));
+    const contents = response.end.mock.calls[0][0] as Buffer;
+    expect(contents.subarray(0,5).toString()).toBe('%PDF-');
+    expect(event.findFirst).not.toHaveBeenCalled();
   });
 });
 

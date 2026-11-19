@@ -1537,3 +1537,13 @@ dialog.dialog-detalhes-evento[open]::backdrop {
 .metadado-icone-evento, .icone-estatistica-evento { display: inline-flex; align-items: center; justify-content: center; width: .85rem; flex: 0 0 .85rem; }
 .metadado-icone-evento svg, .icone-estatistica-evento svg { display: block; width: .78rem; height: .78rem; }
 .metadados-evento li, .estatisticas-evento li { line-height: 1.35; }
+
+.filtros-eventos > .busca-evento-wrapper { min-width: 0; }
+.identificacao-evento-proprio { display: inline-block; margin-top: .4rem; color: var(--ativo-texto); font-size: .72rem; font-weight: 700; }
+@media (max-width: 1050px) { .filtros-eventos > .busca-evento-wrapper { grid-column: 1 / -1; } }
+@media (max-width: 620px) {
+  .filtros-eventos { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+  .filtros-eventos > .busca-evento-wrapper { grid-column: 1 / -1; }
+  .filtros-eventos > #limpar-filtros-eventos { grid-column: auto; width: 100%; min-width: 0; justify-self: stretch; }
+  .filtros-data-eventos > summary, .campo-filtro-evento select { width: 100%; min-width: 0; box-sizing: border-box; }
+}

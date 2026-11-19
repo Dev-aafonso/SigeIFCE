@@ -85,10 +85,12 @@
       <p>Consulte sua frequência e solicite a emissão após o encerramento do evento.</p></div>
     </header>
     <form id="form-elegibilidade-pessoal" class="form-evento-certificados">
+      <div class="busca-evento-wrapper campo-certificado">
       <label class="campo-certificado"><span>Nome do evento</span>
-        <input id="id-evento-elegibilidade" list="eventos-elegibilidade" autocomplete="off" placeholder="Digite ou selecione o nome do evento" required />
-        <datalist id="eventos-elegibilidade"></datalist>
+        <input id="id-evento-elegibilidade" autocomplete="off" placeholder="Digite ou selecione o nome do evento" required />
       </label>
+      <div id="eventos-elegibilidade" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <button type="submit" class="botao-certificado botao-certificado-secundario">Verificar elegibilidade</button>
     </form>
     <p id="estado-elegibilidade-pessoal" role="status" aria-live="polite"></p>
@@ -114,19 +116,20 @@
       </div>
     </header>
     <form id="form-evento-certificados" class="form-evento-certificados">
+      <div class="busca-evento-wrapper campo-certificado">
       <label class="campo-certificado">
         <span>Nome do evento</span>
         <input
           id="id-evento-certificados"
-          list="eventos-gestao-certificados"
           name="eventName"
           data-testid="certificate-event-id"
           autocomplete="off"
           required
           placeholder="Digite ou selecione o nome do evento"
         />
-        <datalist id="eventos-gestao-certificados"></datalist>
       </label>
+      <div id="eventos-gestao-certificados" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <button
         id="carregar-evento-certificados"
         class="botao-certificado botao-certificado-primario"
