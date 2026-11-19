@@ -19,11 +19,12 @@ import { IsString, IsOptional, Length } from 'class-validator';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../database/prisma.service';
 
-class SaveScanDto { @IsOptional() @IsString() @Length(1, 200) eventId?: string; @IsString() @Length(1, 50000) text!: string; }
+class SaveScanDto { @IsOptional() @IsString() @Length(1, 200) eventId?: string; @IsString() @Length(1, 52000) text!: string; }
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../generated/prisma/client';
 import { ReportQueryDto } from './dto/report-query.dto';
 import { ReportPrincipal, ReportsService } from './reports.service';
+import { SCAN_FIELDS, structureScanText } from './scan-format';
 
 type AuthenticatedRequest = Request & {
   user?: { id?: string; sub?: string; role?: UserRole };
@@ -58,23 +59,64 @@ export class ReportsController {
       if (!response.ok) throw new Error('OCR indisponível');
       const result: unknown = await response.json();
       if (!result || typeof result !== 'object' || !('text' in result) || typeof result.text !== 'string') throw new Error('Resposta inválida');
-      return { text: result.text.slice(0, 50000) };
+      const text = result.text.slice(0, 50000);
+      const organized = structureScanText(text);
+      return { text, standardizedText: organized.text, fields: organized.fields, hasContent: organized.hasContent };
     } catch { throw new ServiceUnavailableException('O leitor local está indisponível. Inicie o leitor e tente novamente.'); }
+  }
+
+  @Post('scans/organize')
+  organizeScan(@Body() data: SaveScanDto) {
+    const organized = structureScanText(data.text);
+    if (organized.text.length > 52000) throw new BadRequestException('O texto organizado excede o limite de 52.000 caracteres.');
+    return organized;
+  }
+
+  @Get('scans/template')
+  async scanTemplate(@Res() response: Response): Promise<void> {
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
+      const doc = new PDFDocument({ size: 'A4', margin: 50, info: { Title: 'Modelo de relatório manuscrito - SIGE IFCE' } });
+      const chunks: Buffer[] = [];
+      doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+      doc.fillColor('#155d35').font('Helvetica-Bold').fontSize(11).text('SIGE IFCE  |  MODELO DE MANUSCRITO', 50, 45);
+      doc.fillColor('#17251d').fontSize(19).text('Relatório de evento', 50, 65);
+      doc.font('Helvetica').fontSize(9).fillColor('#4c5a52').text('Preencha à mão, com letra legível. Use uma linha para cada campo e fotografe a folha inteira.', 50, 92, { width: 495 });
+      let y = 122;
+      for (const field of SCAN_FIELDS) {
+        doc.fillColor('#17251d').font('Helvetica-Bold').fontSize(10).text(`${field.label}:`, 50, y, { width: 150 });
+        for (let line = 0; line < field.lines; line++) {
+          const lineY = y + 17 + line * 23;
+          doc.lineWidth(0.6).strokeColor('#b7c4ba').moveTo(line ? 50 : 205, lineY).lineTo(545, lineY).stroke();
+        }
+        y += 35 + (field.lines - 1) * 23;
+      }
+      doc.fillColor('#4c5a52').font('Helvetica').fontSize(9).text('Confira o texto reconhecido antes de salvar ou criar o evento.', 50, y + 3, { width: 495 });
+      doc.end();
+    });
+    response.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="sige-ifce-modelo-manuscrito.pdf"', 'Content-Length': String(buffer.length), 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+    response.end(buffer);
   }
 
   @Post('scans')
   async saveScan(@Body() data: SaveScanDto, @Req() request: AuthenticatedRequest) {
     const principal = this.principal(request); if (data.eventId) await this.scanEvent(data.eventId, principal);
-    const text = data.text.trim(); if (!text) throw new BadRequestException('Revise e informe o texto antes de salvar.');
-    return this.prisma.scannedReport.create({data: {eventId: data.eventId || null, authorId: principal.id, text}, select: {id: true, createdAt: true}});
+    const organized = structureScanText(data.text);
+    if (!organized.hasContent) throw new BadRequestException('Revise e informe o texto antes de salvar.');
+    if (organized.text.length > 52000) throw new BadRequestException('O texto organizado excede o limite de 52.000 caracteres.');
+    const text = organized.text;
+    return this.prisma.scannedReport.create({data: {eventId: data.eventId || null, authorId: principal.id, text}, select: {id: true, createdAt: true, text: true}});
   }
 
   @Post('scans/pdf')
   async exportScanPdf(@Body() data: SaveScanDto, @Req() request: AuthenticatedRequest, @Res() response: Response): Promise<void> {
     const principal = this.principal(request);
     if (data.eventId) await this.scanEvent(data.eventId, principal);
-    const text = data.text.trim();
-    if (!text) throw new BadRequestException('Informe o texto revisado para gerar o PDF.');
+    const organized = structureScanText(data.text);
+    if (!organized.hasContent) throw new BadRequestException('Informe o texto revisado para gerar o PDF.');
+    if (organized.text.length > 52000) throw new BadRequestException('O texto organizado excede o limite de 52.000 caracteres.');
+    const text = organized.text;
     const buffer = await new Promise<Buffer>((resolve, reject) => {
       const doc = new PDFDocument({ size: 'A4', margin: 54, info: { Title: 'Relatório digitalizado — SIGE IFCE' } });
       const chunks: Buffer[] = [];

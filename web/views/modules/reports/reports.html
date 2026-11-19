@@ -37,20 +37,27 @@
     <div class="tabela-relatorios-wrapper"><table class="tabela-relatorios"><thead><tr><th>Nome do relatório</th><th>Gerado em</th><th>Tamanho</th><th>Formato</th><th>Ações</th></tr></thead><tbody id="historico-relatorios"></tbody></table><p id="estado-historico-relatorios" class="estado-relatorios">Nenhum relatório gerado nesta sessão.</p></div>
   </section>
   <section class="secao-relatorio digitalizacao-relatorios" aria-labelledby="titulo-digitalizar">
-    <div class="titulo-secao-relatorio"><div><h3 id="titulo-digitalizar">Digitalizar relatório manuscrito</h3><p>Leia a imagem, revise o texto e, se desejar, crie um evento em rascunho ou baixe um relatório. Vincular a um evento existente é opcional.</p></div></div>
+    <div class="titulo-secao-relatorio"><div><h3 id="titulo-digitalizar">Digitalizar relatório manuscrito</h3><p>Use o modelo padrão, leia a imagem e revise os campos. Vincular o documento a um evento existente é opcional.</p></div></div>
+    <div class="orientacoes-manuscrito">
+      <p>1. Baixe e imprima o modelo. 2. Preencha com letra legível e fotografe a folha inteira. 3. Confira o texto antes de salvar.</p>
+      <button id="baixar-modelo-manuscrito" class="botao-relatorio botao-relatorio-secundario" type="button">Baixar modelo de manuscrito</button>
+    </div>
     <form id="form-digitalizar-relatorio" class="form-filtros-relatorios">
-      <label class="campo-relatorio">Buscar evento<input id="busca-evento-digitalizacao" type="search" placeholder="Digite o nome do evento" autocomplete="off"></label>
+      <div class="busca-evento-wrapper campo-relatorio"><label class="campo-relatorio">Buscar evento<input id="busca-evento-digitalizacao" type="search" placeholder="Digite o nome do evento" autocomplete="off"></label><div id="sugestoes-evento-digitalizacao" class="sugestoes-eventos" aria-live="polite" hidden></div></div>
       <label class="campo-relatorio">Evento (opcional)<select id="evento-digitalizacao"><option value="">Sem evento</option></select></label>
       <label class="campo-relatorio">Foto do relatório<input id="foto-relatorio" type="file" accept="image/jpeg,image/png,image/webp" required></label>
       <button class="botao-relatorio botao-relatorio-primario" type="submit">Ler imagem</button>
     </form>
     <p id="estado-digitalizacao" role="status" aria-live="polite"></p>
-    <label class="campo-relatorio">Texto para revisão<textarea id="texto-digitalizado" rows="10" maxlength="50000" placeholder="O texto reconhecido aparecerá aqui para revisão."></textarea></label>
+    <details class="texto-original-manuscrito"><summary>Ver texto reconhecido originalmente</summary><label class="campo-relatorio">Transcrição antes da organização<textarea id="texto-original-digitalizado" rows="6" readonly></textarea></label></details>
+    <label class="campo-relatorio">Texto padronizado para revisão<textarea id="texto-digitalizado" rows="15" maxlength="50000" placeholder="Os campos do relatório aparecerão aqui para revisão."></textarea></label>
+    <p class="ajuda-manuscrito">Confira todos os campos. Trechos que não puderem ser classificados ficam ao final do texto.</p>
+    <button id="organizar-digitalizacao" class="botao-relatorio botao-relatorio-secundario" type="button" disabled>Organizar texto novamente</button>
     <button id="salvar-digitalizacao" class="botao-relatorio botao-relatorio-primario" type="button" disabled>Salvar relatório revisado</button>
     <button id="baixar-digitalizacao" class="botao-relatorio botao-relatorio-secundario" type="button" disabled>Baixar texto em PDF</button>
     <details class="secao-relatorio digitalizacao-criar-evento">
       <summary>Criar evento a partir do texto</summary>
-      <p>Use os dados identificados como sugestões. Confira e complete os campos: o evento será salvo como rascunho.</p>
+      <p>Use os dados identificados como sugestões. Ao preencher sugestões, os campos abaixo serão substituídos. Confira e complete os dados: o evento será salvo como rascunho.</p>
       <button id="sugerir-evento-digitalizacao" class="botao-relatorio botao-relatorio-secundario" type="button">Preencher sugestões do texto</button>
       <form id="form-evento-digitalizado" class="form-filtros-relatorios">
         <label class="campo-relatorio">Nome do evento<input id="scan-evento-nome" minlength="3" maxlength="200" required></label>

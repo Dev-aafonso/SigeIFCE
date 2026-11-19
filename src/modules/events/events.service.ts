@@ -192,7 +192,7 @@ export class EventsService {
     });
   }
 
-  async findPublic(query: EventQueryDto) {
+  async findPublic(query: EventQueryDto, preferredOrganizer?: AuthUser) {
     await this.synchronizeLifecycle();
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 20;
@@ -249,15 +249,7 @@ export class EventsService {
       }
     }
 
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.event.findMany({
-        where,
-        orderBy: {
-          startDate: 'asc',
-        },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
+    const include = {
           cover: { select: { eventId: true } },
           organizer: {
             select: {
@@ -275,12 +267,41 @@ export class EventsService {
               startDate: 'asc',
             },
           },
-        },
-      }),
-      this.prisma.event.count({
-        where,
-      }),
-    ]);
+        } satisfies Prisma.EventInclude;
+    const orderBy: Prisma.EventOrderByWithRelationInput[] = [
+      { startDate: 'asc' },
+      { id: 'asc' },
+    ];
+    const offset = (page - 1) * limit;
+    let data;
+    let total: number;
+    if (preferredOrganizer) {
+      this.manager(preferredOrganizer);
+      const organizerId = this.userId(preferredOrganizer);
+      const owned = { ...where, organizerId };
+      const others = { ...where, organizerId: { not: organizerId } };
+      // Page over both groups, rather than sorting just the current page.
+      [data, total] = await this.prisma.$transaction(async (tx) => {
+        const [ownedCount, allCount] = await Promise.all([
+          tx.event.count({ where: owned }),
+          tx.event.count({ where }),
+        ]);
+        const ownTake = Math.min(limit, Math.max(0, ownedCount - offset));
+        const own = ownTake ? await tx.event.findMany({
+          where: owned, include, orderBy, skip: offset, take: ownTake,
+        }) : [];
+        const remaining = limit - own.length;
+        const other = remaining ? await tx.event.findMany({
+          where: others, include, orderBy, skip: Math.max(0, offset - ownedCount), take: remaining,
+        }) : [];
+        return [[...own, ...other], allCount] as const;
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+    } else {
+      [data, total] = await this.prisma.$transaction([
+        this.prisma.event.findMany({ where, include, orderBy, skip: offset, take: limit }),
+        this.prisma.event.count({ where }),
+      ]);
+    }
 
     return {
       data: data.map(({ cover, ...event }) => ({ ...event, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null })),

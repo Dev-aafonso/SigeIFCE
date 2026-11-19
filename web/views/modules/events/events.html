@@ -42,6 +42,7 @@
       class="filtros-eventos"
       aria-label="Pesquisar e filtrar eventos"
     >
+      <div class="busca-evento-wrapper">
       <label class="campo-evento campo-evento-busca" for="busca-eventos">
         <span class="rotulo-somente-leitor">Pesquisar eventos</span>
         <span class="icone-busca-eventos" aria-hidden="true"></span>
@@ -55,6 +56,8 @@
           autocomplete="off"
         />
       </label>
+      <div id="sugestoes-busca-eventos" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <span class="rotulo-filtros-eventos" aria-hidden="true">Filtros:</span>
       <label class="campo-filtro-evento">
         <span class="rotulo-somente-leitor">Filtrar por categoria</span>

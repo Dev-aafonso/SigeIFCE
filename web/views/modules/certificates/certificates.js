@@ -1,3 +1,5 @@
+import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../shared/core/event-suggestions.mjs';
+
 (() => {
   const $ = (id) => document.getElementById(id);
   const text = (id, value) => { const el = $(id); if (el) el.textContent = String(value ?? ''); };
@@ -29,8 +31,14 @@
   }
   function showOptions(id, items) {
     const list = $(id); if (!list) return;
-    list.replaceChildren();
-    for (const item of items) { const option = document.createElement('option'); option.value = item.label; list.append(option); }
+    const input = $(id === 'eventos-elegibilidade' ? 'id-evento-elegibilidade' : 'id-evento-certificados');
+    const term = normalize(input.value);
+    if (!term) { list.hidden = true; return; }
+    renderEventSuggestions(list, items.filter(item => normalize(item.title).includes(term) || normalize(item.label).includes(term)), (item) => {
+      input.value = item.label;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.focus();
+    });
   }
   function resolveEvent(items, value) {
     const exact = items.filter(e => normalize(e.label) === normalize(value));
@@ -189,15 +197,18 @@
     $('atualizar-certificados')?.addEventListener('click',loadMine);
     $('id-evento-elegibilidade')?.addEventListener('input',()=>{
       ++personalSequence;personalEligible=false;personalEventId=null;$('emitir-certificado-pessoal').disabled=true;msg('estado-elegibilidade-pessoal','');
+      showOptions('eventos-elegibilidade', personalEvents);
     });
     $('id-evento-certificados')?.addEventListener('input',()=>{
       ++managerSequence;eventId=null;candidates=[];$('emitir-certificados').disabled=true;$('detalhes-evento-certificados').hidden=true;msg('mensagem-gestao-certificados','');
       const value=$('id-evento-certificados').value.trim();
       clearTimeout(managerTimer);++managerSearchSequence;
       if(managerEvents.some(e=>normalize(e.label)===normalize(value)))return;
-      managerEvents=[];showOptions('eventos-gestao-certificados',[]);
+      managerEvents=[];$('eventos-gestao-certificados').hidden=true;
       if(value)managerTimer=setTimeout(()=>searchManagerEvents(value).catch(error=>msg('mensagem-gestao-certificados',`Não foi possível buscar eventos: ${error.message}`,'erro')),250);
     });
+    bindEventSuggestionDismissal($('id-evento-elegibilidade'), $('eventos-elegibilidade'));
+    bindEventSuggestionDismissal($('id-evento-certificados'), $('eventos-gestao-certificados'));
     $('form-elegibilidade-pessoal')?.addEventListener('submit',loadOwnEligibility);
     $('emitir-certificado-pessoal')?.addEventListener('click',issuePersonal);
     $('form-evento-certificados')?.addEventListener('submit',loadManager);

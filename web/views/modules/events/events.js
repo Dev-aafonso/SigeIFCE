@@ -2,6 +2,7 @@ import {
   buildActionPayload,
   buildEventPayload,
 } from "../../../shared/core/event-validation.mjs";
+import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../shared/core/event-suggestions.mjs";
 
 (() => {
   const PAGE_SIZE = 20;
@@ -998,6 +999,15 @@ import {
     const title = document.createElement("h4");
     title.textContent = event.title || "Evento sem título";
     heading.append(title);
+    const user = currentUser();
+    const isOwner = (user.id && event.organizer?.id === user.id) ||
+      (user.email && event.organizer?.email?.toLowerCase() === user.email.toLowerCase());
+    if (["ORGANIZADOR", "PROFESSOR"].includes(currentRole) && isOwner) {
+      const owner = document.createElement("span");
+      owner.className = "identificacao-evento-proprio";
+      owner.textContent = "Seu evento";
+      heading.append(owner);
+    }
 
     const metadata = document.createElement("ul");
     metadata.className = "metadados-evento";
@@ -1104,6 +1114,13 @@ import {
     list.replaceChildren(
       ...filtered.map((event, index) => renderPublicEvent(event, index)),
     );
+    const input = byId("busca-eventos");
+    const suggestions = byId("sugestoes-busca-eventos");
+    if (input?.value.trim()) {
+      renderEventSuggestions(suggestions, filtered, (event) => openEventDetails(event.id, input));
+    } else if (suggestions) {
+      suggestions.hidden = true;
+    }
     emptyState.hidden = filtered.length > 0;
     emptyState.textContent = currentPublicEvents.length
       ? "Nenhum evento nesta página corresponde aos filtros selecionados."
@@ -1165,7 +1182,9 @@ import {
     }
 
     try {
-      const result = await api(`${EVENTS_API}?${query.toString()}`);
+      const listApi = ["ORGANIZADOR", "PROFESSOR"].includes(currentRole)
+        ? `${EVENTS_API}/organizer/list` : EVENTS_API;
+      const result = await api(`${listApi}?${query.toString()}`);
       if (sequence !== searchSequence) return;
       if (!result || !Array.isArray(result.data) || !result.meta) {
         throw new Error(
@@ -1832,8 +1851,11 @@ import {
     });
     byId("busca-eventos")?.addEventListener("input", () => {
       window.clearTimeout(searchDebounceTimer);
+      ++searchSequence;
+      byId("sugestoes-busca-eventos").hidden = true;
       searchDebounceTimer = window.setTimeout(() => loadPublicEvents(1), 300);
     });
+    bindEventSuggestionDismissal(byId("busca-eventos"), byId("sugestoes-busca-eventos"));
     byId("filtro-categoria-eventos")?.addEventListener(
       "change",
       updatePublicResults,
@@ -1850,6 +1872,7 @@ import {
     byId("limpar-filtros-eventos")?.addEventListener("click", () => {
       window.clearTimeout(searchDebounceTimer);
       byId("filtros-eventos")?.reset();
+      byId("sugestoes-busca-eventos").hidden = true;
       showMessage("");
       loadPublicEvents(1);
     });

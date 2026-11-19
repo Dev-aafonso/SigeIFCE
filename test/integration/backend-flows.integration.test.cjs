@@ -129,6 +129,7 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     }).timeout({ deadline: 15000 });
     expectStatus(response, [200, 201], 'Login do segundo organizador');
     assert.equal(response.body.role, 'ORGANIZADOR');
+    assert.ok(response.headers['set-cookie'], 'Login do segundo organizador nao emitiu cookie');
 
     ctx.student = agent();
     response = await ctx.student.post('/auth/register').send(newStudentPayload(1)).timeout({ deadline: 15000 });
@@ -159,12 +160,13 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
 
     const baseMinute = Math.ceil(Date.now() / 60000) * 60000;
     ctx.eventDates = {
-      start: new Date(baseMinute + 30 * 60000),
-      end: new Date(baseMinute + 8 * 60 * 60000),
-      action1Start: new Date(baseMinute + 60 * 60000),
-      action1End: new Date(baseMinute + 120 * 60000),
-      action2Start: new Date(baseMinute + 180 * 60000),
-      action2End: new Date(baseMinute + 240 * 60000),
+      // Keep actions over 24 hours away so RN07 permits cancellation.
+      start: new Date(baseMinute + 49 * 60 * 60000),
+      end: new Date(baseMinute + 56 * 60 * 60000),
+      action1Start: new Date(baseMinute + 50 * 60 * 60000),
+      action1End: new Date(baseMinute + 51 * 60 * 60000),
+      action2Start: new Date(baseMinute + 52 * 60 * 60000),
+      action2End: new Date(baseMinute + 53 * 60 * 60000),
     };
 
     let response = await ctx.organizer.post('/events').send({
@@ -173,6 +175,11 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
       startDate: ctx.eventDates.start.toISOString(),
       endDate: ctx.eventDates.end.toISOString(),
       location: 'Ambiente PostgreSQL de testes',
+      category: 'Oficina',
+      workloadMinutes: 120,
+      registrationStartDate: new Date(baseMinute - 60 * 60000).toISOString(),
+      registrationEndDate: new Date(baseMinute + 48 * 60 * 60000).toISOString(),
+      totalCapacity: 21,
     }).timeout({ deadline: 15000 });
     expectStatus(response, [200, 201], 'Criacao de evento');
     assert.ok(response.body.id, 'Evento criado sem identificador');
@@ -215,6 +222,7 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     response = await ctx.organizer.post(`/events/${ctx.event.id}/publish`).timeout({ deadline: 15000 });
     expectStatus(response, [200, 201], 'Publicacao do evento');
     assert.equal(response.body.status, 'PUBLICADO');
+    ctx.eventPublished = true;
     response = await request(baseUrl).get(`/events/${ctx.event.id}`).timeout({ deadline: 15000 });
     expectStatus(response, 200, 'Consulta publica do evento publicado');
     assert.equal(response.body.id, ctx.event.id);
@@ -224,7 +232,7 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
   });
 
   await t.test('inscricao por acao e cancelamento com persistencia de estado', async (t) => {
-    if (!ctx.event || !ctx.action1 || !ctx.action2 || !ctx.student || !ctx.student2) {
+    if (!ctx.eventPublished || !ctx.action1 || !ctx.action2 || !ctx.student || !ctx.student2) {
       return t.skip('Pre-requisito de evento, acoes ou usuarios falhou.');
     }
 
@@ -309,8 +317,8 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     const action2End = new Date(now - 2 * 60 * 60000);
 
     await db.query(
-      'UPDATE "Event" SET "startDate" = $1, "endDate" = $2, "updatedAt" = NOW() WHERE "id" = $3',
-      [eventStart, eventEnd, ctx.event.id],
+      'UPDATE "Event" SET "startDate" = $1, "endDate" = $2, "registrationStartDate" = $3, "registrationEndDate" = $4, "updatedAt" = NOW() WHERE "id" = $5',
+      [eventStart, eventEnd, new Date(now - 8 * 60 * 60000), new Date(now - 7 * 60 * 60000), ctx.event.id],
     );
     await db.query(
       'UPDATE "Action" SET "startDate" = $1, "endDate" = $2, "updatedAt" = NOW() WHERE "id" = $3',
@@ -354,21 +362,35 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     response = await ctx.organizer.post(`/events/${ctx.event.id}/close`).timeout({ deadline: 15000 });
     expectStatus(response, [200, 201], 'Encerramento do evento');
 
-    response = await ctx.organizer.post(`/certificates/registrations/${ctx.registration1.id}/issue`).send({}).timeout({ deadline: 20000 });
+    await t.test('emissao nova pela rota antiga de inscricao e rejeitada', async () => {
+      const legacy = await ctx.organizer.post(`/certificates/registrations/${ctx.registration1.id}/issue`).send({}).timeout({ deadline: 20000 });
+      expectStatus(legacy, 400, 'Emissao pela rota antiga');
+      const count = await db.query('SELECT COUNT(*)::int AS total FROM "Certificate" WHERE "registrationId" = $1', [ctx.registration1.id]);
+      assert.equal(count.rows[0].total, 0, 'A rota antiga nao deve criar um novo certificado por inscricao');
+    });
+
+    response = await ctx.student.get(`/certificates/events/${ctx.event.id}/eligibility`).timeout({ deadline: 15000 });
+    expectStatus(response, 200, 'Elegibilidade consolidada do participante');
+    assert.equal(response.body.eligible, true);
+    assert.equal(response.body.attendancePercent, 100);
+    assert.equal(response.body.attendedMinutes, 60);
+
+    response = await ctx.organizer.post(`/certificates/events/${ctx.event.id}/issue`).send({ userId: ctx.studentUser.id }).timeout({ deadline: 20000 });
     expectStatus(response, [200, 201], 'Emissao de certificado');
+    assert.equal(response.body.alreadyExisted, false, 'Primeira emissao nao deveria retornar certificado existente');
     const certificate = await db.query(
-      'SELECT c."id", c."validationCode", c."filePath" FROM "Certificate" c WHERE c."registrationId" = $1',
-      [ctx.registration1.id],
+      'SELECT c."id", c."validationCode", c."filePath" FROM "Certificate" c WHERE c."eventId" = $1 AND c."userId" = $2 AND c."scope" = $3',
+      [ctx.event.id, ctx.studentUser.id, 'EVENT'],
     );
     assert.equal(certificate.rowCount, 1, 'Certificado nao foi persistido exatamente uma vez');
     ctx.certificate = certificate.rows[0];
 
     // SEGMENTO DE TESTES NEGATIVOS SPRINT10: reemissao deve ser idempotente e nao gerar duplicata.
     await t.test('reemissao de certificado retorna o existente', async () => {
-      const repeatIssue = await ctx.organizer.post(`/certificates/registrations/${ctx.registration1.id}/issue`).send({}).timeout({ deadline: 20000 });
+      const repeatIssue = await ctx.organizer.post(`/certificates/events/${ctx.event.id}/issue`).send({ userId: ctx.studentUser.id }).timeout({ deadline: 20000 });
       expectStatus(repeatIssue, [200, 201], 'Reemissao idempotente de certificado');
       assert.equal(repeatIssue.body.alreadyExisted, true, 'Reemissao nao sinalizou o certificado existente');
-      const count = await db.query('SELECT COUNT(*)::int AS total FROM "Certificate" WHERE "registrationId" = $1', [ctx.registration1.id]);
+      const count = await db.query('SELECT COUNT(*)::int AS total FROM "Certificate" WHERE "eventId" = $1 AND "userId" = $2 AND "scope" = $3', [ctx.event.id, ctx.studentUser.id, 'EVENT']);
       assert.equal(count.rows[0].total, 1, 'Reemissao criou certificado duplicado');
     });
 
@@ -423,6 +445,60 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     response = await ctx.student.get('/reports').timeout({ deadline: 15000 });
     expectStatus(response, 403, 'Aluno sem permissao para relatorios');
   });
+  await t.test('manuscrito usa modelo e salva texto revisado padronizado', async (t) => {
+    if (!ctx.event || !ctx.organizer || !ctx.student) return t.skip('Pre-requisito de evento ou autenticacao falhou.');
+    let response = await ctx.organizer.get('/reports/scans/template').timeout({ deadline: 15000 });
+    expectStatus(response, 200, 'Modelo de manuscrito');
+    assert.match(response.headers['content-type'], /application\/pdf/);
+    assert.equal(Buffer.from(response.body).subarray(0, 5).toString(), '%PDF-');
+    response = await ctx.organizer.post('/reports/scans/organize').send({ text: 'Local: Cedro\nEvento: Oficina\nParticipantes: 25\nAnotacao adicional' }).timeout({ deadline: 15000 });
+    expectStatus(response, [200, 201], 'Organizacao do manuscrito');
+    assert.equal(response.body.fields.event, 'Oficina');
+    assert.equal(response.body.fields.participants, '25');
+    assert.equal(response.body.fields.capacity, '');
+    assert.match(response.body.text, /Outros trechos reconhecidos: Anotacao adicional/);
+    response = await ctx.organizer.post('/reports/scans').send({ eventId: ctx.event.id, text: response.body.text }).timeout({ deadline: 15000 });
+    expectStatus(response, [200, 201], 'Salvamento do manuscrito');
+    const savedId = response.body.id;
+    response = await ctx.organizer.get('/reports/scans/list').query({ eventId: ctx.event.id }).timeout({ deadline: 15000 });
+    expectStatus(response, 200, 'Lista de manuscritos do evento');
+    assert.ok(response.body.some(item => item.id === savedId && item.text.includes('Evento: Oficina')));
+    response = await ctx.student.get('/reports/scans/template').timeout({ deadline: 15000 });
+    expectStatus(response, 403, 'Aluno sem acesso ao modelo gerencial');
+  });
+  await t.test('lista autenticada prioriza eventos do organizador em todas as paginas', async (t) => {
+    if (!ctx.organizer || !ctx.student || !ctx.organizerId || !ctx.secondOrganizerId) {
+      return t.skip('Pre-requisito de autenticacao falhou.');
+    }
+    const title = `SIGE ordem ${runId}`;
+    const mine = [], others = [];
+    for (let i = 0; i < 46; i++) {
+      const owned = i < 22;
+      const draft = i === 45;
+      const id = `c${crypto.randomBytes(12).toString('hex')}`;
+      const sequence = owned ? i : i - 22;
+      const start = new Date(Date.UTC(2099, owned ? 1 : 0, sequence + 1, 12));
+      const end = new Date(start.getTime() + 60 * 60 * 1000);
+      await db.query(
+        'INSERT INTO "Event" ("id", "title", "description", "startDate", "endDate", "status", "organizerId", "updatedAt") VALUES ($1, $2, $3, $4, $5, $6::"EventStatus", $7, NOW())',
+        [id, title, 'Evento isolado para teste de ordenacao.', start, end, draft ? 'RASCUNHO' : 'PUBLICADO', owned ? ctx.organizerId : ctx.secondOrganizerId],
+      );
+      if (!draft) (owned ? mine : others).push(id);
+    }
+    const ids = [];
+    for (let page = 1; page <= 3; page++) {
+      const response = await ctx.organizer.get('/events/organizer/list').query({ title, page, limit: 20 }).timeout({ deadline: 15000 });
+      expectStatus(response, 200, `Pagina ${page} da lista do organizador`);
+      assert.equal(response.body.meta.total, 45);
+      assert.equal(response.body.meta.pages, 3);
+      ids.push(...response.body.data.map(event => event.id));
+    }
+    assert.deepEqual(ids, [...mine, ...others]);
+    const anonymous = await request(baseUrl).get('/events/organizer/list').timeout({ deadline: 15000 });
+    expectStatus(anonymous, 401, 'Lista do organizador sem autenticacao');
+    const student = await ctx.student.get('/events/organizer/list').timeout({ deadline: 15000 });
+    expectStatus(student, 403, 'Lista do organizador com perfil de aluno');
+  });
   // TESTES ADICIONAIS AUTH-02 AUTH-03 USR-01
   await t.test('AUTH-02: login rejeita credenciais inválidas sem emitir cookie', async () => {
     const invalidEmail = await agent().post('/auth/login').send({
@@ -451,15 +527,11 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
   });
 
   await t.test('AUTH-03: logout limpa o cookie e o agente perde a sessão', async () => {
-    const client = agent();
-
-    let response = await client.post('/auth/login').send({
-      email: organizerEmail,
-      password: organizerPassword,
-    }).timeout({ deadline: 15000 });
-
-    expectStatus(response, [200, 201], 'Login antes do logout');
-    assert.ok(response.headers['set-cookie'], 'Login não emitiu cookie');
+    // The second organizer was already authenticated during setup. Logging
+    // out this user preserves the primary organizer's session for USR-02.
+    const client = ctx.secondOrganizer;
+    let response = await client.get('/auth/me').timeout({ deadline: 15000 });
+    expectStatus(response, 200, 'Sessao do segundo organizador antes do logout');
 
     response = await client.post('/auth/logout').timeout({ deadline: 15000 });
     expectStatus(response, [200, 201], 'Logout');
@@ -497,13 +569,17 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
   });
 
   await t.test('USR-02: organizador não pode administrar usuários', async () => {
+    const organizer = ctx.organizer;
+    const session = await organizer.get('/auth/me').timeout({ deadline: 15000 });
+    expectStatus(session, 200, 'Sessao do organizador para verificar permissoes');
+    assert.equal(session.body.role, 'ORGANIZADOR');
     for (const [method, route, payload] of [
       ['get', '/users', undefined],
       ['get', `/users/${ctx.studentUser.id}`, undefined],
       ['patch', `/users/${ctx.studentUser.id}/role`, { role: 'ADMIN' }],
       ['delete', `/users/${ctx.studentUser.id}`, undefined],
     ]) {
-      let operation = ctx.organizer[method](route);
+      let operation = organizer[method](route);
       if (payload) operation = operation.send(payload);
 
       const response = await operation.timeout({ deadline: 15000 });

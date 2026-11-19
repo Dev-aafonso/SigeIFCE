@@ -212,3 +212,26 @@
 :where(.modulo-relatorios,.modulo-participantes,.modulo-inscricoes,.modulo-certificados) > * { min-width: 0; max-width: 100%; }
 .campo-relatorio textarea { width: 100%; min-width: 0; max-width: 100%; padding: .65rem .8rem; border: 1px solid var(--borda-controle); border-radius: 9px; background: var(--fundo-controle); color: var(--texto-principal); font: inherit; }
 @media (max-width: 720px) { :where(.campo-relatorio,.campo-filtro-participantes,.campo-pesquisa-inscricao,.campo-filtro-inscricao,.campo-certificado) { min-width: 0; } }
+
+/* Sugestões de eventos ficam ligadas ao campo sem deslocar os botões. */
+.busca-evento-wrapper { position: relative; min-width: 0; }
+.busca-evento-wrapper > label { min-width: 0; width: 100%; }
+.busca-evento-wrapper input { width: 100%; box-sizing: border-box; }
+.sugestoes-eventos { position: absolute; z-index: 25; inset-inline: 0; top: calc(100% + .3rem); max-height: 20rem; overflow-y: auto; padding: .35rem; border: 1px solid var(--borda-controle); border-radius: 10px; background: var(--fundo-modulo); box-shadow: var(--sombra-lg); }
+.sugestao-evento { display: grid; gap: .25rem; width: 100%; padding: .7rem .8rem; border: 0; border-radius: 7px; background: transparent; color: var(--texto-principal); text-align: left; font: inherit; cursor: pointer; }
+.sugestao-evento strong { overflow-wrap: anywhere; font-size: .88rem; }
+.sugestao-evento span, .sugestoes-eventos-vazio { color: var(--texto-suave); font-size: .78rem; }
+.sugestao-evento:hover, .sugestao-evento:focus-visible { background: var(--ativo-fundo); outline: 2px solid var(--anel-foco); outline-offset: -2px; }
+.sugestoes-eventos-vazio { margin: 0; padding: .7rem .8rem; }
+:where(.filtros-participantes,.form-evento-certificados,.form-filtros-relatorios) > .busca-evento-wrapper { flex: 2 1 18rem; }
+:where(.filtros-participantes,.form-evento-certificados,.form-filtros-relatorios) > button { align-self: end; }
+:where(.campo-relatorio,.campo-certificado,.campo-filtro-participantes) :where(input,select,textarea) { box-sizing: border-box; width: 100%; min-width: 0; }
+@media (max-width: 720px) { :where(.filtros-participantes,.form-evento-certificados,.form-filtros-relatorios) > .busca-evento-wrapper { flex-basis: 100%; } }
+
+.orientacoes-manuscrito { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin:1rem 0; padding:1rem; border:1px solid var(--cor-divisor); border-radius:9px; background:var(--fundo-modulo); }
+.orientacoes-manuscrito p, .ajuda-manuscrito { color:var(--texto-suave); font-size:.88rem; line-height:1.5; }
+.orientacoes-manuscrito p { margin:0; flex:1 1 22rem; }
+.texto-original-manuscrito { margin:.9rem 0; }
+.texto-original-manuscrito summary { cursor:pointer; font-weight:600; }
+.texto-original-manuscrito label { margin-top:.75rem; }
+.ajuda-manuscrito { margin:.45rem 0 .7rem; }

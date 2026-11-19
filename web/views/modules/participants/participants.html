@@ -40,7 +40,8 @@
       </div>
     </header>
     <form id="form-evento-participantes" class="filtros-participantes">
-      <label class="campo-filtro-participantes campo-evento-participantes">
+      <div class="busca-evento-wrapper campo-evento-participantes">
+      <label class="campo-filtro-participantes">
         <span>Evento</span>
         <input
           id="id-evento-participantes"
@@ -49,10 +50,10 @@
           autocomplete="off"
           required
           placeholder="Digite o nome do evento"
-          list="eventos-participantes"
         />
-        <datalist id="eventos-participantes"></datalist>
       </label>
+      <div id="eventos-participantes" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <button
         class="botao-inscricao botao-inscricao-primario"
         type="submit"

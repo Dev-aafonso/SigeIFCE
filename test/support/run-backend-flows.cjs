@@ -157,7 +157,7 @@ async function dropDatabase() {
 (async () => {
   try {
     const branch = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: ROOT, encoding: 'utf8', windowsHide: true });
-    if (branch.status !== 0 || !['feature/SPRINT10-12', 'integracao/teste-develop-main'].includes(branch.stdout.trim())) {
+    if (branch.status !== 0 || !['main', 'feature/SPRINT10-12', 'integracao/teste-develop-main'].includes(branch.stdout.trim())) {
       throw new Error(`Branch inesperada (${branch.stdout ? branch.stdout.trim() : 'desconhecida'}). O runner so executa nas branches autorizadas.`);
     }
     if (!fs.existsSync(ENV_PATH)) throw new Error('.env nao encontrado; nenhum banco foi criado.');
