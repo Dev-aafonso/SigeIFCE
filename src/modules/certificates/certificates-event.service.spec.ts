@@ -38,7 +38,7 @@ describe('Certificados consolidados (3B)', () => {
     expect(result.alreadyExisted).toBe(false);
     expect(result.certificate.scope).toBe('EVENT');
     expect(result.certificate.certifiedMinutes).toBe(180);
-    expect(prisma.certificate.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ scope: 'EVENT', actionId: null, registrationId: null }) }));
+    expect(prisma.certificate.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ scope: 'EVENT', actionId: null, registrationId: null, pdf: { create: { data: new Uint8Array(Buffer.from('%PDF-TEST')) } } }) }));
     expect(pdf.generate).toHaveBeenCalledWith(expect.objectContaining({ scope: 'EVENT', eventTitle: event.title, attendancePercent: 100 }));
   });
 

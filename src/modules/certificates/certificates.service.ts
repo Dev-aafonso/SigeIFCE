@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
 
 import {
@@ -211,7 +211,6 @@ export class CertificatesService {
 
     const validationCode = `SIGE-${randomBytes(12).toString('hex').toUpperCase()}`;
     const relativeFilePath = `storage/certificates/${validationCode}.pdf`;
-    const absoluteFilePath = resolve(process.cwd(), relativeFilePath);
     const issuedAt = new Date();
     const pdf = await this.pdfService.generate({
       scope: 'EVENT',
@@ -227,23 +226,20 @@ export class CertificatesService {
       issuedAt,
       campusName: process.env.IFCE_CAMPUS_NAME,
     });
-    await mkdir(resolve(process.cwd(), 'storage', 'certificates'), { recursive: true });
-    let fileCreated = false;
+    // Persist the document atomically with its certificate, independent of the container filesystem.
     try {
-      await writeFile(absoluteFilePath, pdf, { flag: 'wx' });
-      fileCreated = true;
       const created = await this.prisma.certificate.create({
         data: {
           scope: 'EVENT', userId, eventId, actionId: null, registrationId: null,
           certifiedMinutes: eligibility.attendedMinutes,
           attendancePercent: eligibility.attendancePercent,
           validationCode, filePath: relativeFilePath,
+          pdf: { create: { data: new Uint8Array(pdf) } },
         },
         include: { user: { select: { id: true, name: true } }, event: true, action: true },
       });
       return { alreadyExisted: false, certificate: this.publicCertificate(created, created.user, created.action, created.event) };
     } catch (error) {
-      if (fileCreated) await rm(absoluteFilePath, { force: true });
       if (getPrismaErrorCode(error) === 'P2002') {
         const concurrent = await this.prisma.certificate.findFirst({
           where: { eventId, userId, scope: 'EVENT' },
@@ -338,6 +334,7 @@ export class CertificatesService {
         event: true,
         action: true,
         registration: true,
+        pdf: { select: { data: true } },
       },
     });
 
@@ -345,6 +342,14 @@ export class CertificatesService {
     await this.assertCanAccess(certificate, requester);
     if (certificate.revokedAt) throw new ForbiddenException('Este certificado foi revogado.');
 
+    if (certificate.pdf) {
+      return {
+        buffer: Buffer.from(certificate.pdf.data),
+        filename: `certificado-${certificate.validationCode}.pdf`,
+      };
+    }
+
+    // Compatibility for documents issued before the persistent storage migration.
     const storageRoot = resolve(process.cwd(), 'storage', 'certificates');
     const absoluteFilePath = resolve(process.cwd(), certificate.filePath);
     if (!absoluteFilePath.startsWith(storageRoot + sep) && absoluteFilePath !== storageRoot) {

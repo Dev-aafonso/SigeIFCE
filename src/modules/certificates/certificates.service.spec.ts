@@ -245,4 +245,17 @@ describe('CertificatesService (modelo por inscrição)', () => {
     expect(result.valid).toBe(false);
     expect(result.message).toMatch(/revogado/i);
   });
+
+  it('baixa PDF persistido sem depender de arquivo local', async () => {
+    const data = new Uint8Array(Buffer.from('%PDF-persisted'));
+    prisma.certificate.findUnique.mockResolvedValue(makeCertificateRecord({ pdf: { data } }));
+    const result = await service.download('certificate-1', { id: 'user-1', role: UserRole.ALUNO });
+    expect(result.buffer).toEqual(Buffer.from(data));
+  });
+
+  it('nega acesso ao PDF persistido a outro participante', async () => {
+    prisma.certificate.findUnique.mockResolvedValue(makeCertificateRecord({ pdf: { data: new Uint8Array([1, 2]) } }));
+    await expect(service.download('certificate-1', { id: 'other', role: UserRole.ALUNO })).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
 });

@@ -161,6 +161,7 @@ model Certificate {
   attendancePercent Float
   issuedAt          DateTime @default(now())
   filePath          String
+  pdf               CertificatePdf?
 
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -194,4 +195,12 @@ model ScannedReport {
   createdAt DateTime @default(now())
   event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
   @@index([eventId])
+}
+
+
+// Binary PDF is stored separately to avoid loading it in list/report queries.
+model CertificatePdf {
+  certificateId String      @id
+  data          Bytes
+  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
