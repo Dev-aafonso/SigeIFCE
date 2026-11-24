@@ -1,4 +1,4 @@
-import base64, json, os, tempfile, threading
+import base64, hmac, json, os, tempfile, threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from paddleocr import PaddleOCR
 
@@ -7,6 +7,9 @@ lock = threading.Lock()
 class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path != '/read': self.send_error(404); return
+        token = os.environ.get('OCR_TOKEN', '').strip()
+        if token and not hmac.compare_digest(self.headers.get('Authorization', '').encode('utf-8'), ('Bearer ' + token).encode('utf-8')):
+            self.send_error(401); return
         try:
             length = int(self.headers.get('Content-Length', '0'))
             if length <= 0 or length > 8_000_000: raise ValueError('Imagem inválida ou muito grande')
