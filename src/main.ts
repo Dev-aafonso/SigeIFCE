@@ -126,7 +126,12 @@ async function bootstrap() {
   });
   expressApp.get('/registrations', sendIndex);
 
-  await app.listen(port);
+  // Endpoint publico de liveness para o Render, sem expor detalhes internos.
+  expressApp.get('/health', (_request: Request, response: Response) => {
+    response.set('Cache-Control', 'no-store').status(200).json({ status: 'ok' });
+  });
+
+  await app.listen(port, '0.0.0.0');
   console.log(`SIGE IFCE executando em http://localhost:${port}`);
 }
 
