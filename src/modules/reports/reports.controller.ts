@@ -55,14 +55,24 @@ export class ReportsController {
     const valid = b && ((b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) || (b.length > 8 && b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) || (b.length > 12 && b.toString('ascii',0,4) === 'RIFF' && b.toString('ascii',8,12) === 'WEBP'));
     if (!valid || !b) throw new BadRequestException('Selecione uma imagem JPG, PNG ou WebP válida de até 5 MB.');
     try {
-      const response = await fetch('http://127.0.0.1:55883/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({image: b.toString('base64')}), signal: AbortSignal.timeout(120000) });
+      const endpoint = new URL(process.env.OCR_URL?.trim() || 'http://127.0.0.1:55883/read');
+      const local = ['127.0.0.1', 'localhost', '[::1]'].includes(endpoint.hostname);
+      const token = process.env.OCR_TOKEN?.trim();
+      if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash ||
+          (endpoint.protocol !== 'https:' && !(local && endpoint.protocol === 'http:')) ||
+          (!local && (!token || token.length < 32))) {
+        throw new Error('Configuração do OCR inválida');
+      }
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const response = await fetch(endpoint.toString(), { method: 'POST', headers, body: JSON.stringify({image: b.toString('base64')}), redirect: 'error', signal: AbortSignal.timeout(120000) });
       if (!response.ok) throw new Error('OCR indisponível');
       const result: unknown = await response.json();
       if (!result || typeof result !== 'object' || !('text' in result) || typeof result.text !== 'string') throw new Error('Resposta inválida');
       const text = result.text.slice(0, 50000);
       const organized = structureScanText(text);
       return { text, standardizedText: organized.text, fields: organized.fields, hasContent: organized.hasContent };
-    } catch { throw new ServiceUnavailableException('O leitor local está indisponível. Inicie o leitor e tente novamente.'); }
+    } catch { throw new ServiceUnavailableException('O leitor de imagens está indisponível. Tente novamente ou utilize a transcrição manual.'); }
   }
 
   @Post('scans/organize')
