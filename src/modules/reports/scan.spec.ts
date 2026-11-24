@@ -23,6 +23,25 @@ describe('relatórios digitalizados', () => {
   it('rejeita arquivo que não seja imagem suportada', async () => {
     await expect(controller.readScan({buffer:Buffer.from('texto'),mimetype:'image/jpeg'})).rejects.toThrow();
   });
+  it('exige HTTPS e token para leitor remoto, sem transmitir a imagem', async () => {
+    const previousUrl = process.env.OCR_URL;
+    const previousToken = process.env.OCR_TOKEN;
+    const fetchSpy = jest.spyOn(globalThis, 'fetch');
+    try {
+      process.env.OCR_URL = 'http://ocr.example/read';
+      process.env.OCR_TOKEN = 'x'.repeat(40);
+      await expect(controller.readScan({buffer: Buffer.from([255,216,255,1]), mimetype:'image/jpeg'})).rejects.toThrow(/indisponível/);
+      expect(fetchSpy).not.toHaveBeenCalled();
+      process.env.OCR_URL = 'https://ocr.example/read';
+      delete process.env.OCR_TOKEN;
+      await expect(controller.readScan({buffer: Buffer.from([255,216,255,1]), mimetype:'image/jpeg'})).rejects.toThrow(/indisponível/);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+      if (previousUrl === undefined) delete process.env.OCR_URL; else process.env.OCR_URL = previousUrl;
+      if (previousToken === undefined) delete process.env.OCR_TOKEN; else process.env.OCR_TOKEN = previousToken;
+    }
+  });
   it('salva sem evento e lista apenas documentos próprios sem vínculo', async () => {
     scannedReport.create.mockResolvedValue({id:'doc'});
     await controller.saveScan({text:'texto revisado'},req);
