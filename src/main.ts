@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -101,9 +101,6 @@ async function bootstrap() {
     transform: true,
     forbidNonWhitelisted: true,
   }));
-
-  app.setBaseViewsDir(join(process.cwd(), 'web', 'views'));
-  app.setViewEngine('hbs');
 
   // Expor somente os diretÃƒÂ³rios pÃƒÂºblicos necessÃƒÂ¡rios. Nunca publicar process.cwd().
   app.useStaticAssets(join(process.cwd(), 'web', 'shared'));
