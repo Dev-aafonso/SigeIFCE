@@ -52,3 +52,56 @@ jobs:
 
       - name: Test
         run: npm test -- --runInBand
+
+  integration:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: sige_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d sige_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/sige_ci
+      DATABASE_URL_UNPOOLED: postgresql://ci:ci@127.0.0.1:5432/sige_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Prepare disposable local environment
+        run: |
+          git switch -C main
+          cat > .env <<'EOF'
+          DATABASE_URL=postgresql://ci:ci@127.0.0.1:5432/sige_ci
+          JWT_SECRET=ci-only-secret-not-used-in-production-1234567890
+          COOKIE_SECURE=false
+          MOCK_MODE=false
+          EOF
+      - name: Run isolated HTTP integration flows
+        run: npm run test:backend-flows
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high

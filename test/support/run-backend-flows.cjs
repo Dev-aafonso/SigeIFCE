@@ -200,6 +200,7 @@ async function dropDatabase() {
       ...envFile,
       ...process.env,
       DATABASE_URL: testDbUrl,
+      DATABASE_URL_UNPOOLED: testDbUrl,
       NODE_ENV: 'test',
     };
 
