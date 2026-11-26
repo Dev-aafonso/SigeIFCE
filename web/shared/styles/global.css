@@ -535,3 +535,22 @@ a {
   border-color: var(--ativo-borda);
   box-shadow: 0 0 0 3px rgba(16, 185, 129, .2);
 }
+
+button[aria-busy="true"] { cursor: progress; }
+button[aria-busy="true"]::after {
+  content: "";
+  display: inline-block;
+  width: .9em;
+  height: .9em;
+  flex: 0 0 .9em;
+  margin-inline-start: .4em;
+  vertical-align: -.1em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: sige-button-spin .7s linear infinite;
+}
+@keyframes sige-button-spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) {
+  button[aria-busy="true"]::after { animation: none; }
+}

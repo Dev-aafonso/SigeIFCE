@@ -244,6 +244,7 @@ async function submitAccountForm(
   const submit = form.querySelector('[type="submit"]');
   const message = form.querySelector(`#${messageId}`);
   submit.disabled = true;
+  submit.setAttribute("aria-busy", "true");
   setMessage(message, loading);
 
   try {
@@ -258,6 +259,7 @@ async function submitAccountForm(
     setMessage(message, error.message, "erro");
   } finally {
     submit.disabled = false;
+    submit.removeAttribute("aria-busy");
   }
 }
 

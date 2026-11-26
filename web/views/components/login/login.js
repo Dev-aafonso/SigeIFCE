@@ -157,10 +157,11 @@ document.addEventListener("submit", async (event) => {
     let selected = "aluno";
     try { selected = sessionStorage.getItem("funcao_cadastro") || selected; } catch {}
     const role = selected === "gestor" ? "ADMIN" : selected === "professor" ? "PROFESSOR" : "ALUNO";
-    const managerCode = document.getElementById("codigo-gestor")?.value || "";
+    const accessCode = document.getElementById("codigo-gestor")?.value || "";
     const data = await requestJson(AUTH_ROUTES.register, {
       name, email, password, passwordConfirmation: password, role,
-      ...(role === "ADMIN" ? { managerCode } : {}),
+      ...(role === "ADMIN" ? { managerCode: accessCode } : {}),
+      ...(role === "PROFESSOR" ? { professorCode: accessCode } : {}),
     });
     const user = saveSession(data);
     try {

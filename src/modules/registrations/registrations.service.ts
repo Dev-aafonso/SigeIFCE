@@ -58,7 +58,7 @@ export class RegistrationsService {
       ] }];
     }
 
-    const [data, total, counts, eventRows] = await Promise.all([
+    const [data, total, counts, events] = await Promise.all([
       this.prisma.registration.findMany({
         where,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -80,9 +80,10 @@ export class RegistrationsService {
       this.prisma.registration.groupBy({
         by: ['status'], where: { userId }, _count: { _all: true },
       }),
-      this.prisma.registration.findMany({
-        where: { userId },
-        select: { action: { select: { event: { select: { id: true, title: true } } } } },
+      this.prisma.event.findMany({
+        where: { actions: { some: { registrations: { some: { userId } } } } },
+        select: { id: true, title: true },
+        orderBy: [{ title: 'asc' }, { id: 'asc' }],
       }),
     ]);
 
@@ -92,13 +93,6 @@ export class RegistrationsService {
       if (entry.status === RegistrationStatus.CANCELLED) summary.cancelled = entry._count._all;
     }
     summary.total = summary.active + summary.cancelled;
-
-    const eventMap = new Map<string, string>();
-    for (const row of eventRows) {
-      eventMap.set(row.action.event.id, row.action.event.title);
-    }
-    const events = Array.from(eventMap, ([id, title]) => ({ id, title }))
-      .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'));
 
     return { data, total, page, limit, pages: Math.max(1, Math.ceil(total / limit)), summary, events };
   }

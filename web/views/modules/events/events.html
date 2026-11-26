@@ -28,7 +28,7 @@
   ></p>
 
   <section id="secao-rascunhos-eventos" class="secao-eventos" aria-labelledby="titulo-rascunhos-eventos" hidden>
-    <div class="titulo-secao-eventos"><div><h3 id="titulo-rascunhos-eventos">Eventos em rascunho</h3><p>Visíveis somente para quem pode gerenciá-los.</p></div><button id="atualizar-rascunhos-eventos" class="botao-evento botao-evento-secundario" type="button">Atualizar</button></div>
+    <div class="titulo-secao-eventos"><div><h3 id="titulo-rascunhos-eventos">Eventos em rascunho</h3><p>Somente você pode ver os seus rascunhos.</p></div><button id="atualizar-rascunhos-eventos" class="botao-evento botao-evento-secundario" type="button">Atualizar</button></div>
     <p id="estado-rascunhos-eventos" role="status" aria-live="polite"></p>
     <div id="lista-rascunhos-eventos" class="grade-eventos-publicos" role="list" aria-label="Eventos em rascunho"></div>
   </section>
@@ -48,6 +48,7 @@
         <span class="icone-busca-eventos" aria-hidden="true"></span>
         <input
           id="busca-eventos"
+          aria-controls="sugestoes-busca-eventos"
           name="title"
           type="search"
           data-testid="search-events"
@@ -143,28 +144,31 @@
       <div>
         <h3 id="titulo-gerenciamento-eventos">Gerenciar eventos</h3>
         <p>
-          Abra um evento do seu escopo pelo identificador ou selecione um criado
-          neste navegador.
+          Selecione um dos seus rascunhos ou busque um evento pelo nome ou identificador.
         </p>
       </div>
     </div>
     <form id="abrir-evento-form" class="abrir-evento-form">
       <label class="campo-evento">
-        <span>Eventos criados neste navegador</span>
+        <span>Seus rascunhos</span>
         <select id="eventos-recentes">
-          <option value="">Selecione um evento salvo</option>
+          <option value="">Selecione um rascunho</option>
         </select>
       </label>
+      <div class="busca-evento-wrapper">
       <label class="campo-evento">
-        <span>Identificador do evento</span>
+        <span>Nome ou identificador do evento</span>
         <input
           id="identificador-evento"
           name="eventId"
+          aria-controls="sugestoes-gerenciamento"
           data-testid="managed-event-id"
           autocomplete="off"
           required
         />
       </label>
+        <div id="sugestoes-gerenciamento" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <button
         class="botao-evento botao-evento-primario"
         type="submit"

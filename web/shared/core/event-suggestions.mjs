@@ -1,7 +1,7 @@
 /** Render selectable event suggestions without inserting event text as HTML. */
 export function renderEventSuggestions(container, events, onSelect, emptyText = 'Nenhum evento encontrado.') {
   if (!container) return;
-  if (!container.parentElement?.contains(document.activeElement)) {
+  if (container.dataset.dismissed || !container.parentElement?.contains(document.activeElement)) {
     container.hidden = true;
     return;
   }
@@ -37,15 +37,22 @@ export function renderEventSuggestions(container, events, onSelect, emptyText = 
 export function bindEventSuggestionDismissal(input, container) {
   const wrapper = container?.parentElement;
   if (!input || !wrapper) return;
+  input.addEventListener('input', () => { delete container.dataset.dismissed; });
   wrapper.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !container.hidden) {
+      event.stopPropagation();
       event.preventDefault();
       container.hidden = true;
       input.focus();
+      container.dataset.dismissed = "true";
     }
-    if (event.key === 'ArrowDown' && !container.hidden) {
-      const first = container.querySelector('button');
-      if (first) { event.preventDefault(); first.focus(); }
+    if (['ArrowDown', 'ArrowUp'].includes(event.key) && !container.hidden) {
+      const buttons = [...container.querySelectorAll('button')];
+      if (!buttons.length) return;
+      event.preventDefault();
+      const index = buttons.indexOf(document.activeElement);
+      const next = event.key === 'ArrowDown' ? index + 1 : index < 0 ? buttons.length - 1 : index - 1;
+      buttons[(next + buttons.length) % buttons.length].focus();
     }
   });
   wrapper.addEventListener('focusout', () => {
@@ -53,4 +60,34 @@ export function bindEventSuggestionDismissal(input, container) {
       if (!wrapper.contains(document.activeElement)) container.hidden = true;
     }, 0);
   });
+}
+
+// A new edit invalidates the previous request, including during the debounce.
+export function bindEventLookup(input, container, { search, select, clear, allowEmpty = false }) {
+  let timer;
+  let request;
+  const lookup = () => {
+    clearTimeout(timer);
+    request?.abort();
+    const term = input.value.trim();
+    if (!term && !allowEmpty) { container.hidden = true; return; }
+    const controller = new AbortController();
+    request = controller;
+    renderEventSuggestions(container, [], null, 'Pesquisando eventos…');
+    timer = setTimeout(async () => {
+      try {
+        const matches = await search(term, controller.signal);
+        if (!controller.signal.aborted && input.isConnected) {
+          renderEventSuggestions(container, matches, select);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted && input.isConnected) {
+          renderEventSuggestions(container, [], null, error.message);
+        }
+      }
+    }, 250);
+  };
+  input.addEventListener('input', () => { clear(); lookup(); });
+  if (allowEmpty) input.addEventListener('focus', () => { delete container.dataset.dismissed; lookup(); });
+  bindEventSuggestionDismissal(input, container);
 }

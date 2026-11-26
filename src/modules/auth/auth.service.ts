@@ -20,11 +20,13 @@ export class AuthService {
     }
 
     const role = dto.role ?? UserRole.ALUNO;
-    if (role === UserRole.ADMIN) {
-      const expected = process.env.SIGE_MANAGER_CODE;
+    if (role === UserRole.ADMIN || role === UserRole.PROFESSOR) {
+      const professor = role === UserRole.PROFESSOR;
+      const expected = professor ? process.env.SIGE_PROFESSOR_CODE : process.env.SIGE_MANAGER_CODE;
+      const supplied = professor ? dto.professorCode : dto.managerCode;
       const digest = (value: string) => createHash('sha256').update(value).digest();
-      if (!expected || !dto.managerCode || !timingSafeEqual(digest(expected), digest(dto.managerCode))) {
-        throw new ForbiddenException('Código de gestor inválido ou não configurado.');
+      if (!expected || !supplied || !timingSafeEqual(digest(expected), digest(supplied))) {
+        throw new ForbiddenException(`Código de ${professor ? 'professor' : 'gestor'} inválido ou não configurado.`);
       }
     }
 

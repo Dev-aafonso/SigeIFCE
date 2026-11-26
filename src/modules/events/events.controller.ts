@@ -52,9 +52,21 @@ export class EventsController {
   }
 
   @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
+  @Get('manageable/drafts')
+  listMyDrafts(@Req() req: AuthenticatedRequest) {
+    return this.service.listMyDrafts(req.user);
+  }
+
+  @Roles(UserRole.ADMIN, UserRole.ORGANIZADOR, UserRole.PROFESSOR)
   @Get('manageable/search')
   searchManageable(@Query('title') title: string, @Req() req: AuthenticatedRequest) {
     return this.service.searchManageable(title, req.user);
+  }
+
+  @Public()
+  @Get('registration/options')
+  registrationOptions(@Query('title') title?: string) {
+    return this.service.registrationOptions(title);
   }
 
   @Public()

@@ -1,3 +1,5 @@
+import { busyHandler } from '../../../shared/core/button-busy.mjs';
+import { bindEventLookup, bindEventSuggestionDismissal, renderEventSuggestions } from '../../../shared/core/event-suggestions.mjs';
 import {
   canCancelRegistration, historyParameters, registrationCsv,
 } from '../../../shared/core/registration-history.mjs';
@@ -22,6 +24,7 @@ import {
   let history = [];
   let actions = [];
   let historySequence = 0;
+  let historyRequest;
   let selectorSequence = 0;
   let selected = new Set();
   let pendingCancel = null;
@@ -122,7 +125,7 @@ import {
         const button = document.createElement('button');
         button.type = 'button'; button.textContent = label; button.disabled = disabled;
         button.className = 'botao-inscricao botao-inscricao-secundario';
-        button.addEventListener('click', () => { page = target; loadHistory(); });
+        button.addEventListener('click', busyHandler(() => { page = target; return loadHistory(); }));
         pagination.append(button);
       }
     }
@@ -132,6 +135,8 @@ import {
     if (!root) return;
     const currentRoot = root;
     const sequence = ++historySequence;
+    historyRequest?.abort();
+    historyRequest = new AbortController();
     setBusy(true);
     const filter = $('filtro-status-inscricoes')?.value || (activeFilter === 'ALL' ? '' : activeFilter);
     const query = historyParameters({
@@ -139,9 +144,18 @@ import {
       status: filter, eventId: $('filtro-evento-inscricoes')?.value ?? '',
     });
     try {
-      const payload = await api(`/registrations/me?${query}`);
+      const payload = await api(`/registrations/me?${query}`, { signal: historyRequest.signal });
       if (sequence !== historySequence || !currentRoot.isConnected) return;
       renderHistory(payload);
+      const menu = $('sugestoes-inscricoes');
+      if ($('busca-inscricoes').value.trim()) {
+        renderEventSuggestions(menu, history.map(registration => ({
+          title: registration.action?.event?.title,
+          label: registration.action?.title,
+          startDate: registration.action?.startDate,
+          registration,
+        })), item => { $('busca-inscricoes').focus(); showDetails(item.registration); }, 'Nenhuma inscrição encontrada.');
+      } else menu.hidden = true;
       if ($('mensagem-inscricoes')?.dataset.tipo !== 'sucesso') notify('');
     } catch (error) {
       if (sequence !== historySequence || !currentRoot.isConnected) return;
@@ -149,6 +163,7 @@ import {
       if (table) table.replaceChildren();
       const empty = $('estado-inscricoes');
       if (empty) { empty.hidden = false; empty.textContent = 'Não foi possível carregar suas inscrições.'; }
+      renderEventSuggestions($('sugestoes-inscricoes'), [], null, error.message);
       text('contagem-historico-inscricoes', 'Falha na consulta.');
       notify(error.message, 'erro');
     } finally {
@@ -160,9 +175,9 @@ import {
     const list = $('lista-detalhes-inscricao');
     if (!list) return;
     list.replaceChildren();
+    text('titulo-detalhes-inscricao', registration.action?.event?.title || 'Detalhes da inscrição');
     for (const [label, value] of [
-      ['Evento', registration.action?.event?.title],
-      ['Ação', registration.action?.title],
+      ['Atividade', registration.action?.title],
       ['Início', formatDate(registration.action?.startDate)],
       ['Fim', formatDate(registration.action?.endDate)],
       ['Local', registration.action?.location],
@@ -172,7 +187,9 @@ import {
     ]) {
       const term = document.createElement('dt'); term.textContent = label;
       const description = document.createElement('dd'); description.textContent = value || '—';
-      list.append(term, description);
+      const field = document.createElement('div');
+      field.append(term, description);
+      list.append(field);
     }
     $('dialog-detalhes-inscricao')?.showModal();
   }
@@ -181,12 +198,13 @@ import {
     if (!canCancelRegistration(registration)) return;
     pendingCancel = registration;
     text('mensagem-cancelamento-inscricao', '');
-    text('descricao-cancelar-inscricao', `Cancelar sua inscrição em "${registration.action?.title}"? A vaga será liberada.`);
+    text('descricao-cancelar-inscricao', `Você vai cancelar a participação em “${registration.action?.title}”, do evento “${registration.action?.event?.title}”. A vaga ficará disponível para outra pessoa.`);
     $('dialog-cancelar-inscricao')?.showModal();
   }
 
   async function submitCancellation(event) {
     event.preventDefault();
+    if (submitting) return;
     const action = event.submitter?.value;
     if (action !== 'confirm') { pendingCancel = null; $('dialog-cancelar-inscricao')?.close(); return; }
     if (!pendingCancel || submitting) return;
@@ -233,37 +251,17 @@ import {
     if (!actions.length) text('mensagem-seletor-acoes', 'Nenhuma ação ativa disponível neste evento.');
   }
 
-  async function loadEvents() {
-    const selector = $('seletor-evento-acoes');
-    if (!selector) return;
-    const sequence = ++selectorSequence;
-    actions = []; selected.clear(); renderActions();
-    selector.replaceChildren(new Option('Carregando eventos...', ''));
-    try {
-      const result = await api('/events?limit=100');
-      if (sequence !== selectorSequence || !selector.isConnected) return;
-      const events = Array.isArray(result) ? result : (result.data || []);
-      selector.replaceChildren(new Option('Selecione o evento', ''));
-      events.forEach((event) => selector.add(new Option(event.title || event.id, event.id)));
-      text('mensagem-seletor-acoes', events.length ? 'Escolha um evento e selecione as ações.' : 'Nenhum evento publicado disponível.');
-    } catch (error) {
-      if (sequence !== selectorSequence) return;
-      selector.replaceChildren(new Option('Eventos indisponíveis', ''));
-      text('mensagem-seletor-acoes', error.message);
-    }
-  }
-
   async function loadActions() {
     const eventId = $('seletor-evento-acoes')?.value;
     const sequence = ++selectorSequence;
     selected.clear(); actions = []; renderActions();
-    if (!eventId) return;
+    if (!eventId) { text('mensagem-seletor-acoes', 'Escolha um evento para ver as atividades.'); return; }
     text('mensagem-seletor-acoes', 'Carregando ações...');
     try {
       const result = await api(`/events/${encodeURIComponent(eventId)}/actions`);
       if (sequence !== selectorSequence || !root?.isConnected) return;
       const incoming = Array.isArray(result) ? result : (result.data || []);
-      actions = incoming.filter((action) => action.status === 'ATIVA');
+      actions = incoming.filter(action => action.status === 'ATIVA' && new Date(action.startDate).getTime() > Date.now());
       renderActions();
       if (actions.length) text('mensagem-seletor-acoes', '');
     } catch (error) {
@@ -280,7 +278,7 @@ import {
     if (button) button.disabled = true;
     let created = 0;
     const errors = [];
-    for (const id of selected) {
+    for (const id of [...selected]) {
       try { await api(`/registrations/actions/${encodeURIComponent(id)}`, { method: 'POST' }); created++; }
       catch (error) { errors.push(error.message); }
     }
@@ -308,15 +306,29 @@ import {
     root = document.querySelector('.modulo-inscricoes');
     if (!root) return;
     page = 1; activeFilter = 'ALL'; history = []; selected = new Set(); pendingCancel = null;
-    const query = () => { page = 1; loadHistory(); };
+    const searchInput = $('busca-inscricoes');
+    const historyMenu = $('sugestoes-inscricoes');
+    const eventInput = $('busca-evento-inscricao');
+    const eventId = $('seletor-evento-acoes');
+    const clearEvent = () => { eventId.value = ''; loadActions(); };
+    bindEventLookup(eventInput, $('sugestoes-seletor'), {
+      allowEmpty: true,
+      search: (title, signal) => api(`/events/registration/options?title=${encodeURIComponent(title)}`, { signal }),
+      select: event => { eventInput.value = event.title; eventId.value = event.id; loadActions(); },
+      clear: clearEvent,
+    });
+    bindEventSuggestionDismissal(searchInput, historyMenu);
+    let searchTimer;
+    const query = () => { clearTimeout(searchTimer); page = 1; return loadHistory(); };
     root.querySelectorAll('[data-inscricao-action="open-selector"]').forEach((button) => button.addEventListener('click', () => {
-      $('dialog-seletor-acoes')?.showModal(); loadEvents();
+      eventInput.value = ''; clearEvent();
+      $('dialog-seletor-acoes').showModal(); eventInput.focus();
     }));
     root.querySelectorAll('[data-inscricao-action="close-selector"]').forEach((button) => button.addEventListener('click', () => $('dialog-seletor-acoes')?.close()));
     root.querySelectorAll('[data-inscricao-action="close-details"]').forEach((button) => button.addEventListener('click', () => $('dialog-detalhes-inscricao')?.close()));
     root.querySelectorAll('[data-inscricao-action="export"]').forEach((button) => button.addEventListener('click', exportPage));
-    root.querySelectorAll('[data-inscricao-action="refresh"]').forEach((button) => button.addEventListener('click', loadHistory));
-    root.querySelectorAll('[data-inscricao-filter]').forEach((button) => button.addEventListener('click', () => {
+    root.querySelectorAll('[data-inscricao-action="refresh"]').forEach((button) => button.addEventListener('click', busyHandler(loadHistory)));
+    root.querySelectorAll('[data-inscricao-filter]').forEach((button) => button.addEventListener('click', busyHandler(() => {
       if (button.hidden) return;
       root.querySelectorAll('[data-inscricao-filter]').forEach((other) => {
         other.classList.toggle('ativa', other === button);
@@ -324,12 +336,16 @@ import {
       });
       activeFilter = button.dataset.inscricaoFilter;
       const select = $('filtro-status-inscricoes'); if (select) select.value = activeFilter === 'ALL' ? '' : activeFilter;
-      query();
-    }));
-    let searchTimer = null;
+      return query();
+    })));
     $('filtros-inscricoes')?.addEventListener('submit', (event) => { event.preventDefault(); query(); });
     $('busca-inscricoes')?.addEventListener('input', () => {
       clearTimeout(searchTimer);
+      ++historySequence;
+      historyRequest?.abort();
+      delete historyMenu.dataset.dismissed;
+      if (searchInput.value.trim()) renderEventSuggestions(historyMenu, [], null, 'Pesquisando inscrições…');
+      else historyMenu.hidden = true;
       searchTimer = setTimeout(query, 300);
     });
     $('filtro-evento-inscricoes')?.addEventListener('change', query);
@@ -341,9 +357,10 @@ import {
       });
       query();
     });
-    $('seletor-evento-acoes')?.addEventListener('change', loadActions);
-    $('form-seletor-acoes')?.addEventListener('submit', submitRegistration);
-    $('form-confirmar-cancelamento')?.addEventListener('submit', submitCancellation);
+
+    $('form-seletor-acoes')?.addEventListener('submit', busyHandler(submitRegistration));
+    $('dialog-cancelar-inscricao').addEventListener('cancel', event => { if (submitting) event.preventDefault(); });
+    $('form-confirmar-cancelamento')?.addEventListener('submit', busyHandler(submitCancellation));
     await loadHistory();
   };
 })();

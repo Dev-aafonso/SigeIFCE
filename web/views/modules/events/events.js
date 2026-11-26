@@ -1,8 +1,9 @@
+import { busyHandler, withButtonBusy } from '../../../shared/core/button-busy.mjs';
 import {
   buildActionPayload,
   buildEventPayload,
 } from "../../../shared/core/event-validation.mjs";
-import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../shared/core/event-suggestions.mjs";
+import { renderEventSuggestions, bindEventLookup, bindEventSuggestionDismissal } from "../../../shared/core/event-suggestions.mjs";
 
 (() => {
   const PAGE_SIZE = 20;
@@ -38,6 +39,8 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
   let currentPage = 1;
   let currentManagerEvent = null;
   let searchSequence = 0;
+  let publicRequest;
+  let draftSequence = 0;
   let searchDebounceTimer = null;
   let currentPublicEvents = [];
   let currentPublicMeta = null;
@@ -70,69 +73,6 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
 
   function canManage() {
     return ["ADMIN", "ORGANIZADOR", "PROFESSOR"].includes(currentRole);
-  }
-
-  function managerStorageKey() {
-    const user = currentUser();
-    const identity = user.id || user.email || "unknown";
-    return `sige_managed_events_${identity}`;
-  }
-
-  function getSavedEvents() {
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(managerStorageKey()) || "[]",
-      );
-      return Array.isArray(saved)
-        ? saved.filter(
-            (event) =>
-              event &&
-              typeof event.id === "string" &&
-              typeof event.title === "string",
-          )
-        : [];
-    } catch (error) {
-      console.error(
-        "Não foi possível ler os eventos salvos neste navegador.",
-        error,
-      );
-      return [];
-    }
-  }
-
-  function saveManagedEvent(event) {
-    if (!event?.id) return;
-    const saved = getSavedEvents().filter((item) => item.id !== event.id);
-    saved.unshift({ id: event.id, title: event.title || event.id });
-    try {
-      localStorage.setItem(
-        managerStorageKey(),
-        JSON.stringify(saved.slice(0, 30)),
-      );
-    } catch (error) {
-      console.error("Não foi possível salvar o evento neste navegador.", error);
-    }
-    renderSavedEvents();
-  }
-
-  function renderSavedEvents() {
-    const select = byId("eventos-recentes");
-    if (!select) return;
-    const selected = select.value;
-    select.replaceChildren();
-    const placeholder = document.createElement("option");
-    placeholder.value = "";
-    placeholder.textContent = "Selecione um evento salvo";
-    select.append(placeholder);
-
-    getSavedEvents().forEach((event) => {
-      const option = document.createElement("option");
-      option.value = event.id;
-      option.textContent = event.title;
-      select.append(option);
-    });
-    if (getSavedEvents().some((event) => event.id === selected))
-      select.value = selected;
   }
 
   function escapeHtml(value) {
@@ -1034,7 +974,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
     stats.className = "estatisticas-evento";
     stats.setAttribute("aria-label", "Resumo da programação");
     const actionStat = document.createElement("li");
-    const actionCount = Array.isArray(event.actions) ? event.actions.length : 0;
+    const actionCount = event._count?.actions ?? event.actions?.length ?? 0;
     const actionIcon = document.createElement("span");
     actionIcon.className = "icone-estatistica-evento";
     actionIcon.setAttribute("aria-hidden", "true");
@@ -1147,6 +1087,8 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
     const form = byId("filtros-eventos");
     if (!list || !pagination || !form) return;
 
+    publicRequest?.abort();
+    publicRequest = new AbortController();
     currentPage = page;
     const sequence = ++searchSequence;
     setPublicLoading("Buscando eventos...");
@@ -1184,7 +1126,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
     try {
       const listApi = ["ORGANIZADOR", "PROFESSOR"].includes(currentRole)
         ? `${EVENTS_API}/organizer/list` : EVENTS_API;
-      const result = await api(`${listApi}?${query.toString()}`);
+      const result = await api(`${listApi}?${query.toString()}`, { signal: publicRequest.signal });
       if (sequence !== searchSequence) return;
       if (!result || !Array.isArray(result.data) || !result.meta) {
         throw new Error(
@@ -1221,6 +1163,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       currentPublicEvents = [];
       currentPublicMeta = null;
       updatePublicResults();
+      if (title) renderEventSuggestions(byId("sugestoes-busca-eventos"), [], null, error.message);
       setPublicLoading(error.message);
       list.setAttribute("aria-busy", "false");
       showMessage(error.message, "erro");
@@ -1294,7 +1237,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
 
   function renderManagedEvent(event) {
     currentManagerEvent = event;
-    saveManagedEvent(event);
+
     const panel = byId("painel-gerenciamento-evento");
     if (!panel) return;
     releaseCoverPreview(panel);
@@ -1470,7 +1413,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       let coverError = "";
       try { await uploadEventCover(event.id, selectedCover); }
       catch (error) { coverError = ` A capa não foi salva: ${error.message}. Você pode reenviá-la na edição do evento.`; }
-      saveManagedEvent(event);
+
       void loadDraftCards();
       byId("dialog-criar-evento").close();
       const opened = await openManagedEvent(event.id);
@@ -1595,20 +1538,22 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
     }
   }
 
-  async function transition(path, label) {
+  async function transition(path, label, button) {
     if (!currentManagerEvent) return;
-    try {
-      await api(path, { method: "POST" });
-      const updated = await api(
-        `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}/manage`,
-      );
-      renderManagedEvent(updated);
-      void loadDraftCards();
-      void loadPublicEvents(currentPage);
-      showMessage(label, "sucesso");
-    } catch (error) {
-      showMessage(error.message, "erro");
-    }
+    return withButtonBusy(button, async () => {
+      try {
+        await api(path, { method: "POST" });
+        const updated = await api(
+          `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}/manage`,
+        );
+        renderManagedEvent(updated);
+        void loadDraftCards();
+        void loadPublicEvents(currentPage);
+        showMessage(label, "sucesso");
+      } catch (error) {
+        showMessage(error.message, "erro");
+      }
+    });
   }
 
   async function registerForAction(actionId, button) {
@@ -1668,25 +1613,29 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
     const list = byId("lista-rascunhos-eventos");
     const state = byId("estado-rascunhos-eventos");
     if (!section || !list || !state || !canManage()) return;
+    const sequence = ++draftSequence;
     section.hidden = false;
     state.textContent = "Carregando rascunhos...";
     list.replaceChildren();
     try {
-      const filters = await api("/dashboard/filters");
-      const drafts = (Array.isArray(filters.events) ? filters.events : []).filter(item => item.status === "RASCUNHO");
-      const results = await Promise.allSettled(drafts.map(item => api(`${EVENTS_API}/${encodeURIComponent(item.id)}/manage`)));
-      if (!section.isConnected) return;
-      let failed = 0;
-      results.forEach((result, index) => {
-        if (result.status !== "fulfilled") { failed++; return; }
-        const card = renderPublicEvent(result.value, index);
+      const drafts = await api(`${EVENTS_API}/manageable/drafts`);
+      if (!section.isConnected || sequence !== draftSequence) return;
+      const recent = byId("eventos-recentes");
+      const previous = recent.value;
+      recent.replaceChildren(new Option("Selecione um rascunho", ""), ...drafts.map(event => new Option(event.title, event.id)));
+      if (drafts.some(event => event.id === previous)) recent.value = previous;
+      list.replaceChildren(...drafts.map((draft, index) => {
+        const card = renderPublicEvent(draft, index);
         const button = card.querySelector("[data-event-action='open-event-details']");
-        if (button) { button.dataset.eventAction = "open-draft-management"; button.textContent = "Gerenciar evento"; button.removeAttribute("aria-controls"); button.removeAttribute("aria-haspopup"); button.setAttribute("aria-label", `Gerenciar ${result.value.title || "evento"}`); }
-        list.append(card);
-      });
-      state.textContent = failed ? `${failed} rascunho(s) não puderam ser carregados. Atualize para tentar novamente.` : drafts.length ? `${drafts.length} rascunho(s). Os eventos publicados aparecem abaixo.` : "Nenhum evento em rascunho.";
-      if (filters.events?.length >= (filters.limits?.events || 250)) state.textContent += " A lista pode estar limitada aos eventos mais recentes.";
-    } catch (error) { if (section.isConnected) state.textContent = `Não foi possível carregar os rascunhos: ${error.message}`; }
+        button.dataset.eventAction = "open-draft-management";
+        button.textContent = "Gerenciar evento";
+        button.removeAttribute("aria-controls");
+        button.removeAttribute("aria-haspopup");
+        button.setAttribute("aria-label", `Gerenciar ${draft.title}`);
+        return card;
+      }));
+      state.textContent = drafts.length ? `${drafts.length} rascunho(s).` : "Nenhum evento em rascunho.";
+    } catch (error) { if (section.isConnected && sequence === draftSequence) state.textContent = `Não foi possível carregar os rascunhos: ${error.message}`; }
   }
 
   function onEventsClick(event) {
@@ -1695,7 +1644,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
     const action = button.dataset.eventAction;
     const value = button.dataset.value;
     if (action === "open-draft-management") {
-      openManagedEvent(value).then(opened => { if (opened) byId("secao-gerenciamento-eventos")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      withButtonBusy(button, () => openManagedEvent(value)).then(opened => { if (opened) byId("secao-gerenciamento-eventos")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
       return;
     }
     if (action === "open-event-details") {
@@ -1728,7 +1677,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       ) {
         transition(
           `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}/publish`,
-          "Evento publicado.",
+          "Evento publicado.", button,
         );
       }
     }
@@ -1740,7 +1689,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       ) {
         transition(
           `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}/cancel`,
-          "Evento cancelado.",
+          "Evento cancelado.", button,
         );
       }
     }
@@ -1748,7 +1697,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       if (window.confirm("Encerrar este evento?")) {
         transition(
           `${EVENTS_API}/${encodeURIComponent(currentManagerEvent.id)}/close`,
-          "Evento encerrado.",
+          "Evento encerrado.", button,
         );
       }
     }
@@ -1774,15 +1723,15 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
           action === "cancel-action" ? "Ação cancelada." : "Ação encerrada.";
         transition(
           `${ACTIONS_API}/${encodeURIComponent(value)}/${transitionName}`,
-          done,
+          done, button,
         );
       }
     }
     if (action === "register-action") {
-      registerForAction(value, button);
+      withButtonBusy(button, () => registerForAction(value, button));
     }
     if (action === "previous-page" || action === "next-page") {
-      loadPublicEvents(currentPage + (action === "next-page" ? 1 : -1));
+      withButtonBusy(button, () => loadPublicEvents(currentPage + (action === "next-page" ? 1 : -1)));
     }
   }
 
@@ -1798,21 +1747,28 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       .toUpperCase();
     byId("novo-evento").hidden = !canManage();
     byId("secao-gerenciamento-eventos").hidden = !canManage();
-    renderSavedEvents();
     if (canManage()) {
       loadDraftCards();
       byId("lista-rascunhos-eventos")?.addEventListener("click", onEventsClick);
-      byId("atualizar-rascunhos-eventos")?.addEventListener("click", loadDraftCards);
+      byId("atualizar-rascunhos-eventos")?.addEventListener("click", busyHandler(loadDraftCards));
     }
 
+    const managedInput = byId("identificador-evento");
+    const managedMenu = byId("sugestoes-gerenciamento");
+    let selectedId = "";
+    bindEventLookup(managedInput, managedMenu, {
+      search: (title, signal) => api(`${EVENTS_API}/manageable/search?title=${encodeURIComponent(title)}`, { signal }),
+      select: event => { selectedId = event.id; managedInput.value = event.title; managedInput.focus(); },
+      clear: () => { selectedId = ""; },
+    });
     byId("eventos-recentes")?.addEventListener("change", (event) => {
-      if (event.target.value)
-        byId("identificador-evento").value = event.target.value;
+      selectedId = event.target.value;
+      managedInput.value = selectedId;
     });
-    byId("abrir-evento-form")?.addEventListener("submit", (event) => {
+    byId("abrir-evento-form")?.addEventListener("submit", busyHandler((event) => {
       event.preventDefault();
-      openManagedEvent(byId("identificador-evento").value);
-    });
+      return openManagedEvent(selectedId || managedInput.value);
+    }));
     byId("novo-evento")?.addEventListener("click", () => {
       resetCreateWizard();
       byId("dialog-criar-evento")?.showModal();
@@ -1835,24 +1791,29 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       ?.addEventListener("change", () =>
         updateCoverPreview(byId("form-criar-evento")),
       );
-    byId("form-criar-evento")?.addEventListener("submit", (event) => {
+    byId("form-criar-evento")?.addEventListener("submit", busyHandler((event) => {
       event.preventDefault();
       if (createWizardStep !== 3) {
         if (validateDraftStep(createWizardStep))
           showCreateWizardStep(createWizardStep + 1);
         return;
       }
-      if (validateDraftStep(3)) createEvent(event.currentTarget);
-    });
+      if (validateDraftStep(3)) return createEvent(event.currentTarget);
+    }));
     byId("filtros-eventos")?.addEventListener("submit", (event) => {
       event.preventDefault();
       showMessage("");
-      loadPublicEvents(1);
+      return loadPublicEvents(1);
     });
     byId("busca-eventos")?.addEventListener("input", () => {
       window.clearTimeout(searchDebounceTimer);
       ++searchSequence;
-      byId("sugestoes-busca-eventos").hidden = true;
+      publicRequest?.abort();
+      const input = byId("busca-eventos");
+      const menu = byId("sugestoes-busca-eventos");
+      delete menu.dataset.dismissed;
+      if (input.value.trim()) renderEventSuggestions(menu, [], null, "Pesquisando eventos…");
+      else menu.hidden = true;
       searchDebounceTimer = window.setTimeout(() => loadPublicEvents(1), 300);
     });
     bindEventSuggestionDismissal(byId("busca-eventos"), byId("sugestoes-busca-eventos"));
@@ -1869,13 +1830,13 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       .forEach((input) =>
         input.addEventListener("change", () => loadPublicEvents(1)),
       );
-    byId("limpar-filtros-eventos")?.addEventListener("click", () => {
+    byId("limpar-filtros-eventos")?.addEventListener("click", busyHandler(() => {
       window.clearTimeout(searchDebounceTimer);
       byId("filtros-eventos")?.reset();
       byId("sugestoes-busca-eventos").hidden = true;
       showMessage("");
-      loadPublicEvents(1);
-    });
+      return loadPublicEvents(1);
+    }));
     byId("lista-eventos-publicos")?.addEventListener("click", onEventsClick);
     byId("paginacao-eventos")?.addEventListener("click", onEventsClick);
     byId("painel-gerenciamento-evento")?.addEventListener(
@@ -1891,12 +1852,12 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from "../../../s
       const form = event.target;
       if (!(form instanceof HTMLFormElement)) return;
       event.preventDefault();
-      if (form.dataset.formType === "edit-event") saveEventChanges(form);
+      if (form.dataset.formType === "edit-event") return withButtonBusy(event.submitter, () => saveEventChanges(form));
       if (
         form.dataset.formType === "edit-action" ||
         form.dataset.formType === "create-action"
       )
-        saveAction(form);
+        withButtonBusy(event.submitter, () => saveAction(form));
     });
     loadPublicEvents(1);
   }

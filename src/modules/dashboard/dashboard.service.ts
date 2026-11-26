@@ -1,3 +1,4 @@
+import { manageableEvents } from '../events/event-visibility';
 import {
   BadRequestException,
   ForbiddenException,
@@ -59,11 +60,7 @@ export class DashboardService {
   ): Prisma.EventWhereInput {
     this.assertPrincipal(principal);
     const { from, to } = this.bounds(query);
-    const where: Prisma.EventWhereInput = {};
-
-    if (principal.role !== UserRole.ADMIN) {
-      where.organizerId = principal.id;
-    }
+    const where = manageableEvents(principal.id, principal.role);
     if (includeSelectedEvent && query.eventId) {
       where.id = query.eventId;
     }

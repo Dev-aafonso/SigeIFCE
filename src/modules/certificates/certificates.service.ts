@@ -1,3 +1,4 @@
+import { assertDraftOwner } from '../events/event-visibility';
 import {
   BadRequestException,
   ForbiddenException,
@@ -121,6 +122,7 @@ export class CertificatesService {
       select: { id: true, title: true, status: true, minAttendancePercent: true, endDate: true, organizerId: true },
     });
     if (!event) throw new NotFoundException('Evento não encontrado.');
+    assertDraftOwner(event, requester.id);
     const userId = targetUserId || requester.id;
     if (userId !== requester.id && requester.role !== UserRole.ADMIN &&
         !((requester.role === UserRole.ORGANIZADOR || requester.role === UserRole.PROFESSOR) && event.organizerId === requester.id)) {
@@ -260,6 +262,7 @@ export class CertificatesService {
       select: { id: true, title: true, status: true, organizerId: true, minAttendancePercent: true },
     });
     if (!event) throw new NotFoundException('Evento não encontrado.');
+    assertDraftOwner(event, requester.id);
     const manager = requester.role === UserRole.ADMIN ||
       ((requester.role === UserRole.ORGANIZADOR || requester.role === UserRole.PROFESSOR) && event.organizerId === requester.id);
     if (!requester.id || !manager) throw new ForbiddenException('Sem permissão para consultar participantes do evento.');
