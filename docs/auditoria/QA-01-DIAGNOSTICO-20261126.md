@@ -1,10 +1,10 @@
 # SIGE IFCE — QA-01: diagnóstico de qualidade
 
-**Data:** 26/11/2026 (Fortaleza)  
-**Versão-alvo:** 1.0.0  
-**Referência local auditada:** `641fa67` (`feature/eventos-inscricoes-professor`)  
-**Referência implantada observada:** `bb773df` (`main`, Render)  
-**Status:** diagnóstico parcial consolidado; homologação complementar pendente.
+- **Data:** 26/11/2026 (Fortaleza)
+- **Versão-alvo:** 1.0.0
+- **Referência local auditada:** `641fa67` (`feature/eventos-inscricoes-professor`)
+- **Referência implantada observada:** `bb773df` (`main`, Render)
+- **Status:** diagnóstico parcial consolidado; homologação complementar pendente.
 
 ## 1. Escopo e restrições
 
