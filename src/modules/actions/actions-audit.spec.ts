@@ -16,7 +16,7 @@ describe('Auditoria ERS: capacidade de acoes', () => {
   const tx = {
     $queryRaw: jest.fn(),
     action: { findUnique: jest.fn(), update: jest.fn() },
-    registration: { count: jest.fn() },
+    registration: { count: jest.fn(), findFirst: jest.fn() },
   };
   const db = {
     action: { findUnique: jest.fn(), update: jest.fn() },
@@ -34,6 +34,7 @@ describe('Auditoria ERS: capacidade de acoes', () => {
       status: ActionStatus.ATIVA, event,
     } as never);
     tx.registration.count.mockResolvedValue(6 as never);
+    tx.registration.findFirst.mockResolvedValue(null as never);
     tx.action.update.mockResolvedValue({ id: 'action-1', capacity: 6 } as never);
     db.$transaction.mockImplementation((async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)) as never);
   });
@@ -58,5 +59,12 @@ describe('Auditoria ERS: capacidade de acoes', () => {
     await expect(service.close('action-1', manager))
       .rejects.toBeInstanceOf(ConflictException);
     expect(db.action.update).not.toHaveBeenCalled();
+  });
+
+  it('impede remarcar uma ação quando o novo horário conflita com inscrições existentes', async () => {
+    tx.registration.findFirst.mockResolvedValue({ id: 'reg-1' } as never);
+    const service = new ActionsService(db as never);
+    await expect(service.update('action-1', { startDate: '2099-01-01T10:00:00Z', endDate: '2099-01-01T11:00:00Z' }, manager)).rejects.toThrow('novo horário conflita');
+    expect(tx.action.update).not.toHaveBeenCalled();
   });
 });

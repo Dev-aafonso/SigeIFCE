@@ -7,9 +7,9 @@ describe('NotificationsService', () => {
   const now = new Date('2026-11-10T10:00:00Z');
   function setup() {
     const db = {
-      registration: { findMany: jest.fn<any>().mockResolvedValue([{ id: 'r1', createdAt: now, cancelledAt: null, action: { title: 'Oficina', event: { title: 'Semana' } } }]) },
-      certificate: { findMany: jest.fn<any>().mockResolvedValue([{ id: 'c1', issuedAt: now, event: { title: 'Semana' } }]) },
-      notificationRead: { findMany: jest.fn<any>().mockResolvedValue([{ key: 'certificate:c1' }]), upsert: jest.fn<any>().mockResolvedValue({}) },
+      registration: { findMany: jest.fn(async () => [{ id: 'r1', createdAt: now, cancelledAt: null, action: { title: 'Oficina', event: { title: 'Semana' } } }]) },
+      certificate: { findMany: jest.fn(async () => [{ id: 'c1', issuedAt: now, event: { title: 'Semana' } }]) },
+      notificationRead: { findMany: jest.fn(async () => [{ key: 'certificate:c1' }]), upsert: jest.fn(async () => ({})) },
     };
     return { db, service: new NotificationsService(db as unknown as PrismaService) };
   }
