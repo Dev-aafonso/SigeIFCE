@@ -206,6 +206,27 @@ export class RegistrationsService {
               );
             }
 
+            // Half-open intervals: an action ending exactly when another starts
+            // is compatible. Serializable isolation also covers concurrent
+            // registrations for different actions/events by the same user.
+            const overlapping = await tx.registration.findFirst({
+              where: {
+                userId,
+                status: RegistrationStatus.ACTIVE,
+                actionId: { not: actionId },
+                action: {
+                  status: { not: ActionStatus.CANCELADA },
+                  event: { status: { not: EventStatus.CANCELADO } },
+                  startDate: { lt: action.endDate },
+                  endDate: { gt: action.startDate },
+                },
+              },
+              select: { id: true },
+            });
+            if (overlapping) {
+              throw new ConflictException('Você já possui uma inscrição em outra ação com horário conflitante.');
+            }
+
             const activeRegistrations = await tx.registration.count({
               where: {
                 actionId,

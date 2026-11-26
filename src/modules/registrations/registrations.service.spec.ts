@@ -37,6 +37,7 @@ type FakeTx = {
     findUnique: (...args: unknown[]) => Promise<FakeAction | null>;
   };
   registration: {
+    findFirst: (...args: unknown[]) => Promise<{ id: string } | null>;
     findUnique: (
       ...args: unknown[]
     ) => Promise<
@@ -123,6 +124,7 @@ describe('RegistrationsService', () => {
       },
 
       registration: {
+        findFirst: async () => null,
         findUnique: async (
           ..._args: unknown[]
         ): Promise<
@@ -294,6 +296,15 @@ describe('RegistrationsService', () => {
       'N\u00e3o h\u00e1 vagas dispon\u00edveis para esta a\u00e7\u00e3o.',
     );
 
+    expect(createCalls).toBe(0);
+  });
+
+  it('rejeita a inscrição quando outra ação ativa possui horário sobreposto', async () => {
+    tx.registration.findFirst = async (...args) => {
+      expect(args[0]).toMatchObject({ where: { userId: 'user-1', status: RegistrationStatus.ACTIVE, actionId: { not: 'action-1' }, action: { startDate: { lt: action.endDate }, endDate: { gt: action.startDate } } } });
+      return { id: 'overlapping-registration' };
+    };
+    await expect(service.createForAction('user-1', 'action-1')).rejects.toThrow('horário conflitante');
     expect(createCalls).toBe(0);
   });
 

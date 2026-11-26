@@ -410,7 +410,8 @@ export class ActionsService {
       },
     } as const;
 
-    if (dto.capacity === undefined) {
+    const scheduleChanged = dto.startDate !== undefined || dto.endDate !== undefined;
+    if (dto.capacity === undefined && !scheduleChanged) {
       return this.prisma.action.update(query);
     }
 
@@ -456,6 +457,26 @@ export class ActionsService {
             throw new ConflictException(
               'Capacidade menor que a quantidade de inscricoes ativas.',
             );
+          }
+          if (scheduleChanged && active > 0) {
+            const conflict = await tx.registration.findFirst({
+              where: {
+                actionId: id,
+                status: RegistrationStatus.ACTIVE,
+                user: { registrations: { some: {
+                  actionId: { not: id },
+                  status: RegistrationStatus.ACTIVE,
+                  action: {
+                    status: { not: ActionStatus.CANCELADA },
+                    event: { status: { not: EventStatus.CANCELADO } },
+                    startDate: { lt: end },
+                    endDate: { gt: start },
+                  },
+                } } },
+              },
+              select: { id: true },
+            });
+            if (conflict) throw new ConflictException('O novo horário conflita com outra inscrição de um participante.');
           }
           return tx.action.update(query);
         }, {

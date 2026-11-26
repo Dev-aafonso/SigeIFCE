@@ -13,7 +13,7 @@ describe('cadastro de perfis', () => {
   const base = {name:'Pessoa teste',email:'teste@example.test',password:'Senha123!',passwordConfirmation:'Senha123!'};
   afterEach(() => { if (original === undefined) delete process.env.SIGE_MANAGER_CODE; else process.env.SIGE_MANAGER_CODE = original; });
   function create() {
-    const prisma = { user: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn(async ({data}: any) => ({...data,id:'u1',sessionVersion:0})) } };
+    const prisma = { user: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn(async ({data}: { data: Record<string, unknown> }) => ({...data,id:'u1',sessionVersion:0})) } };
     const service = new AuthService(prisma as never, {signAsync: jest.fn().mockResolvedValue('token')} as never);
     return {prisma,service};
   }

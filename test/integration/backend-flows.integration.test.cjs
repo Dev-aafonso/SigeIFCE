@@ -612,4 +612,31 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
       expectStatus(response, 403, `Organizador sem permissão: ${method.toUpperCase()} ${route}`);
     }
   });
+
+  await t.test('QA-03/04: última vaga concorrente, sobreposição e horários adjacentes', async () => {
+    const organizer = agent();
+    expectStatus(await organizer.post('/auth/login').send({ email: organizerEmail, password: organizerPassword }), [200, 201], 'Login QA');
+    const participants = [agent(), agent()];
+    for (let i = 0; i < participants.length; i++) {
+      expectStatus(await participants[i].post('/auth/register').send(newStudentPayload(200 + i)), [200, 201], 'Cadastro QA');
+    }
+    const minute = Math.ceil(Date.now() / 60000) * 60000;
+    const at = hours => new Date(minute + hours * 3600000).toISOString();
+    const event = await organizer.post('/events').send({ title: `QA integridade ${runId}`, description: 'Evento isolado para validar vagas e horários.', startDate: at(49), endDate: at(58), location: 'Laboratório local', category: 'Oficina', workloadMinutes: 180, registrationStartDate: at(-1), registrationEndDate: at(48), totalCapacity: 10 });
+    expectStatus(event, [200, 201], 'Evento QA');
+    const actions = [];
+    for (const [title, start, end] of [['Última vaga', 50, 51], ['Horário simultâneo', 50, 51], ['Horário adjacente', 51, 52]]) {
+      const action = await organizer.post(`/events/${event.body.id}/actions`).send({ title, description: 'Atividade de teste isolada.', startDate: at(start), endDate: at(end), durationMinutes: 60, capacity: 1 });
+      expectStatus(action, [200, 201], 'Ação QA'); actions.push(action.body.id);
+    }
+    expectStatus(await organizer.post(`/events/${event.body.id}/publish`), [200, 201], 'Publicação QA');
+    const responses = await Promise.all(participants.map(client => client.post(`/registrations/actions/${actions[0]}`).send({})));
+    const winner = responses.findIndex(response => [200, 201].includes(response.status));
+    assert.ok(winner >= 0); assert.equal(responses.filter(response => [200, 201].includes(response.status)).length, 1);
+    expectStatus(responses[1 - winner], 409, 'Última vaga ocupada');
+    expectStatus(await participants[winner].post(`/registrations/actions/${actions[1]}`).send({}), 409, 'Horário sobreposto');
+    expectStatus(await participants[winner].post(`/registrations/actions/${actions[2]}`).send({}), [200, 201], 'Horário adjacente');
+    const count = await db.query('SELECT COUNT(*)::int AS total FROM "Registration" WHERE "actionId" = $1 AND status = $2', [actions[0], 'ACTIVE']);
+    assert.equal(count.rows[0].total, 1);
+  });
 });
