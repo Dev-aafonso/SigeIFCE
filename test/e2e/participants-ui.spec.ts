@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test';
 
 test('lista de chamada carrega participantes, filtra e registra presença com confirmação', async ({ page }) => {
   let presenceAdded = false;
+  await page.route('**/auth/me', route => route.fulfill({ json: { id: 'organizer-1', role: 'ORGANIZADOR' } }));
+  await page.route('**/events/manageable/search?*', route => route.fulfill({ json: [{ id: 'event-demo', title: 'Evento IFCE' }] }));
   await page.route('**/events/event-demo/manage', (route) => route.fulfill({
     contentType: 'application/json',
     body: JSON.stringify({ id: 'event-demo', title: 'Evento IFCE', actions: [{ id: 'action-demo', title: 'Oficina de Testes' }] }),
@@ -18,7 +20,7 @@ test('lista de chamada carrega participantes, filtra e registra presença com co
   });
   await page.goto('/#/participants');
   await expect(page.getByTestId('attendance-module')).toBeVisible();
-  await page.getByTestId('attendance-event-id').fill('event-demo');
+  await page.getByTestId('attendance-event-id').fill('Evento IFCE');
   await page.getByTestId('load-attendance-event').click();
   await expect(page.locator('#lista-participantes tr')).toHaveCount(1);
   await expect(page.locator('#lista-participantes')).toContainText('<script>alert(1)</script>');

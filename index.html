@@ -6,24 +6,44 @@
     <meta name="color-scheme" content="light dark">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta name="referrer" content="no-referrer">
-    <link rel="icon" href="./web/shared/assets/images/favicon.svg" type="image/x-icon">
-    <title>SIGE - Sistema de Gerenciamento de Eventos</title>
+    <link rel="icon" href="/web/shared/assets/images/favicon.svg" type="image/svg+xml">
+    <title>SIGE IFCE | Sistema de Gerenciamento de Eventos Científicos</title>
+    <meta name="description" content="Conheça o SIGE IFCE: encontre eventos científicos, inscreva-se em atividades e acompanhe suas participações e certificados digitais.">
+    <link rel="canonical" href="https://sigeifce.onrender.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="SIGE IFCE">
+    <meta property="og:title" content="SIGE IFCE — Eventos científicos">
+    <meta property="og:description" content="Descubra eventos científicos do IFCE, inscreva-se em atividades e acompanhe suas participações e certificados digitais.">
+    <meta property="og:url" content="https://sigeifce.onrender.com/">
+    <meta property="og:image" content="https://sigeifce.onrender.com/assets/sige-social-preview.png">
+    <meta property="og:image:secure_url" content="https://sigeifce.onrender.com/assets/sige-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="SIGE IFCE — Sistema de Gerenciamento de Eventos Científicos do IFCE">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SIGE IFCE — Eventos científicos">
+    <meta name="twitter:description" content="Encontre eventos, realize inscrições e acompanhe seus certificados digitais no SIGE IFCE.">
+    <meta name="twitter:image" content="https://sigeifce.onrender.com/assets/sige-social-preview.png">
+    <meta name="twitter:image:alt" content="Identidade visual do SIGE IFCE">
 
     <meta name="theme-color" content="#ffffff">
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="/manifest.json">
 
-    <link rel="stylesheet" href="./web/shared/styles/global.css">
-    <link rel="stylesheet" href="./web/shared/styles/layout.css">
-    <link rel="stylesheet" href="./web/shared/styles/modules.css">
-    <link rel="stylesheet" href="./web/shared/account/account.css">
-    <link rel="stylesheet" href="./web/shared/styles/ui-refresh.css">
+    <link rel="stylesheet" href="/web/shared/styles/global.css">
+    <link rel="stylesheet" href="/web/shared/styles/layout.css">
+    <link rel="stylesheet" href="/web/shared/styles/modules.css">
+    <link rel="stylesheet" href="/web/shared/account/account.css">
+    <link rel="stylesheet" href="/web/shared/styles/ui-refresh.css">
 
-    <script src="./web/vendor/htmx.min.js" defer></script>
-    <script src="./web/shared/core/router.js" type="module" defer></script>
-    <script src="./web/shared/core/main.js" type="module" defer></script>
-    <script src="./web/shared/account/account.js" type="module" defer></script>
+    <script src="/web/vendor/htmx.min.js" defer></script>
+    <script src="/web/shared/core/router.js" type="module" defer></script>
+    <script src="/web/shared/core/main.js" type="module" defer></script>
+    <script src="/web/shared/account/account.js" type="module" defer></script>
 </head>
 <body>
+    <a class="sige-skip-link" href="#area-conteudo">Ir para o conteúdo principal</a>
     <noscript>
         <div class="alerta-noscript">
             <h2>JavaScript Desativado</h2>
@@ -34,7 +54,7 @@
     <div class="container">
         <header class="cabecalho-topo">
             <div class="cabecalho-esquerda">
-                <button id="alternador-barra-lateral" class="botao-icone" aria-label="Alternar menu lateral" title="Ocultar/Exibir menu">
+                <button id="alternador-barra-lateral" class="botao-icone" aria-label="Alternar menu lateral" aria-controls="barra-lateral" aria-expanded="false" title="Ocultar/Exibir menu">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -56,7 +76,7 @@
             </div>
 
             <button id="botao-notificacoes" class="botao-icone" aria-controls="popover-notificacoes" aria-expanded="false" aria-label="Notificações">
-                <img src="./web/shared/assets/icons/main-icons/sino.png" width="24" height="24" alt="Sino de notificações">
+                <img src="/web/shared/assets/icons/main-icons/sino.png" width="24" height="24" alt="">
             </button>
         </header>
 
@@ -120,12 +140,12 @@
             </aside>
 
             <div class="envoltorio-principal">
-                <main id="area-conteudo" class="conteudo-principal"></main>
+                <main id="area-conteudo" class="conteudo-principal" tabindex="-1"></main>
             </div>
         </div>
     </div>
 
-    <dialog id="modal-perfil" class="modal-perfil">
+    <dialog id="modal-perfil" class="modal-perfil" aria-label="Perfil do usuário">
         <header class="cabecalho-modal">
             <h3>Perfil do Usuário</h3>
             <button commandfor="modal-perfil" command="close" class="botao-fechar" aria-label="Fechar modal">&times;</button>

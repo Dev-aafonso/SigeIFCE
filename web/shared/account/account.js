@@ -358,7 +358,7 @@ function initializeAccount() {
             console.error("Não foi possível limpar os dados locais da sessão.", error);
           }
           if (dialog.open) dialog.close();
-          window.location.replace("/#/auth/login");
+          window.location.replace("/entrar");
         })
         .catch(() => {
           button.disabled = false;

@@ -27,8 +27,13 @@ export function renderEventSuggestions(container, events, onSelect, emptyText = 
     button.append(title);
     if (detail.textContent) button.append(detail);
     button.addEventListener('click', () => {
-      onSelect(event, button);
-      container.hidden = true;
+      container.dataset.restoringFocus = 'true';
+      try {
+        onSelect(event, button);
+        container.dataset.dismissed = 'true';
+        container.hidden = true;
+        container.parentElement?.querySelector('input')?.focus();
+      } finally { delete container.dataset.restoringFocus; }
     });
     container.append(button);
   }
@@ -37,21 +42,27 @@ export function renderEventSuggestions(container, events, onSelect, emptyText = 
 export function bindEventSuggestionDismissal(input, container) {
   const wrapper = container?.parentElement;
   if (!input || !wrapper) return;
+  if (container.id) input.setAttribute('aria-controls', container.id);
+  // These are native buttons in a suggestion group, not a simulated combobox.
+  container.setAttribute('role', 'group');
+  container.setAttribute('aria-label', 'Sugestões de eventos');
   input.addEventListener('input', () => { delete container.dataset.dismissed; });
   wrapper.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !container.hidden) {
       event.stopPropagation();
       event.preventDefault();
       container.hidden = true;
-      input.focus();
       container.dataset.dismissed = "true";
+      container.dataset.restoringFocus = 'true';
+      try { input.focus(); } finally { delete container.dataset.restoringFocus; }
     }
-    if (['ArrowDown', 'ArrowUp'].includes(event.key) && !container.hidden) {
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) && !container.hidden) {
       const buttons = [...container.querySelectorAll('button')];
       if (!buttons.length) return;
+      if (['Home', 'End'].includes(event.key) && document.activeElement === input) return;
       event.preventDefault();
       const index = buttons.indexOf(document.activeElement);
-      const next = event.key === 'ArrowDown' ? index + 1 : index < 0 ? buttons.length - 1 : index - 1;
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : event.key === 'ArrowDown' ? index + 1 : index < 0 ? buttons.length - 1 : index - 1;
       buttons[(next + buttons.length) % buttons.length].focus();
     }
   });
@@ -88,6 +99,9 @@ export function bindEventLookup(input, container, { search, select, clear, allow
     }, 250);
   };
   input.addEventListener('input', () => { clear(); lookup(); });
-  if (allowEmpty) input.addEventListener('focus', () => { delete container.dataset.dismissed; lookup(); });
+  if (allowEmpty) input.addEventListener('focus', () => {
+    if (container.dataset.restoringFocus) return;
+    delete container.dataset.dismissed; lookup();
+  });
   bindEventSuggestionDismissal(input, container);
 }

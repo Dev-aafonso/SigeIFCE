@@ -123,8 +123,11 @@ test('buscas rápidas descartam respostas antigas e permitem fechar as sugestõe
   await expect(page.locator('#sugestoes-busca-eventos')).toContainText('Evento novo');
   await page.waitForTimeout(500);
   await expect(page.locator('#sugestoes-busca-eventos')).not.toContainText('Evento antigo');
-  await input.press('Escape');
+  await input.press('ArrowDown');
+  await expect(page.locator('#sugestoes-busca-eventos .sugestao-evento').first()).toBeFocused();
+  await page.keyboard.press('Escape');
   await expect(page.locator('#sugestoes-busca-eventos')).toBeHidden();
+  await expect(input).toBeFocused();
   await input.fill('sem resultados');
   await expect(page.locator('#sugestoes-busca-eventos')).toContainText('Nenhum evento encontrado');
 });

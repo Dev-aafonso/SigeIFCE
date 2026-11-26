@@ -554,3 +554,5 @@ button[aria-busy="true"]::after {
 @media (prefers-reduced-motion: reduce) {
   button[aria-busy="true"]::after { animation: none; }
 }
+.sige-skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 10000; transform: translateY(-150%); padding: .8rem 1rem; border-radius: .5rem; background: var(--fundo-modulo, #fff); color: var(--texto-principal, #121212); font-weight: 700; }
+.sige-skip-link:focus-visible { transform: translateY(0); outline: 3px solid var(--anel-foco, #187a42); outline-offset: 3px; }

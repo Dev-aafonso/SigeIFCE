@@ -82,7 +82,7 @@ async function navigateAfterAuth(user) {
   if (window.navegarParaModulo) {
     await window.navegarParaModulo(destination);
   } else {
-    window.location.assign(`/#/${destination}`);
+    window.location.assign(destination.toLowerCase() === 'dashboard' ? '/painel' : '/eventos');
   }
 }
 
