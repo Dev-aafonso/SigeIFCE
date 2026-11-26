@@ -27,8 +27,11 @@ test("interpreta hash, inicialização e caminhos legados", () => {
 });
 
 test("os endereços canônicos são estáveis e seguros", () => {
-  assert.equal(caminhoDaRota({ module: "events" }), "/#/events");
-  assert.equal(caminhoDaRota({ module: "auth", component: "login" }), "/#/auth/login");
-  assert.equal(caminhoDaRota({ module: "../../admin" }), "/#/auth/login");
-  assert.equal(chaveDaRota({ module: "config" }), "/#/config");
+  assert.equal(caminhoDaRota({ module: "events" }), "/eventos");
+  assert.equal(caminhoDaRota({ module: "auth", component: "login" }), "/entrar");
+  assert.equal(caminhoDaRota({ module: "../../admin" }), "/entrar");
+  assert.equal(chaveDaRota({ module: "config" }), "/configuracoes");
+  for (const module of MODULES.filter(name => name !== 'auth')) assert.deepEqual(interpretarRota('', caminhoDaRota({ module })), { module, component: null });
+  for (const component of AUTH_COMPONENTS) assert.deepEqual(interpretarRota('', caminhoDaRota({ module: 'auth', component })), { module: 'auth', component });
+  assert.deepEqual(interpretarRota('#area-conteudo', '/eventos'), { module: 'events', component: null });
 });

@@ -19,15 +19,13 @@ describe('RegistrationsService.listMine', () => {
   };
 
   const prismaMock = {
+    event: { findMany: async () => [row.action.event] },
     registration: {
       findMany: async (args: Record<string, unknown>) => {
-        if ('take' in args) {
-          dataWhere = args.where;
-          dataSkip = args.skip;
-          dataTake = args.take;
-          return [row];
-        }
-        return [{ action: { event: { id: 'event-1', title: 'Semana acadêmica' } } }];
+        dataWhere = args.where;
+        dataSkip = args.skip;
+        dataTake = args.take;
+        return [row];
       },
       count: async (args: Record<string, unknown>) => {
         countWhere = args.where;

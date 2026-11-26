@@ -1,3 +1,4 @@
+import { manageableEvents } from '../events/event-visibility';
 import {
   BadRequestException,
   ForbiddenException,
@@ -84,8 +85,7 @@ export class ReportsService {
       throw new BadRequestException('A data inicial deve ser anterior ou igual à data final.');
     }
 
-    const where: Prisma.EventWhereInput = {};
-    if (principal.role !== UserRole.ADMIN) where.organizerId = principal.id;
+    const where = manageableEvents(principal.id, principal.role);
     if (query.eventId) where.id = query.eventId;
     if (query.actionId) where.actions = { some: { id: query.actionId } };
     if (from || to) {

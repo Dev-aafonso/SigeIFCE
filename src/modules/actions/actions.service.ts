@@ -1,3 +1,4 @@
+import { assertDraftOwner } from '../events/event-visibility';
 import {
   BadRequestException,
   ConflictException,
@@ -98,13 +99,14 @@ export class ActionsService {
   }
 
   private scope(
-    organizerId: string,
+    event: { organizerId: string; status: EventStatus },
     user: AuthUser,
   ) {
+    assertDraftOwner(event, this.userId(user));
     if (user.role === UserRole.ADMIN) return;
 
     if (
-      organizerId !== this.userId(user)
+      event.organizerId !== this.userId(user)
     ) {
       throw new ForbiddenException(
         'VocÃª nÃ£o possui acesso ao evento.',
@@ -162,7 +164,7 @@ export class ActionsService {
       await this.getEvent(eventId);
 
     this.scope(
-      event.organizerId,
+      event,
       user,
     );
 
@@ -297,7 +299,7 @@ export class ActionsService {
       await this.getAction(id);
 
     this.scope(
-      current.event.organizerId,
+      current.event,
       user,
     );
 
@@ -433,7 +435,7 @@ export class ActionsService {
           if (!latest) {
             throw new NotFoundException('Acao nao encontrada.');
           }
-          this.scope(latest.event.organizerId, user);
+          this.scope(latest.event, user);
           if (
             latest.status !== ActionStatus.ATIVA ||
             latest.event.status === EventStatus.CANCELADO ||
@@ -485,7 +487,7 @@ export class ActionsService {
       await this.getAction(id);
 
     this.scope(
-      current.event.organizerId,
+      current.event,
       user,
     );
 
@@ -519,7 +521,7 @@ export class ActionsService {
       await this.getAction(id);
 
     this.scope(
-      current.event.organizerId,
+      current.event,
       user,
     );
 

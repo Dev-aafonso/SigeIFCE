@@ -26,6 +26,7 @@ test.beforeEach(async ({ page }) => {
   }
   await page.addInitScript(value => localStorage.setItem('sige_user', JSON.stringify(value)), organizer);
   await page.route('**/auth/me', route => route.fulfill({ json: organizer }));
+  await page.route('**/events/manageable/drafts', route => route.fulfill({ json: [] }));
   await page.route('**/dashboard/filters', route => route.fulfill({ json: { events: [], actions: [] } }));
   await page.route('**/events/organizer/list?*', route => {
     const term = new URL(route.request().url()).searchParams.get('title')?.toLowerCase() || '';
@@ -122,8 +123,11 @@ test('buscas rápidas descartam respostas antigas e permitem fechar as sugestõe
   await expect(page.locator('#sugestoes-busca-eventos')).toContainText('Evento novo');
   await page.waitForTimeout(500);
   await expect(page.locator('#sugestoes-busca-eventos')).not.toContainText('Evento antigo');
-  await input.press('Escape');
+  await input.press('ArrowDown');
+  await expect(page.locator('#sugestoes-busca-eventos .sugestao-evento').first()).toBeFocused();
+  await page.keyboard.press('Escape');
   await expect(page.locator('#sugestoes-busca-eventos')).toBeHidden();
+  await expect(input).toBeFocused();
   await input.fill('sem resultados');
   await expect(page.locator('#sugestoes-busca-eventos')).toContainText('Nenhum evento encontrado');
 });
@@ -156,3 +160,71 @@ for (const width of [1440, 390]) {
     }
   });
 }
+
+test('busca no histórico abre detalhes e mantém o cancelamento pendente até a resposta', async ({ page }) => {
+  const registration = {
+    id: 'reg-1', actionId: 'activity-1', status: 'ACTIVE', createdAt: '2026-10-01T12:00:00Z',
+    action: { id: 'activity-1', title: 'Oficina de redes', status: 'ATIVA', location: 'Cedro',
+      startDate: events[0].startDate, endDate: events[0].endDate, event: events[0] },
+  };
+  await page.route('**/registrations/me?*', route => route.fulfill({ json: {
+    data: [registration], events, summary: { total: 1, active: 1 }, total: 1, pages: 1,
+  } }));
+  let finish!: () => void;
+  const pending = new Promise<void>(resolve => { finish = resolve; });
+  await page.route('**/registrations/actions/activity-1', async route => {
+    await pending;
+    await route.fulfill({ json: {} });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#/registrations');
+  const input = page.getByTestId('search-registrations');
+  await input.fill('redes');
+  const menu = page.locator('#sugestoes-inscricoes');
+  await expect(menu.getByRole('button')).toContainText('Oficina de redes');
+  await input.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  const details = page.locator('#dialog-detalhes-inscricao');
+  await expect(details).toContainText('Feira de Tecnologia');
+  await expect(details).toContainText('Oficina de redes');
+  await details.getByRole('button').click();
+  await page.locator('#lista-minhas-inscricoes').getByRole('button', { name: 'Cancelar', exact: true }).click();
+  const cancel = page.getByTestId('confirm-cancellation');
+  await cancel.click();
+  await expect(cancel).toHaveAttribute('aria-busy', 'true');
+  await expect(cancel).toBeDisabled();
+  finish();
+  await expect(page.locator('#dialog-cancelar-inscricao')).toBeHidden();
+});
+
+test('seleciona o evento pelo nome e carrega as atividades pelo identificador', async ({ page }) => {
+  await page.route('**/registrations/me?*', route => route.fulfill({ json: { data: [], events: [] } }));
+  await page.route('**/events/registration/options?*', route => route.fulfill({ json: events }));
+  await page.route('**/events/ev-2/actions', route => route.fulfill({ json: [
+    { id: 'activity-2', title: 'Oficina de programação', status: 'ATIVA', startDate: events[1].startDate, capacity: 30 },
+  ] }));
+  await page.goto('/#/registrations');
+  await page.getByRole('button', { name: 'Inscrever-se em eventos' }).click();
+  await page.locator('#busca-evento-inscricao').fill('Feira');
+  await page.locator('#sugestoes-seletor').getByRole('button', { name: /Iguatu/ }).click();
+  await page.getByRole('checkbox', { name: /Oficina de programação/ }).check();
+  await expect(page.getByTestId('confirm-registration')).toBeEnabled();
+});
+
+test('cadastro de professor solicita o código do perfil e envia o campo à API', async ({ page }) => {
+  await page.route('**/auth/me', route => route.fulfill({ status: 401, json: {} }));
+  await page.route('**/auth/register', route => route.fulfill({ status: 403, json: { message: 'Código de professor inválido ou não configurado.' } }));
+  await page.goto('/#/auth/selecao-funcao');
+  await page.getByTestId('signup-role-professor').click();
+  const code = page.getByLabel('Código de acesso de professor');
+  await expect(code).toBeVisible();
+  await expect(code).toHaveAttribute('required', '');
+  await page.getByTestId('signup-name').fill('Docente de teste');
+  await page.getByTestId('signup-email').fill('docente@example.test');
+  await page.getByTestId('signup-password').fill('senha-de-teste');
+  await code.fill('codigo-de-teste');
+  const request = page.waitForRequest('**/auth/register');
+  await page.getByTestId('signup-submit').click();
+  expect((await request).postDataJSON()).toMatchObject({ role: 'PROFESSOR', professorCode: 'codigo-de-teste' });
+  await expect(page.locator('#mensagem-cadastro')).toContainText('Código de professor inválido');
+});

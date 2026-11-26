@@ -1,3 +1,4 @@
+import { assertDraftOwner, manageableEvents } from './event-visibility';
 import { Prisma } from '../../generated/prisma/client';
 import {
   BadRequestException,
@@ -137,9 +138,10 @@ export class EventsService {
   }
 
   private scope(
-    event: { organizerId: string },
+    event: { organizerId: string; status: EventStatus },
     user: AuthUser,
   ) {
+    assertDraftOwner(event, this.userId(user));
     if (user.role === UserRole.ADMIN) return;
 
     if (event.organizerId !== this.userId(user)) {
@@ -149,12 +151,47 @@ export class EventsService {
     }
   }
 
+  registrationOptions(title?: string) {
+    const term = typeof title === 'string' ? title.trim().slice(0, 200) : '';
+    const now = new Date();
+    return this.prisma.event.findMany({
+      where: {
+        status: { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO] }, endDate: { gt: now },
+        AND: [
+          { OR: [{ registrationStartDate: null }, { registrationStartDate: { lte: now } }] },
+          { OR: [{ registrationEndDate: null }, { registrationEndDate: { gt: now } }] },
+        ],
+        actions: { some: { status: ActionStatus.ATIVA, startDate: { gt: now } } },
+        ...(term ? { title: { contains: term, mode: 'insensitive' } } : {}),
+      },
+      select: { id: true, title: true, startDate: true, location: true },
+      orderBy: [{ startDate: 'asc' }, { id: 'asc' }],
+      take: 8,
+    });
+  }
+
+  async listMyDrafts(user: AuthUser) {
+    this.manager(user);
+    const drafts = await this.prisma.event.findMany({
+      where: { organizerId: this.userId(user), status: EventStatus.RASCUNHO },
+      orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+      select: {
+        id: true, title: true, startDate: true, endDate: true, location: true, category: true, status: true,
+        organizer: { select: { id: true } }, cover: { select: { eventId: true } },
+        _count: { select: { actions: true } },
+      },
+    });
+    return drafts.map(({ cover, ...event }) => ({
+      ...event, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/manage/cover` : null,
+    }));
+  }
+
   async searchManageable(title: string, user: AuthUser) {
     this.manager(user);
     const term = typeof title === 'string' ? title.trim().slice(0, 100) : '';
     if (!term) return [];
     return this.prisma.event.findMany({
-      where: { title: { contains: term, mode: 'insensitive' }, ...(user.role === UserRole.ADMIN ? {} : { organizerId: this.userId(user) }) },
+      where: { title: { contains: term, mode: 'insensitive' }, ...manageableEvents(this.userId(user), user.role) },
       select: { id: true, title: true, startDate: true },
       orderBy: { startDate: 'desc' },
       take: 100,
@@ -193,7 +230,7 @@ export class EventsService {
   }
 
   async findPublic(query: EventQueryDto, preferredOrganizer?: AuthUser) {
-    await this.synchronizeLifecycle();
+    const now = new Date();
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 20;
 
@@ -226,9 +263,21 @@ export class EventsService {
       );
     }
 
+    const active = [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO];
     const where: Prisma.EventWhereInput = {
-      status: query.status ?? { in: [EventStatus.PUBLICADO, EventStatus.EM_ANDAMENTO, EventStatus.ENCERRADO] },
+      status: { in: [...active, EventStatus.ENCERRADO] },
     };
+    // Filter by the effective status even between background lifecycle updates.
+    if (query.status === EventStatus.ENCERRADO) {
+      where.OR = [
+        { status: EventStatus.ENCERRADO },
+        { status: { in: active }, endDate: { lte: now } },
+      ];
+    } else if (query.status) {
+      where.status = { in: active };
+      where.endDate = { gt: now };
+      where.AND = [{ startDate: query.status === EventStatus.PUBLICADO ? { gt: now } : { lte: now } }];
+    }
 
     if (query.title?.trim()) {
       where.title = {
@@ -304,7 +353,7 @@ export class EventsService {
     }
 
     return {
-      data: data.map(({ cover, ...event }) => ({ ...event, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null })),
+      data: data.map(({ cover, ...event }) => ({ ...event, status: effectiveEventStatus(event.status, event.startDate, event.endDate, now), coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null })),
       meta: {
         page,
         limit,
@@ -315,7 +364,6 @@ export class EventsService {
   }
 
   async findPublicById(id: string) {
-    await this.synchronizeLifecycle();
     const event = await this.prisma.event.findFirst({
       where: {
         id,
@@ -349,7 +397,7 @@ export class EventsService {
     }
 
     const { cover, ...rest } = event;
-    return { ...rest, coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null };
+    return { ...rest, status: effectiveEventStatus(event.status, event.startDate, event.endDate), coverImageUrl: cover ? `/events/${encodeURIComponent(event.id)}/cover` : null };
   }
 
   async setCover(id: string, user: AuthUser, file?: { buffer: Buffer; mimetype: string }) {

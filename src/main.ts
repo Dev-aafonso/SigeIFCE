@@ -122,6 +122,11 @@ async function bootstrap() {
     response.sendFile(join(process.cwd(), 'manifest.json'));
   });
   expressApp.get('/registrations', sendIndex);
+  // Only explicit frontend routes; JSON APIs, assets and 404s keep their behavior.
+  expressApp.get(['/entrar', '/cadastro', '/escolher-perfil', '/painel', '/eventos', '/inscricoes', '/participantes', '/certificados', '/relatorios', '/usuarios', '/configuracoes'], sendIndex);
+  expressApp.get('/validar-certificado', (_request: Request, response: Response) => {
+    response.sendFile(join(process.cwd(), 'web', 'certificate-validation.html'));
+  });
 
   // Endpoint publico de liveness para o Render, sem expor detalhes internos.
   expressApp.get('/health', (_request: Request, response: Response) => {

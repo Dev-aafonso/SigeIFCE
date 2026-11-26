@@ -1,3 +1,4 @@
+import { busyHandler } from '../../../shared/core/button-busy.mjs';
 import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../shared/core/event-suggestions.mjs';
 
 (() => {
@@ -135,13 +136,13 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../s
       const li=make('li','',`${user.name} (${user.email}) — ${user.attendancePercent}% de frequência — ${user.eligible?'APTO':'INELEGÍVEL'}`);
       if(user.eligible){
         const btn=make('button','botao-certificado botao-certificado-secundario','Emitir');btn.type='button';
-        btn.addEventListener('click',async()=>{
+        btn.addEventListener('click',busyHandler(async()=>{
           if(issuing || !window.confirm(`Emitir certificado para ${user.name}?`))return;
           issuing=true;btn.disabled=true;
           try{await issue(eventId,user.userId);msg('mensagem-gestao-certificados',`Certificado emitido para ${user.name}.`,'sucesso');}
           catch(error){msg('mensagem-gestao-certificados',error.message,'erro');}
           finally{issuing=false;btn.disabled=false;}
-        });li.append(btn);
+        }));li.append(btn);
       }
       list.append(li);
     }
@@ -194,7 +195,7 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../s
     let role='';try{role=JSON.parse(localStorage.getItem('sige_user')||'{}').role||'';}catch{}
     const admin=['ADMIN','ORGANIZADOR','PROFESSOR'].includes(role);
     $('painel-gestao-certificados').hidden=!admin;
-    $('atualizar-certificados')?.addEventListener('click',loadMine);
+    $('atualizar-certificados')?.addEventListener('click',busyHandler(loadMine));
     $('id-evento-elegibilidade')?.addEventListener('input',()=>{
       ++personalSequence;personalEligible=false;personalEventId=null;$('emitir-certificado-pessoal').disabled=true;msg('estado-elegibilidade-pessoal','');
       showOptions('eventos-elegibilidade', personalEvents);
@@ -209,21 +210,21 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../s
     });
     bindEventSuggestionDismissal($('id-evento-elegibilidade'), $('eventos-elegibilidade'));
     bindEventSuggestionDismissal($('id-evento-certificados'), $('eventos-gestao-certificados'));
-    $('form-elegibilidade-pessoal')?.addEventListener('submit',loadOwnEligibility);
-    $('emitir-certificado-pessoal')?.addEventListener('click',issuePersonal);
-    $('form-evento-certificados')?.addEventListener('submit',loadManager);
+    $('form-elegibilidade-pessoal')?.addEventListener('submit',busyHandler(loadOwnEligibility));
+    $('emitir-certificado-pessoal')?.addEventListener('click',busyHandler(issuePersonal));
+    $('form-evento-certificados')?.addEventListener('submit',busyHandler(loadManager));
     $('emitir-certificados')?.addEventListener('click',requestBatch);
-    $('confirmar-emissao-certificados')?.addEventListener('click',confirmBatch);
+    $('confirmar-emissao-certificados')?.addEventListener('click',busyHandler(confirmBatch));
     $('cancelar-emissao-certificados')?.addEventListener('click',()=>$('dialog-confirmar-emissao-certificados')?.close());
     $('fechar-preview-certificado')?.addEventListener('click',()=>$('dialog-preview-certificado')?.close());
     $('abrir-validacao-certificado')?.addEventListener('click',()=>$('dialog-validar-certificado')?.showModal());
     $('fechar-validacao-certificado')?.addEventListener('click',()=>$('dialog-validar-certificado')?.close());
-    $('form-validar-certificado')?.addEventListener('submit',async(ev)=>{
+    $('form-validar-certificado')?.addEventListener('submit',busyHandler(async(ev)=>{
       ev.preventDefault();const code=$('codigo-validacao-certificado')?.value.trim();if(!code)return;
       text('resultado-validacao-certificado','Verificando...');
       try{const value=await json(`/certificates/validate/${encodeURIComponent(code)}`);text('resultado-validacao-certificado',value.valid?`Certificado válido — ${value.certificate?.participantName||'participante'} (${value.certificate?.eventTitle||'evento'}).`:value.message||'Código inválido.');}
       catch(error){text('resultado-validacao-certificado',error.message);}
-    });
+    }));
     await Promise.all([loadMine(), loadPersonalEvents().catch(error=>msg('estado-elegibilidade-pessoal',`Não foi possível buscar seus eventos: ${error.message}`,'erro'))]);
   };
 })();

@@ -1,3 +1,4 @@
+import { busyHandler } from '../../../shared/core/button-busy.mjs';
 (() => {
   const USERS_API = "/users";
   const USER_ROLES = [
@@ -116,7 +117,7 @@
     const label = document.createElement("label"); label.textContent = "Perfil";
     const select = createRoleSelect(user, false); label.append(select);
     const save = document.createElement("button"); save.type = "button"; save.className = "botao-salvar-papel"; save.textContent = "Salvar perfil";
-    save.addEventListener("click", async () => {
+    save.addEventListener("click", busyHandler(async () => {
       if (select.value === user.role) { dialog.close(); return; }
       save.disabled = true; select.disabled = true; message.textContent = "Salvando...";
       try {
@@ -125,7 +126,7 @@
         if (updated.role !== role) throw new Error("A API não confirmou a atualização do perfil.");
         user.role = updated.role; dialog.close(); renderUsers(); setUsersMessage("Perfil atualizado.", "sucesso");
       } catch (error) { message.textContent = error.message; save.disabled = false; select.disabled = false; }
-    });
+    }));
     controls.append(label, save); dialog.showModal();
   }
 
@@ -133,23 +134,23 @@
     const { dialog, message, controls } = makeDialog("Ações do usuário", user);
     const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "botao-dialogo-secundario";
     toggle.textContent = user.isActive ? "Desativar conta" : "Ativar conta";
-    toggle.addEventListener("click", async () => {
+    toggle.addEventListener("click", busyHandler(async () => {
       if (!window.confirm(`${user.isActive ? "Desativar" : "Ativar"} a conta de ${user.email}?`)) return;
       toggle.disabled = true; remove.disabled = true; message.textContent = "Atualizando...";
       try {
         const updated = await requestUsersApi(`/${encodeURIComponent(user.id)}/status`, { method: "PATCH", body: JSON.stringify({ isActive: !user.isActive }) });
         user.isActive = updated.isActive; dialog.close(); renderUsers(); setUsersMessage("Status atualizado.", "sucesso");
       } catch (error) { message.textContent = error.message; toggle.disabled = false; remove.disabled = false; }
-    });
+    }));
     const remove = document.createElement("button"); remove.type = "button"; remove.className = "botao-remover-usuario"; remove.textContent = "Remover conta";
-    remove.addEventListener("click", async () => {
+    remove.addEventListener("click", busyHandler(async () => {
       if (!window.confirm(`Tem certeza de que deseja remover a conta ${user.email}? Esta ação não pode ser desfeita.`)) return;
       toggle.disabled = true; remove.disabled = true; message.textContent = "Removendo...";
       try {
         await requestUsersApi(`/${encodeURIComponent(user.id)}`, { method: "DELETE" });
         cachedUsers = cachedUsers.filter(item => item.id !== user.id); dialog.close(); renderUsers(); setUsersMessage(`A conta ${user.email} foi removida.`, "sucesso");
       } catch (error) { message.textContent = error.message; toggle.disabled = false; remove.disabled = false; }
-    });
+    }));
     controls.append(toggle, remove); dialog.showModal();
   }
 
@@ -251,7 +252,7 @@
   window.inicializarGerenciamentoUsuarios = () => {
     const refreshButton = document.getElementById("atualizar-usuarios");
     if (refreshButton && refreshButton.dataset.initialized !== "true") {
-      refreshButton.addEventListener("click", loadUsers);
+      refreshButton.addEventListener("click", busyHandler(loadUsers));
       refreshButton.dataset.initialized = "true";
     }
     for (const id of ["busca-usuarios", "filtro-perfil-usuarios", "filtro-status-usuarios"]) {

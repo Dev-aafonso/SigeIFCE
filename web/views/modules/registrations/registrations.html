@@ -28,7 +28,7 @@
       data-testid="open-registration-selector"
     >
       <span aria-hidden="true">+</span>
-      Inscrever-se em ações
+      Inscrever-se em eventos
     </button>
   </header>
 
@@ -184,6 +184,7 @@
       role="search"
       aria-label="Pesquisar inscrições"
     >
+      <div class="busca-evento-wrapper busca-historico">
       <label class="campo-pesquisa-inscricao">
         <span class="icone-pesquisa-inscricao" aria-hidden="true"></span>
         <span id="rotulo-busca-inscricoes" class="rotulo-somente-leitor"
@@ -191,12 +192,16 @@
         >
         <input
           id="busca-inscricoes"
+          maxlength="100"
+          aria-controls="sugestoes-inscricoes"
           type="search"
           data-testid="search-registrations"
           placeholder="Pesquisar evento ou atividade..."
           autocomplete="off"
         />
       </label>
+      <div id="sugestoes-inscricoes" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <label class="campo-filtro-inscricao">
         <span class="rotulo-somente-leitor">Filtrar por evento</span>
         <select
@@ -234,11 +239,11 @@
         <thead>
           <tr>
             <th id="cabecalho-coluna-principal" scope="col">Evento</th>
-            <th id="cabecalho-coluna-secundaria" scope="col">Ação</th>
+            <th id="cabecalho-coluna-secundaria" scope="col">Atividade</th>
             <th scope="col">Data da inscrição</th>
             <th scope="col">Status</th>
             <th scope="col">
-              <span class="rotulo-somente-leitor">Ações</span>
+              <span class="rotulo-somente-leitor">Opções da inscrição</span>
             </th>
           </tr>
         </thead>
@@ -270,15 +275,15 @@
     <div class="conteudo-detalhes-inscricao">
       <header class="cabecalho-dialog-inscricoes">
         <div>
-          <p class="sobretitulo-inscricoes">DETALHES</p>
+          <p class="sobretitulo-inscricoes">Minha inscrição</p>
           <h3 id="titulo-detalhes-inscricao">Inscrição</h3>
         </div>
         <button
-          class="botao-fechar-inscricoes"
+          class="botao-inscricao botao-inscricao-secundario"
           type="button"
           data-inscricao-action="close-details"
           aria-label="Fechar detalhes"
-        ></button>
+        >Fechar</button>
       </header>
       <dl id="lista-detalhes-inscricao" class="lista-detalhes-inscricao"></dl>
     </div>
@@ -293,22 +298,22 @@
       <header class="cabecalho-dialog-inscricoes">
         <div>
           <p class="sobretitulo-inscricoes">NOVA PARTICIPAÇÃO</p>
-          <h3 id="titulo-seletor-acoes">Escolha suas ações</h3>
-          <p>Selecione uma ou mais atividades disponíveis.</p>
+          <h3 id="titulo-seletor-acoes">Escolha um evento</h3>
+          <p>Depois de escolher o evento, selecione as atividades em que deseja participar.</p>
         </div>
         <button
-          class="botao-fechar-inscricoes"
+          class="botao-inscricao botao-inscricao-secundario"
           type="button"
           data-inscricao-action="close-selector"
-          aria-label="Fechar seleção de ações"
-        ></button>
+          aria-label="Fechar seleção de eventos"
+        >Fechar</button>
       </header>
-      <label class="campo-evento-seletor">
-        <span>Evento</span>
-        <select id="seletor-evento-acoes" required>
-          <option value="">Carregando eventos...</option>
-        </select>
-      </label>
+      <div class="busca-evento-wrapper">
+        <label class="campo-evento-seletor" for="busca-evento-inscricao">Evento</label>
+        <input type="search" id="busca-evento-inscricao" placeholder="Pesquisar eventos…" autocomplete="off" aria-controls="sugestoes-seletor" maxlength="200">
+        <input type="hidden" id="seletor-evento-acoes">
+        <div id="sugestoes-seletor" class="sugestoes-eventos" aria-live="polite" hidden></div>
+      </div>
       <p
         id="mensagem-seletor-acoes"
         class="mensagem-seletor-acoes"
@@ -366,6 +371,7 @@
       <div class="acoes-confirmacao-inscricao">
         <button
           class="botao-inscricao botao-inscricao-secundario"
+          autofocus
           value="keep"
           formnovalidate
         >

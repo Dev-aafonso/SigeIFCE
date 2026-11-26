@@ -257,3 +257,15 @@
   .grade-autenticacao .cartao-autenticacao { border-radius: 14px; }
   .gerenciamento-usuarios .filtros-usuarios { padding: .65rem; }
 }
+/* Mobile portrait: consistent action widths and cards that fit their labels. */
+@media (max-width: 768px) and (orientation: portrait) {
+  .modulo-certificados #emitir-certificado-pessoal { width: 100%; min-height: 44px; }
+  .modulo-inscricoes .resumo-inscricoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .modulo-inscricoes .cartao-resumo-inscricao { min-width: 0; gap: .65rem; padding: .8rem; align-items: flex-start; }
+  .modulo-inscricoes .cartao-resumo-inscricao > div { min-width: 0; flex: 1; }
+  .modulo-inscricoes .cartao-resumo-inscricao p { overflow-wrap: anywhere; }
+  .modulo-inscricoes .cartao-resumo-inscricao:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@media (max-width: 350px) {
+  .modulo-inscricoes .resumo-inscricoes { grid-template-columns: 1fr; }
+}

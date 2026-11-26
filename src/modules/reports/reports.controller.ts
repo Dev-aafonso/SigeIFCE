@@ -1,3 +1,4 @@
+import { manageableEvents } from '../events/event-visibility';
 import {
   Controller,
   Get,
@@ -43,7 +44,7 @@ export class ReportsController {
   }
 
   private async scanEvent(id: string, principal: ReportPrincipal) {
-    const event = await this.prisma.event.findFirst({ where: { id, ...(principal.role !== UserRole.ADMIN ? { organizerId: principal.id } : {}) }, select: { id: true } });
+    const event = await this.prisma.event.findFirst({ where: { id, ...manageableEvents(principal.id, principal.role) }, select: { id: true } });
     if (!event) throw new ForbiddenException('Evento não encontrado ou sem permissão.');
     return event;
   }

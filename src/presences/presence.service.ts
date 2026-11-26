@@ -1,5 +1,6 @@
+import { assertDraftOwner } from '../modules/events/event-visibility';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, RegistrationStatus, UserRole } from '../generated/prisma/client';
+import { EventStatus, Prisma, RegistrationStatus, UserRole } from '../generated/prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { CreatePresenceDto } from './dto/create-presence.dto';
 import { isTransactionConflict } from '../common/transaction-conflict';
@@ -17,9 +18,10 @@ export class PresenceService {
     }
   }
 
-  private assertOrganizerScope(organizerId: string, requester: PresencePrincipal): void {
+  private assertOrganizerScope(event: { organizerId: string; status: EventStatus }, requester: PresencePrincipal): void {
     this.assertManager(requester);
-    if (requester.role !== UserRole.ADMIN && organizerId !== requester.id) {
+    assertDraftOwner(event, requester.id);
+    if (requester.role !== UserRole.ADMIN && event.organizerId !== requester.id) {
       throw new ForbiddenException('VocÃª nÃ£o tem permissÃ£o para consultar ou alterar presenÃ§as desta aÃ§Ã£o.');
     }
   }
@@ -28,10 +30,10 @@ export class PresenceService {
     this.assertManager(requester);
     const action = await this.prisma.action.findUnique({
       where: { id: actionId },
-      select: { id: true, event: { select: { organizerId: true } } },
+      select: { id: true, event: { select: { organizerId: true, status: true } } },
     });
     if (!action) throw new NotFoundException('AÃ§Ã£o nÃ£o encontrada.');
-    this.assertOrganizerScope(action.event.organizerId, requester);
+    this.assertOrganizerScope(action.event, requester);
   }
 
   async create(dto: CreatePresenceDto, requester: PresencePrincipal) {
@@ -50,12 +52,12 @@ export class PresenceService {
           const registration = await tx.registration.findUnique({
             where: { id: dto.registrationId },
             include: {
-              action: { include: { event: { select: { organizerId: true } } } },
+              action: { include: { event: { select: { organizerId: true, status: true } } } },
               presence: true,
             },
           });
           if (!registration) throw new NotFoundException('Inscricao nao encontrada.');
-          this.assertOrganizerScope(registration.action.event.organizerId, requester);
+          this.assertOrganizerScope(registration.action.event, requester);
           if (registration.status !== RegistrationStatus.ACTIVE) {
             throw new BadRequestException('A inscricao nao esta ativa.');
           }

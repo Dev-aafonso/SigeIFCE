@@ -104,15 +104,26 @@ describe('EventsService', () => {
     );
   });
 
-  it('permite ADMIN editar evento de outro organizador', async () => {
+  it('reserva rascunhos ao criador inclusive quando o visitante é administrador', async () => {
+    prisma.event.findUnique.mockResolvedValue({
+      id: 'e1', organizerId: 'owner', status: EventStatus.RASCUNHO,
+      startDate: new Date('2099-10-20'), endDate: new Date('2099-10-21'), actions: [],
+    });
+    const service = new EventsService(prisma);
+    await expect(service.findManageable('e1', admin)).rejects.toThrow(ForbiddenException);
+    await expect(service.update('e1', { title: 'Novo' }, admin)).rejects.toThrow(ForbiddenException);
+    await expect(service.findManageable('e1', { sub: 'owner', role: UserRole.PROFESSOR })).resolves.toMatchObject({ id: 'e1' });
+  });
+
+  it('permite ADMIN editar evento publicado de outro organizador', async () => {
     prisma.event.findUnique.mockResolvedValue({
       id: 'e1',
       organizerId: 'owner',
-      status: EventStatus.RASCUNHO,
+      status: EventStatus.PUBLICADO,
       startDate:
-        new Date('2026-10-20T08:00:00Z'),
+        new Date('2099-10-20T08:00:00Z'),
       endDate:
-        new Date('2026-10-20T18:00:00Z'),
+        new Date('2099-10-20T18:00:00Z'),
       organizer: {},
       actions: [],
     });

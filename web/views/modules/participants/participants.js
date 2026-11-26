@@ -1,3 +1,4 @@
+import { busyHandler } from '../../../shared/core/button-busy.mjs';
 import { attendanceSummary, filterAttendance, flattenAttendance } from '../../../shared/core/attendance-list.mjs';
 import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../shared/core/event-suggestions.mjs';
 
@@ -218,17 +219,17 @@ import { renderEventSuggestions, bindEventSuggestionDismissal } from '../../../s
     allRows = [];
     ++requestSequence;
     pending = null;
-    $('form-evento-participantes')?.addEventListener('submit', loadEvent);
+    $('form-evento-participantes')?.addEventListener('submit', busyHandler(loadEvent));
     $('id-evento-participantes')?.addEventListener('input', () => { clearTimeout(searchTimer); ++searchSequence; $('eventos-participantes').hidden = true; searchTimer = setTimeout(searchEvents, 250); });
     bindEventSuggestionDismissal($('id-evento-participantes'), $('eventos-participantes'));
-    $('atualizar-participantes')?.addEventListener('click', () => {
-      if (eventData) void loadRows();
+    $('atualizar-participantes')?.addEventListener('click', busyHandler(() => {
+      if (eventData) return loadRows();
       else text('mensagem-participantes', 'Informe o nome do evento.');
-    });
+    }));
     for (const id of ['filtro-acao-participantes', 'filtro-status-participantes', 'busca-participantes']) {
       $(id)?.addEventListener(id === 'busca-participantes' ? 'input' : 'change', render);
     }
-    $('confirmar-presenca')?.addEventListener('click', registerPresence);
+    $('confirmar-presenca')?.addEventListener('click', busyHandler(registerPresence));
     $('cancelar-confirmacao-presenca')?.addEventListener('click', () => {
       pending = null;
       $('dialog-confirmar-presenca')?.close();

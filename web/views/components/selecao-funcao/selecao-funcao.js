@@ -1,5 +1,4 @@
-// A função escolhida é uma preferência de cadastro, não uma concessão de permissões.
-// O backend atribui ALUNO no registro; perfis com privilégios exigem autorização administrativa.
+// A API valida o código do perfil escolhido no cadastro.
 const PAPEIS_CADASTRO = new Set(['gestor', 'professor', 'aluno']);
 document.addEventListener('click', (event) => {
   if (!(event.target instanceof Element)) return;

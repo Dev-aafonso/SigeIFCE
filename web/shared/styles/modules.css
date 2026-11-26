@@ -235,3 +235,35 @@
 .texto-original-manuscrito summary { cursor:pointer; font-weight:600; }
 .texto-original-manuscrito label { margin-top:.75rem; }
 .ajuda-manuscrito { margin:.45rem 0 .7rem; }
+
+.busca-historico { flex: 2 1 18rem; }
+.modulo-inscricoes .cabecalho-dialog-inscricoes {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.modulo-inscricoes dialog { width: min(32rem, calc(100vw - 2rem)); padding: clamp(1rem, 4vw, 1.65rem); }
+.modulo-inscricoes dialog h3 { margin: .25rem 0; overflow-wrap: anywhere; }
+.lista-detalhes-inscricao {
+  margin: 1rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .85rem 1.25rem;
+  border-top: 1px solid var(--cor-divisor);
+  padding-top: 1rem;
+}
+.lista-detalhes-inscricao div:first-child { grid-column: 1 / -1; }
+.lista-detalhes-inscricao dt { font-size: .8rem; color: var(--texto-suave); }
+.lista-detalhes-inscricao dd { margin: .25rem 0 0; overflow-wrap: anywhere; }
+#form-confirmar-cancelamento, .formulario-seletor-acoes { display: grid; gap: 1rem; }
+#form-confirmar-cancelamento p { margin: 0; overflow-wrap: anywhere; }
+#mensagem-cancelamento-inscricao { color: var(--cor-erro); }
+#mensagem-cancelamento-inscricao:empty { display: none; }
+.icone-alerta-cancelamento { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--botao-hover); color: var(--cor-erro); font-weight: 750; }
+.acoes-confirmacao-inscricao, .acoes-dialog-inscricoes > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; padding-top: 1rem; border-top: 1px solid var(--cor-divisor); }
+.modulo-inscricoes .botao-inscricao-perigo { background: #a32929; color: white; border-color: #a32929; }
+@media (max-width: 480px) {
+  .acoes-confirmacao-inscricao button { flex: 1 1 100%; }
+  .lista-detalhes-inscricao { grid-template-columns: 1fr; }
+}

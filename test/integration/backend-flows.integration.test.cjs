@@ -185,6 +185,32 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
     assert.ok(response.body.id, 'Evento criado sem identificador');
     ctx.event = response.body;
 
+    await t.test('somente o criador vê o rascunho nas listas e no acesso direto', async () => {
+      const own = await ctx.organizer.get('/events/manageable/drafts');
+      expectStatus(own, 200, 'Rascunhos do criador');
+      assert.ok(own.body.some(event => event.id === ctx.event.id));
+
+      const adminEmail = `s10-${runId}-admin@example.test`;
+      await db.query(
+        'INSERT INTO "User" ("id","name","email","password","role") SELECT $1,$2,$3,"password",$4::"UserRole" FROM "User" WHERE id=$5',
+        [crypto.randomUUID(), 'Admin de teste', adminEmail, 'ADMIN', ctx.organizerId],
+      );
+      const admin = agent();
+      expectStatus(await admin.post('/auth/login').send({ email: adminEmail, password: organizerPassword }), [200, 201], 'Login do administrador');
+      for (const viewer of [ctx.secondOrganizer, admin]) {
+        const drafts = await viewer.get('/events/manageable/drafts');
+        expectStatus(drafts, 200, 'Lista de rascunhos');
+        assert.ok(!drafts.body.some(event => event.id === ctx.event.id));
+        const matches = await viewer.get('/events/manageable/search').query({ title: ctx.event.title });
+        expectStatus(matches, 200, 'Busca de eventos');
+        assert.ok(!matches.body.some(event => event.id === ctx.event.id));
+        const filters = await viewer.get('/dashboard/filters');
+        expectStatus(filters, 200, 'Filtros do painel');
+        assert.ok(!filters.body.events.some(event => event.id === ctx.event.id));
+        expectStatus(await viewer.get(`/events/${ctx.event.id}/manage`), 403, 'Acesso por link');
+      }
+    });
+
     // SEGMENTO DE TESTES NEGATIVOS SPRINT10: um organizador nao administra evento alheio.
     await t.test('organizador nao pode administrar evento de outro organizador', async () => {
       const foreignResponse = await ctx.secondOrganizer.get(`/events/${ctx.event.id}/manage`).timeout({ deadline: 15000 });

@@ -13,6 +13,7 @@ const INICIALIZADORES = Object.freeze({
   reports: "inicializarModuloRelatorios",
   config: "inicializarModuloConfig",
 });
+const TITULOS = Object.freeze({ auth: 'Acesso', dashboard: 'Painel', events: 'Eventos', registrations: 'Inscrições', participants: 'Participantes', certificates: 'Certificados', reports: 'Relatórios', users: 'Usuários', config: 'Configurações' });
 
 class Router {
   constructor() {
@@ -37,12 +38,6 @@ class Router {
     window.addEventListener("popstate", sincronizar);
     window.addEventListener("hashchange", sincronizar);
 
-    // Mantém compatibilidade com /registrations e URLs antigas.
-    const rota = interpretarRota(window.location.hash, window.location.pathname);
-    const canonica = caminhoDaRota(rota);
-    if (window.location.pathname + window.location.hash !== canonica) {
-      history.replaceState({ module: rota.module }, "", canonica);
-    }
     return this.carregarLocalizacao();
   }
 
@@ -51,7 +46,7 @@ class Router {
     if (!nome) return Promise.reject(new Error("Módulo não reconhecido."));
     const rota = { module: nome, component: nome === "auth" ? normalizarComponenteAuth(componente) : null };
     const destino = caminhoDaRota(rota);
-    if (window.location.pathname + window.location.hash !== destino) {
+    if (window.location.pathname + window.location.search + window.location.hash !== destino) {
       history.pushState({ module: nome }, "", destino);
     }
     return this.carregarLocalizacao();
@@ -60,6 +55,9 @@ class Router {
   carregarLocalizacao() {
     const rota = interpretarRota(window.location.hash, window.location.pathname);
     const chave = chaveDaRota(rota);
+    if (window.location.pathname !== chave || window.location.search || window.location.hash.startsWith('#/')) {
+      history.replaceState({ module: rota.module }, '', chave);
+    }
     if (this.chaveAtual === chave) return this.carregamentoAtual ?? Promise.resolve();
     this.chaveAtual = chave;
     const trabalho = this.carregarModulo(rota);
@@ -76,6 +74,8 @@ class Router {
     const atual = () => sequencia === this.sequenciaNavegacao;
 
     document.body.classList.toggle("modo-auth", modulo === "auth");
+    document.title = `${modulo === 'auth' ? ({ login: 'Entrar', cadastro: 'Cadastro', 'selecao-funcao': 'Escolher perfil' }[componente] || 'Entrar') : TITULOS[modulo]} | SIGE IFCE`;
+    this.areaConteudo.setAttribute('aria-busy', 'true');
     if (modulo !== "auth") this.atualizarBotaoAtivo(modulo);
     const pasta = modulo === "dashboard" ? "Dashboard" : modulo;
     if (["auth", "dashboard", "events", "users"].includes(modulo)) {
@@ -98,6 +98,7 @@ class Router {
       if (!atual()) return;
       this.fetchEmAndamento = null;
       this.areaConteudo.innerHTML = html;
+      this.areaConteudo.scrollTop = 0;
 
       await this.carregarJS(`/web/views/modules/${pasta}/${modulo}.js`);
       if (!atual()) return;
@@ -114,6 +115,13 @@ class Router {
         if (!atual()) return;
       }
       document.dispatchEvent(new CustomEvent("sige:module-loaded", { detail: { module: modulo } }));
+      const heading = this.areaConteudo.querySelector('h2, h1, h3');
+      // Async initializers may finish after the user has started typing. Never
+      // steal focus from an already active control in the new page.
+      if (!this.areaConteudo.contains(document.activeElement)) {
+        if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+        else this.areaConteudo.focus({ preventScroll: true });
+      }
     } catch (error) {
       if (!atual()) return; // Uma navegação posterior ganhou a corrida.
       console.error("SIGE: erro ao carregar módulo", modulo, error);
@@ -129,15 +137,17 @@ class Router {
       retry.type = "button";
       retry.textContent = "Tentar novamente";
       retry.addEventListener("click", () => {
-        if (this.chaveAtual !== chaveDaRota(rota)) return;
+        if (chaveDaRota(interpretarRota(window.location.hash, window.location.pathname)) !== chaveDaRota(rota)) return;
         this.chaveAtual = null;
         this.carregarLocalizacao();
       });
       content.append(heading, message, retry);
       this.areaConteudo.append(content);
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
       this.chaveAtual = null;
     } finally {
-      if (atual()) this.fetchEmAndamento = null;
+      if (atual()) { this.fetchEmAndamento = null; this.areaConteudo.removeAttribute('aria-busy'); }
     }
   }
 

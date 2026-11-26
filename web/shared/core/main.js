@@ -7,6 +7,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const painelFundoLateral = document.getElementById("painel-fundo-lateral");
   const barraLateral = document.getElementById("barra-lateral");
   const botaoTema = document.getElementById("botao-tema");
+  const menuMovel = window.matchMedia('(max-width: 768px)');
+  const conteudo = document.getElementById('area-conteudo');
+  const cabecalho = document.querySelector('.cabecalho-topo');
+  // Native dialog commands with a progressive fallback for other browsers.
+  if (!('commandForElement' in HTMLButtonElement.prototype)) {
+    document.addEventListener('click', event => {
+      const button = event.target instanceof Element && event.target.closest('button[commandfor][command]');
+      if (!button) return;
+      const dialog = document.getElementById(button.getAttribute('commandfor'));
+      if (!(dialog instanceof HTMLDialogElement)) return;
+      if (button.getAttribute('command') === 'show-modal' && !dialog.open) dialog.showModal();
+      if (button.getAttribute('command') === 'close' && dialog.open) dialog.close();
+    });
+  }
+  function rotularDialogos(root = document) {
+    root.querySelectorAll('dialog').forEach(dialog => {
+      if (dialog.hasAttribute('aria-label') || dialog.hasAttribute('aria-labelledby')) return;
+      const heading = dialog.querySelector('h1, h2, h3, h4');
+      if (!heading) return;
+      if (!heading.id) heading.id = `${dialog.id || 'sige-dialog'}-titulo`;
+      dialog.setAttribute('aria-labelledby', heading.id);
+    });
+  }
+  rotularDialogos();
+  document.addEventListener('sige:module-loaded', () => rotularDialogos(conteudo));
 
   // Uma única origem de verdade para o tema, inclusive para a tela Configurações.
   inicializarTema();
@@ -28,19 +53,60 @@ document.addEventListener("DOMContentLoaded", () => {
     botaoTema.setAttribute("title", escuro ? "Ativar tema claro" : "Ativar tema escuro");
   });
 
-  function fecharBarraLateral() {
+  function sincronizarBarraLateral() {
+    const aberta = Boolean(barraLateral?.classList.contains('abrir'));
+    if (barraLateral) barraLateral.inert = menuMovel.matches && !aberta;
+    alternadorBarraLateral?.setAttribute('aria-expanded', String(!menuMovel.matches || aberta));
+    if (conteudo) conteudo.inert = menuMovel.matches && aberta;
+    const notificacoes = cabecalho?.querySelector('#botao-notificacoes');
+    if (notificacoes) notificacoes.inert = menuMovel.matches && aberta;
+  }
+  function fecharBarraLateral(restaurarFoco = false) {
     barraLateral?.classList.remove("abrir");
     painelFundoLateral?.classList.remove("mostrar");
     document.body.classList.remove("menu-lateral-aberto");
+    sincronizarBarraLateral();
+    if (restaurarFoco) alternadorBarraLateral?.focus();
   }
 
   alternadorBarraLateral?.addEventListener("click", () => {
     const aberta = barraLateral?.classList.toggle("abrir") ?? false;
     painelFundoLateral?.classList.toggle("mostrar", aberta);
     document.body.classList.toggle("menu-lateral-aberto", aberta);
+    sincronizarBarraLateral();
+    if (aberta && menuMovel.matches) barraLateral?.querySelector('.botao-menu:not([hidden])')?.focus();
+    else if (!aberta) alternadorBarraLateral?.focus();
   });
 
-  painelFundoLateral?.addEventListener("click", fecharBarraLateral);
+  painelFundoLateral?.addEventListener("click", () => fecharBarraLateral(true));
+  menuMovel.addEventListener('change', () => fecharBarraLateral());
+  sincronizarBarraLateral();
+  document.addEventListener('keydown', event => {
+    if (event.defaultPrevented || document.querySelector('dialog[open]')) return;
+    if (!menuMovel.matches || !barraLateral?.classList.contains('abrir')) return;
+    if (event.key === 'Escape') {
+      event.preventDefault(); fecharBarraLateral(true);
+    } else if (event.key === 'Tab') {
+      const controls = [alternadorBarraLateral, ...barraLateral.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')].filter(el => el?.getClientRects().length && !el.closest('[hidden], [inert]'));
+      if (!controls.length) return;
+      const index = controls.indexOf(document.activeElement);
+      if (index < 0 || (!event.shiftKey && index === controls.length - 1) || (event.shiftKey && index === 0)) {
+        event.preventDefault(); controls[event.shiftKey ? controls.length - 1 : 0].focus();
+      }
+    }
+  });
+  menuNavegacao?.addEventListener('keydown', event => {
+    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+    const buttons = [...menuNavegacao.querySelectorAll('.botao-menu:not([hidden]):not(:disabled)')].filter(button => button.getClientRects().length);
+    const index = buttons.indexOf(document.activeElement);
+    if (index < 0 || !buttons.length) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next].focus();
+  });
+  document.querySelector('.sige-skip-link')?.addEventListener('click', event => {
+    event.preventDefault(); fecharBarraLateral(); conteudo?.focus();
+  });
 
   menuNavegacao?.addEventListener("click", (evento) => {
     const alvo = evento.target;
@@ -97,7 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
   popoverNotificacoes?.addEventListener("toggle", event => {
     const aberto = event.newState === "open";
     botaoNotificacoes?.setAttribute("aria-expanded", String(aberto));
-    if (aberto) carregarNotificacoes();
+    if (aberto) { carregarNotificacoes(); popoverNotificacoes.tabIndex = -1; popoverNotificacoes.focus(); }
+    else if (popoverNotificacoes.contains(document.activeElement)) botaoNotificacoes?.focus();
   });
 
   router.init();

@@ -26,6 +26,10 @@ test('histórico de inscrições renderiza dados da API sem HTML injetado', asyn
   await expect(page.locator('#lista-minhas-inscricoes tr')).toHaveCount(1);
   await expect(page.locator('#lista-minhas-inscricoes')).toContainText('<img src=x onerror=alert(1)>');
   await expect(page.locator('#lista-minhas-inscricoes img')).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fits = await page.locator('.cartao-resumo-inscricao').evaluateAll(cards => cards.every(card => card.scrollWidth <= card.clientWidth + 1));
+  expect(fits).toBeTruthy();
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.locator('#lista-minhas-inscricoes button').first().click();
   await expect(page.locator('#dialog-detalhes-inscricao')).toBeVisible();
   expect(errors).toEqual([]);

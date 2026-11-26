@@ -1,3 +1,4 @@
+import { busyHandler } from '../../../shared/core/button-busy.mjs';
 import {
   getAllowedModules,
   getRoleLabel,
@@ -463,9 +464,9 @@ function initializeAdministrativeMetrics(currentRole) {
   select.addEventListener("change", loadMetrics);
   document
     .getElementById("atualizar-dashboard-administrativo")
-    .addEventListener("click", () =>
-      select.value ? loadMetrics() : loadEvents(),
-    );
+    .addEventListener("click", busyHandler(() =>
+      select.value ? loadMetrics() : loadEvents()
+    ));
   loadEvents();
 }
 
