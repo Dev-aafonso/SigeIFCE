@@ -614,12 +614,10 @@ test('fluxos integrados do backend no PostgreSQL isolado', async (t) => {
   });
 
   await t.test('QA-03/04: última vaga concorrente, sobreposição e horários adjacentes', async () => {
-    const organizer = agent();
-    expectStatus(await organizer.post('/auth/login').send({ email: organizerEmail, password: organizerPassword }), [200, 201], 'Login QA');
-    const participants = [agent(), agent()];
-    for (let i = 0; i < participants.length; i++) {
-      expectStatus(await participants[i].post('/auth/register').send(newStudentPayload(200 + i)), [200, 201], 'Cadastro QA');
-    }
+    // Reuse the ordinary authenticated test sessions; the login/register rate
+    // limits remain enabled and are shared by the integration scenarios.
+    const organizer = ctx.organizer;
+    const participants = [ctx.student, ctx.student2];
     const minute = Math.ceil(Date.now() / 60000) * 60000;
     const at = hours => new Date(minute + hours * 3600000).toISOString();
     const event = await organizer.post('/events').send({ title: `QA integridade ${runId}`, description: 'Evento isolado para validar vagas e horários.', startDate: at(49), endDate: at(58), location: 'Laboratório local', category: 'Oficina', workloadMinutes: 180, registrationStartDate: at(-1), registrationEndDate: at(48), totalCapacity: 10 });
